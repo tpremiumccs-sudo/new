@@ -108,7 +108,7 @@ header.top{
   background:linear-gradient(120deg,var(--accent) 0%,var(--c5) 100%);
   color:#fff; position:relative; overflow:hidden; animation:fadeUp .5s ease both;
 }
-.hero::after{content:"🛡️📐"; position:absolute; right:18px; top:50%; transform:translateY(-50%); font-size:64px; opacity:.25; letter-spacing:-14px}
+.hero::after{content:var(--hero-emoji,"🛡️📐"); position:absolute; right:18px; top:50%; transform:translateY(-50%); font-size:64px; opacity:.25; letter-spacing:-14px}
 .hero h1{font-size:clamp(1.4rem,3.4vw,2rem); margin-bottom:2px}
 .hero p{opacity:.92; max-width:640px; margin-bottom:14px}
 .hero .actions{display:flex; gap:10px; flex-wrap:wrap}
@@ -566,6 +566,12 @@ details.coll-sec[open] > summary::before{transform:rotate(90deg)}
 .fld input:not([type=checkbox]), .fld select{margin-top:4px; width:100%}
 .fld.row{display:flex; align-items:center; justify-content:space-between; gap:12px; font-size:.88rem; padding:6px 0; border-bottom:1px dashed var(--line)}
 .fld.row input[type=checkbox]{width:20px; height:20px; accent-color:var(--accent); flex:none}
+.av-dress{margin-top:12px; border-top:1px solid var(--line); padding-top:8px}
+.av-dress > summary{cursor:pointer; font-size:.95rem; list-style:none; display:flex; align-items:center; gap:8px; padding:2px 0}
+.av-dress > summary::-webkit-details-marker{display:none}
+.av-dress > summary::before{content:'▸'; color:var(--muted); transition:transform .15s}
+.av-dress[open] > summary::before{transform:rotate(90deg)}
+.eq-slot-label{font-size:.72rem; font-weight:800; color:var(--muted); text-transform:uppercase; letter-spacing:.04em; margin:2px 0 4px}
 .av-modes{display:flex; gap:6px; margin:8px 0}
 .av-mode{flex:1; padding:8px 6px; border:2px solid var(--line); border-radius:11px; background:var(--surface); font-weight:700; font-size:.82rem; cursor:pointer; transition:border-color .15s, background .15s}
 .av-mode.on{border-color:var(--accent); background:color-mix(in srgb,var(--accent) 12%, var(--surface))}
@@ -655,12 +661,12 @@ select.ainput{appearance:auto}
     <span class="lvlnum" id="lvlNum">1</span>
     <span><span class="lvlbar"><i id="lvlBar" style="width:0%"></i></span><small id="lvlXpTxt">0 XP</small></span>
   </div>
-  <span class="chip streak" title="Racha de días de estudio"><span class="icon">🔥</span><b id="streakTxt">0</b></span>
   <span class="chip hdr-badge hidden" id="hdrBadge" title="Insignia destacada"></span>
   <button class="iconbtn" id="btnProfile" title="Mi perfil y configuración">🎓</button>
   <button class="iconbtn" id="btnShop" title="Tienda y colección">🛒</button>
   <button class="iconbtn" id="btnModes" title="Modos de juego">🎮</button>
   <button class="iconbtn" id="btnTasks" title="Tareas y calendario" style="position:relative">📋<span id="taskBadge" class="task-badge hidden"></span></button>
+  <span class="chip streak" title="Racha de días de estudio"><span class="icon">🔥</span><b id="streakTxt">0</b></span>
   <div class="more-wrap">
     <button class="iconbtn" id="btnMore" title="Más opciones" aria-expanded="false">⋯</button>
     <div class="more-menu hidden" id="moreMenu">
@@ -679,7 +685,7 @@ select.ainput{appearance:auto}
   <section id="view-home">
     <div class="hero">
       <h1 id="heroTitle">¡Bienvenido, futuro actuario! 👋</h1>
-      <p>Avanza por 12 módulos resolviendo retos de Cálculo Actuarial. Necesitas <b>80%</b> para desbloquear el siguiente nivel. Gana XP, estrellas e insignias mientras dominas cada concepto.</p>
+      <p id="heroDesc">Avanza por los módulos resolviendo retos. Necesitas <b>80%</b> para desbloquear el siguiente nivel. Gana XP, estrellas e insignias mientras dominas cada concepto.</p>
       <div class="actions">
         <button class="btn onhero" id="btnContinue">▶ Continuar donde me quedé</button>
         <button class="btn onhero" id="btnExam">📝 Examen diario</button>
@@ -941,11 +947,11 @@ const clamp = (n,a,b) => Math.max(a,Math.min(b,n));
    Para agregar temas/módulos a una materia solo hay que llenar su entrada en
    MODULES_BY_SUBJECT (y opcionalmente EXAM_BUILDERS_BY_SUBJECT). */
 const SUBJECTS = [
-  {id:'ca3',   icon:'🛡️', name:'Cálculo Actuarial III',              short:'Cálculo III'},
-  {id:'reg',   icon:'📉', name:'Modelos de Regresión',                short:'Regresión',        soon:true},
-  {id:'nopar', icon:'📊', name:'Análisis Estadístico No Paramétrico', short:'No Paramétrico',   soon:true},
-  {id:'stoch', icon:'🎲', name:'Procesos Estocásticos',               short:'Estocásticos',     soon:true},
-  {id:'fin',   icon:'💼', name:'Administración Financiera',           short:'Admin. Financiera', soon:true}
+  {id:'ca3',   icon:'🛡️', name:'Cálculo Actuarial III',              short:'Cálculo III',       wm:'🛡️📐'},
+  {id:'reg',   icon:'📉', name:'Modelos de Regresión',                short:'Regresión',        wm:'📉📈', soon:true},
+  {id:'nopar', icon:'📊', name:'Análisis Estadístico No Paramétrico', short:'No Paramétrico',   wm:'📊🎯', soon:true},
+  {id:'stoch', icon:'🎲', name:'Procesos Estocásticos',               short:'Estocásticos',     wm:'🎲🔀', soon:true},
+  {id:'fin',   icon:'💼', name:'Administración Financiera',           short:'Admin. Financiera', wm:'💼💰', soon:true}
 ];
 const subjectById = id => SUBJECTS.find(s=>s.id===id) || SUBJECTS[0];
 /* Claves del estado que pertenecen a la materia activa (se intercambian al
@@ -1146,12 +1152,25 @@ function applyTheme(){
   $('#btnTheme').textContent = dark ? '☀️ Tema claro' : '🌙 Tema oscuro';
   // color principal efectivo: manual > tema de interfaz equipado > predeterminado
   let accent = S.accentColor;
-  if(!accent && S.equip && S.equip.theme){
-    const th = THEMES.find(t=>t.id===S.equip.theme);
-    if(th) accent = th.accent;
-  }
+  const th = (S.equip && S.equip.theme) ? THEMES.find(t=>t.id===S.equip.theme) : null;
+  if(!accent && th) accent = th.accent;
   if(accent){ root.style.setProperty('--accent', accent); root.style.setProperty('--accent-strong', accent); }
   else { root.style.removeProperty('--accent'); root.style.removeProperty('--accent-strong'); }
+  // el tema equipado tiñe el fondo de TODA la app (inicio, juegos, preguntas…)
+  const tintColor = th ? th.accent : (S.accentColor || null);
+  if(th && tintColor){
+    const a = dark ? 0.16 : 0.09, a2 = dark ? 0.05 : 0.02;
+    document.body.style.backgroundImage = 'linear-gradient(160deg, '+hexA(tintColor, a)+', '+hexA(tintColor, a2)+' 60%), linear-gradient(var(--bg), var(--bg))';
+    document.body.style.backgroundAttachment = 'fixed';
+  } else {
+    document.body.style.backgroundImage = '';
+    document.body.style.backgroundAttachment = '';
+  }
+}
+/* hex (#rrggbb) → rgba con alfa */
+function hexA(hex, a){
+  const m = /^#?([0-9a-f]{6})$/i.exec(hex||''); if(!m) return 'rgba(0,0,0,'+a+')';
+  const n = parseInt(m[1],16); return 'rgba('+((n>>16)&255)+','+((n>>8)&255)+','+(n&255)+','+a+')';
 }
 $('#btnTheme').addEventListener('click', ()=>{
   const dark = S.theme==='dark' || (!S.theme && matchMedia('(prefers-color-scheme: dark)').matches);
@@ -1337,6 +1356,9 @@ function renderHome(){
   renderHeader();
   const subj = subjectById(S.activeSubject);
   const hasContent = MODULES.length > 0;
+  // marca de agua translúcida del hero según la materia activa
+  const heroEl = document.querySelector('#view-home .hero');
+  if(heroEl) heroEl.style.setProperty('--hero-emoji', '"'+(subj.wm||'🛡️📐')+'"');
   const o = overallStats();
   const dayXp = (S.dayXP && S.dayXP.d === todayKey()) ? S.dayXP.xp : 0;
   const goal = S.xpGoal || 50;
@@ -1358,6 +1380,9 @@ function renderHome(){
     : o.done===0 ? '¡Bienvenido, '+pname+'! 👋'
     : o.done===MODULES.length ? '🏅 ¡Dominaste todos los módulos, '+pname+'!'
     : '¡Sigue así, '+pname+'! Vas '+o.done+' de '+o.total+' módulos 💪';
+  $('#heroDesc').innerHTML = hasContent
+    ? 'Avanza por los '+o.total+' módulos de <b>'+esc(subj.name)+'</b>. Necesitas <b>80%</b> para desbloquear el siguiente. Gana XP, estrellas e insignias.'
+    : 'Los módulos de <b>'+esc(subj.name)+'</b> están en preparación. Mientras tanto revisa sus 📋 tareas y su 📅 calendario de exámenes.';
   // estado del examen diario
   const doneToday = S.examDay === todayKey();
   $('#btnExam').innerHTML = (doneToday && S.examHistory.length)
@@ -4734,22 +4759,26 @@ function svgMustache(s){ const w=Math.round(s*0.5); return '<svg width="'+w+'" v
 function svgCowboy(s){ const w=Math.round(s*0.85); return '<svg width="'+w+'" viewBox="0 0 100 46" style="display:block">'
   + '<path d="M6 38 Q50 52 94 38 Q72 42 70 33 L66 16 Q50 6 34 16 L30 33 Q28 42 6 38Z" fill="#8a5a2b"/>'
   + '<path d="M30 30 Q50 37 70 30 L70 34 Q50 41 30 34Z" fill="#5e3c17"/></svg>'; }
+/* Cada accesorio ocupa una "ranura" (slot); solo puede equiparse uno por slot
+   para no saturar el avatar: cabeza, ojos, boca, mano (flotante) y sticker. */
+const ACC_SLOT_NAMES = {head:'🎩 Cabeza', eyes:'👓 Ojos', mouth:'👄 Boca', hand:'✋ Mano', sticker:'🏷️ Sticker'};
 const ACCESSORIES = [
-  {id:'acc-glasses', type:'acc', name:'Lentes Cartier', ico:'🕶️', xp:400,  svg:svgGlasses, pos:s=>'left:50%;top:44%;transform:translate(-50%,-50%)', desc:'Lentes cuadrados elegantes, estilo Cartier.'},
-  {id:'acc-cap',     type:'acc', name:'Gorra de desvelado', ico:'🧢', xp:700, emoji:'🧢', scale:0.62, pos:s=>'left:50%;top:-16%;transform:translateX(-50%)', desc:'Para las desveladas.'},
-  {id:'acc-headphones', type:'acc', name:'Audífonos', ico:'🎧', xp:900, emoji:'🎧', scale:0.9, pos:s=>'left:50%;top:46%;transform:translate(-50%,-50%)', desc:'Música para concentrarte.'},
-  {id:'acc-mustache', type:'acc', name:'Bigote falso', ico:'👨', xp:1100, svg:svgMustache, pos:s=>'left:50%;top:63%;transform:translate(-50%,-50%)', desc:'Un disfraz muy serio.'},
-  {id:'acc-crown',   type:'acc', name:'Corona', ico:'👑', xp:2000, emoji:'👑', scale:0.5, pos:s=>'left:50%;top:-14%;transform:translateX(-50%)', desc:'De la realeza actuarial.'},
-  {id:'acc-cowboy',  type:'acc', name:'Sombrero vaquero', ico:'🤠', xp:1600, svg:svgCowboy, pos:s=>'left:50%;top:-20%;transform:translateX(-50%)', desc:'Yeehaw, actuario.'},
-  {id:'acc-coffee',  type:'acc', name:'Café gigante', ico:'☕', xp:1400, emoji:'☕', scale:0.5, pos:s=>'right:-10%;bottom:-8%', desc:'Combustible de estudiante.'},
-  {id:'acc-calc',    type:'acc', name:'Calculadora flotante', ico:'🧮', xp:1000, emoji:'🧮', scale:0.44, pos:s=>'right:-12%;top:-4%', desc:'Siempre a la mano.'},
-  {id:'acc-magnifier', type:'acc', name:'Lupa de auditor', ico:'🔍', xp:1300, emoji:'🔍', scale:0.46, pos:s=>'right:-10%;bottom:-6%', desc:'Nada se te escapa.'},
-  {id:'acc-cap-grad', type:'acc', name:'Birrete', ico:'🎓', xp:2500, emoji:'🎓', scale:0.55, pos:s=>'left:50%;top:-16%;transform:translateX(-50%)', desc:'Listo para graduarte.'},
-  {id:'acc-aprobe',  type:'acc', name:'Sticker “Aprobé”', ico:'✅', test:()=>(S.examHistory||[]).some(e=>e.score>=80), cond:'Aprueba un examen diario (≥80%)', sticker:'✅ Aprobé', stickerBg:'#0ca30c', pos:s=>'left:-8%;bottom:2%', desc:'La prueba de que sí se pudo.'},
-  {id:'acc-noc',     type:'acc', name:'Sticker “No era la C”', ico:'🅲', xp:1500, sticker:'No era la C', stickerBg:'#e34948', pos:s=>'left:-10%;top:6%', desc:'Todos hemos estado ahí.'},
-  {id:'acc-tear',    type:'acc', name:'Lágrima de parcial', ico:'💧', xp:500,  emoji:'💧', scale:0.34, pos:s=>'left:58%;top:56%', desc:'El parcial estuvo difícil.'},
-  {id:'acc-flag',    type:'acc', name:'Bandera “Sobreviví”', ico:'🏁', test:()=>(S.examHistory||[]).length>=3, cond:'Presenta 3 exámenes diarios', sticker:'🏁 Sobreviví', stickerBg:'#4a3aa7', pos:s=>'right:-10%;top:2%', desc:'Un cuatrimestre más.'}
+  {id:'acc-glasses', type:'acc', slot:'eyes', name:'Lentes Cartier', ico:'🕶️', xp:400,  svg:svgGlasses, pos:s=>'left:50%;top:44%;transform:translate(-50%,-50%)', desc:'Lentes cuadrados elegantes, estilo Cartier.'},
+  {id:'acc-cap',     type:'acc', slot:'head', name:'Gorra de desvelado', ico:'🧢', xp:700, emoji:'🧢', scale:0.62, pos:s=>'left:50%;top:-16%;transform:translateX(-50%)', desc:'Para las desveladas.'},
+  {id:'acc-headphones', type:'acc', slot:'eyes', name:'Audífonos', ico:'🎧', xp:900, emoji:'🎧', scale:0.9, pos:s=>'left:50%;top:46%;transform:translate(-50%,-50%)', desc:'Música para concentrarte.'},
+  {id:'acc-mustache', type:'acc', slot:'mouth', name:'Bigote falso', ico:'👨', xp:1100, svg:svgMustache, pos:s=>'left:50%;top:63%;transform:translate(-50%,-50%)', desc:'Un disfraz muy serio.'},
+  {id:'acc-crown',   type:'acc', slot:'head', name:'Corona', ico:'👑', xp:2000, emoji:'👑', scale:0.5, pos:s=>'left:50%;top:-14%;transform:translateX(-50%)', desc:'De la realeza actuarial.'},
+  {id:'acc-cowboy',  type:'acc', slot:'head', name:'Sombrero vaquero', ico:'🤠', xp:1600, svg:svgCowboy, pos:s=>'left:50%;top:-20%;transform:translateX(-50%)', desc:'Yeehaw, actuario.'},
+  {id:'acc-coffee',  type:'acc', slot:'hand', name:'Café gigante', ico:'☕', xp:1400, emoji:'☕', scale:0.5, pos:s=>'right:-10%;bottom:-8%', desc:'Combustible de estudiante.'},
+  {id:'acc-calc',    type:'acc', slot:'hand', name:'Calculadora flotante', ico:'🧮', xp:1000, emoji:'🧮', scale:0.44, pos:s=>'right:-12%;top:-4%', desc:'Siempre a la mano.'},
+  {id:'acc-magnifier', type:'acc', slot:'hand', name:'Lupa de auditor', ico:'🔍', xp:1300, emoji:'🔍', scale:0.46, pos:s=>'right:-10%;bottom:-6%', desc:'Nada se te escapa.'},
+  {id:'acc-cap-grad', type:'acc', slot:'head', name:'Birrete', ico:'🎓', xp:2500, emoji:'🎓', scale:0.55, pos:s=>'left:50%;top:-16%;transform:translateX(-50%)', desc:'Listo para graduarte.'},
+  {id:'acc-aprobe',  type:'acc', slot:'sticker', name:'Sticker “Aprobé”', ico:'✅', test:()=>(S.examHistory||[]).some(e=>e.score>=80), cond:'Aprueba un examen diario (≥80%)', sticker:'✅ Aprobé', stickerBg:'#0ca30c', pos:s=>'left:-8%;bottom:2%', desc:'La prueba de que sí se pudo.'},
+  {id:'acc-noc',     type:'acc', slot:'sticker', name:'Sticker “No era la C”', ico:'🅲', xp:1500, sticker:'No era la C', stickerBg:'#e34948', pos:s=>'left:-10%;top:6%', desc:'Todos hemos estado ahí.'},
+  {id:'acc-tear',    type:'acc', slot:'mouth', name:'Lágrima de parcial', ico:'💧', xp:500,  emoji:'💧', scale:0.34, pos:s=>'left:58%;top:56%', desc:'El parcial estuvo difícil.'},
+  {id:'acc-flag',    type:'acc', slot:'sticker', name:'Bandera “Sobreviví”', ico:'🏁', test:()=>(S.examHistory||[]).length>=3, cond:'Presenta 3 exámenes diarios', sticker:'🏁 Sobreviví', stickerBg:'#4a3aa7', pos:s=>'right:-10%;top:2%', desc:'Un cuatrimestre más.'}
 ];
+const accSlot = id => { const a = ACCESSORIES.find(x=>x.id===id); return a ? a.slot : null; };
 /* ---- Efectos visuales (se ven sobre tu avatar; el confeti dispara al acertar) ---- */
 const EFFECTS = [
   {id:'fx-sparkle', type:'effect', name:'Destellos', ico:'✨', xp:1200, cls:'sparkle', desc:'Un anillo dorado con chispas girando en tu avatar.'},
@@ -4890,7 +4919,7 @@ function avatarSVG(c, size){
     + '<defs><radialGradient id="'+uid+'" cx="42%" cy="34%" r="80%">'
     + '<stop offset="0%" stop-color="#ffffff" stop-opacity=".45"/><stop offset="55%" stop-color="'+skin+'"/><stop offset="100%" stop-color="'+skin+'"/>'
     + '</radialGradient></defs>'
-    + '<ellipse cx="50" cy="92" rx="27" ry="17" fill="var(--accent)"/>'      /* hombros */
+    + '<ellipse cx="50" cy="92" rx="27" ry="17" fill="#6b7280"/>'            /* hombros/camisa (color fijo, no depende del tema) */
     + '<ellipse cx="50" cy="73" rx="9" ry="6" fill="'+skin+'"/>'             /* cuello */
     + '<ellipse cx="50" cy="49" rx="23" ry="25" fill="url(#'+uid+')"/>'      /* cara */
     + h + e
@@ -4931,8 +4960,7 @@ function avatarStack(p, size, equipOv){
   const effect = eq.effect ? EFFECTS.find(f=>f.id===eq.effect) : null;
   const accIds = Array.isArray(eq.acc) ? eq.acc : (eq.acc?[eq.acc]:[]);
   const cls = ['av-stack']; if(effect && effect.cls) cls.push(effect.cls);
-  let inner = '<span class="av-bg" style="'+(bg?bgStyle(bg):'background:var(--surface2)')+'">'
-    + (bg && bg.emoji ? '<span style="font-size:'+Math.round(size*0.5)+'px">'+bg.emoji+'</span>' : '') + '</span>'
+  let inner = '<span class="av-bg" style="'+(bg?bgStyle(bg):'background:var(--surface2)')+'"></span>'
     + '<span class="av-base">'+avatarBase(p, size)+'</span>';
   if(effect && (effect.cls==='sparkle' || effect.cls==='stars')) inner += '<span class="av-ring"></span>';
   if(frame) inner += '<span class="av-frame" style="'+frameStyle(frame, size)+'"></span>';
@@ -4948,7 +4976,12 @@ function equipReward(r){
   const eq = ensureEquip();
   if(r.type === 'acc'){
     const i = eq.acc.indexOf(r.id);
-    if(i>=0) eq.acc.splice(i,1); else eq.acc.push(r.id);
+    if(i>=0){ eq.acc.splice(i,1); }
+    else {
+      // solo un accesorio por ranura: quita el que ocupe el mismo slot
+      eq.acc = eq.acc.filter(id => accSlot(id) !== r.slot);
+      eq.acc.push(r.id);
+    }
   } else {
     eq[r.type] = (eq[r.type] === r.id) ? null : r.id;
   }
@@ -5009,19 +5042,31 @@ function renderLevels(){
 }
 
 /* ==================== Perfil y configuración ==================== */
-/* Rejilla para equipar recompensas ya desbloqueadas de un tipo (+ opción "Ninguno") */
+/* Rejilla para equipar recompensas ya desbloqueadas de un tipo (+ opción "Ninguno").
+   Los accesorios se agrupan por ranura (una pieza por ranura). */
+function equipItemHTML(r){
+  const on = isEquipped(r);
+  return '<div class="equip-item'+(on?' on':'')+'" data-eqid="'+r.id+'"><span class="ei-ico">'+r.ico+'</span><span class="ei-name">'+esc(r.name)+'</span>'
+    + (on?'<span class="ei-on">✓</span>':'')+'</div>';
+}
 function equipGridHTML(type){
   const owned = REWARDS.filter(r => r.type===type && isUnlockedReward(r.id));
   const eq = ensureEquip();
-  const none = type==='acc' ? (eq.acc.length===0) : !eq[type];
-  let items = '<div class="equip-item'+(none?' on':'')+'" data-eqnone="'+type+'"><span class="ei-ico">🚫</span><span class="ei-name">Ninguno</span></div>';
-  items += owned.map(r => {
-    const on = isEquipped(r);
-    return '<div class="equip-item'+(on?' on':'')+'" data-eqid="'+r.id+'"><span class="ei-ico">'+r.ico+'</span><span class="ei-name">'+esc(r.name)+'</span>'
-      + (on?'<span class="ei-on">✓</span>':'')+'</div>';
-  }).join('');
-  return '<div class="equip-grid">'+items+'</div>'
-    + (owned.length ? '' : '<p class="q-help">Aún no tienes '+REWARD_TYPE_LABEL[type].toLowerCase()+'. Consíguelos en la 🛒 Tienda.</p>');
+  if(!owned.length) return '<p class="q-help">Aún no tienes '+REWARD_TYPE_LABEL[type].toLowerCase()+'. Consíguelos en la 🛒 Tienda.</p>';
+  if(type === 'acc'){
+    // agrupado por ranura, con "Quitar" por ranura
+    const slots = [...new Set(owned.map(r=>r.slot))];
+    return slots.map(slot => {
+      const list = owned.filter(r=>r.slot===slot);
+      const none = !eq.acc.some(id=>accSlot(id)===slot);
+      return '<div style="margin-bottom:6px"><div class="eq-slot-label">'+(ACC_SLOT_NAMES[slot]||slot)+'</div>'
+        + '<div class="equip-grid"><div class="equip-item'+(none?' on':'')+'" data-eqnoneslot="'+slot+'"><span class="ei-ico">🚫</span><span class="ei-name">Ninguno</span></div>'
+        + list.map(equipItemHTML).join('')+'</div></div>';
+    }).join('');
+  }
+  const none = !eq[type];
+  return '<div class="equip-grid"><div class="equip-item'+(none?' on':'')+'" data-eqnone="'+type+'"><span class="ei-ico">🚫</span><span class="ei-name">Ninguno</span></div>'
+    + owned.map(equipItemHTML).join('')+'</div>';
 }
 function profileGeneralProgress(){
   const ws = SUBJECTS.map(x=>subjStats(x.id)).filter(x=>x.total>0);
@@ -5055,9 +5100,19 @@ function avatarEditorHTML(p){
           + '<button class="bnav" data-bk="'+k+'" data-bd="1">›</button></div>').join('')
       + '</div><p class="q-help">Personaliza tu avatar 3D. Pronto habrá más piezas (cuerpo completo).</p>';
   }
+  // secciones para vestir el avatar (marco / fondo / accesorios / efecto), con
+  // vista previa en vivo arriba; se equipa aquí para verlo al instante.
+  const dress = '<details class="av-dress" open><summary><b>👕 Vestir mi avatar</b></summary>'
+    + '<p class="q-help" style="margin:6px 0">Equipa aquí lo que desbloqueaste en la 🛒 Tienda y velo al instante en tu avatar de arriba. Un accesorio por ranura.</p>'
+    + '<label class="fld">🖼️ Marco</label>'+equipGridHTML('frame')
+    + '<label class="fld">🌆 Fondo</label>'+equipGridHTML('bg')
+    + '<label class="fld">🎭 Accesorios</label>'+equipGridHTML('acc')
+    + '<label class="fld">✨ Efecto</label>'+equipGridHTML('effect')
+    + '</details>';
   return '<label class="fld">🧑‍🎨 Tu avatar</label>'
     + '<div class="av-modes">'+seg('emoji','😀 Emoji')+seg('photo','📷 Foto')+seg('custom','🧑 Avatar 3D')+'</div>'
-    + '<div id="avEditorBody">'+body+'</div>';
+    + '<div id="avEditorBody">'+body+'</div>'
+    + dress;
 }
 function bindAvatarEditor(p){
   $$('#profileBody [data-avmode]').forEach(b => b.addEventListener('click', () => {
@@ -5078,11 +5133,19 @@ function bindAvatarEditor(p){
     const c = p.custom = Object.assign(defaultCustom(), p.custom||{});
     c[k] = ((c[k]||0) + d + AV_SIZES[k]) % AV_SIZES[k];
     p.avatarMode = 'custom';
-    saveProfiles(); renderHeader();
-    // actualiza solo la vista previa y la etiqueta, sin re-render completo
-    const prev = document.querySelector('#profileBody .panel .av-stack');
-    renderProfile();
-    sfx('flip');
+    saveProfiles(); renderHeader(); renderProfile(); sfx('flip');
+  }));
+  // — Equipar marco / fondo / accesorios / efecto (vista previa arriba) —
+  $$('#profileBody [data-eqid]').forEach(el => el.addEventListener('click', () => { const r = rewardById(el.dataset.eqid); if(r) equipReward(r); }));
+  $$('#profileBody [data-eqnone]').forEach(el => el.addEventListener('click', () => {
+    const t = el.dataset.eqnone; const eq = ensureEquip();
+    if(t==='acc') eq.acc = []; else eq[t] = null;
+    save(); applyTheme(); renderHeader(); renderProfile(); sfx('click');
+  }));
+  $$('#profileBody [data-eqnoneslot]').forEach(el => el.addEventListener('click', () => {
+    const slot = el.dataset.eqnoneslot; const eq = ensureEquip();
+    eq.acc = eq.acc.filter(id => accSlot(id) !== slot);
+    save(); renderHeader(); renderProfile(); sfx('click');
   }));
 }
 function renderProfile(){
