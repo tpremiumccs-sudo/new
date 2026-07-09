@@ -58,11 +58,40 @@ diarios.
 
 - **Perfiles personales**: cada estudiante crea su perfil (nombre + avatar);
   un mismo navegador puede alojar varios perfiles con progreso independiente.
-- **Configuración** en el perfil: tema (sistema/claro/oscuro), sonidos,
-  confeti y "mostrar procedimiento también al acertar".
+- **Configuración** en el perfil: tema (sistema/claro/oscuro), objetivo diario
+  de XP, sonidos, confeti, "mostrar procedimiento también al acertar", guía
+  progresiva, texto grande, reducir animaciones y avatar beta.
 - **Exportar / Importar JSON**: respaldo completo del progreso para moverlo
   entre dispositivos o guardarlo.
 - **Reiniciar progreso** del perfil con doble confirmación.
+
+## ⬆️ Niveles y recompensas
+
+La barra de XP del encabezado abre la **ruta de niveles**: cada nivel
+desbloquea avatares, títulos (Aprendiz → Actuario Senior) y accesorios para
+el avatar personalizable.
+
+## 🧑‍🎨 Avatar personalizable (beta)
+
+Constructor de avatar con aspecto 3D (SVG con degradados): tono de piel,
+peinado, color de cabello, ojos, fondo y accesorios que se desbloquean por
+nivel. Es una **función experimental activable/desactivable** desde
+Preferencias; al desactivarla se usa el avatar emoji de siempre.
+
+## 📖 Guía de estudio progresiva
+
+La guía se desbloquea **tema por tema** conforme avanzas en los módulos (la
+sección del siguiente tema siempre está disponible para estudiar antes de
+jugarlo). Se puede desactivar en Preferencias para ver la guía completa.
+
+## 📘 Unidades del curso
+
+El contenido actual es la **Unidad 1 · Fundamentos del Cálculo Actuarial**.
+La arquitectura está lista para agregar una **Unidad 2** con nuevos temas:
+cada unidad tendrá sus propios módulos y su propio examen diario (los temas
+no se mezclan entre unidades, salvo los compartidos). El registro
+`EXAM_BUILDERS` en `index.html` documenta dónde se conecta el examen de cada
+unidad.
 
 ## 🖨️ Guía de estudio (PDF)
 

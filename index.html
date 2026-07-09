@@ -446,6 +446,33 @@ header.top{
 .profile-row .pr-name{flex:1; font-weight:700; font-size:.9rem; overflow:hidden; text-overflow:ellipsis}
 .btn.danger{background:var(--bad)}
 select.ainput{appearance:auto}
+.avatar-pick .av.locked{opacity:.45; cursor:not-allowed}
+#btnProfile svg{display:block; border-radius:50%}
+.lvlbox{cursor:pointer; transition:transform .15s}
+.lvlbox:hover{transform:translateY(-2px)}
+/* ============ Constructor de avatar ============ */
+.builder-row{display:flex; align-items:center; gap:8px; padding:6px 0; border-bottom:1px dashed var(--line); font-size:.85rem}
+.builder-row .b-label{flex:1; font-weight:700; color:var(--ink2)}
+.builder-row .b-val{min-width:96px; text-align:center; font-weight:700; font-size:.8rem}
+.builder-row .bnav{width:30px; height:30px; border-radius:9px; border:1px solid var(--border); background:var(--surface2); font-weight:800; font-size:1rem}
+.builder-row .bnav:hover{background:var(--accent); color:#fff}
+/* ============ Niveles y recompensas ============ */
+.lvl-row{display:flex; align-items:center; gap:12px; padding:10px 8px; border-bottom:1px solid var(--line)}
+.lvl-row:last-child{border-bottom:none}
+.lvl-row .lvl-badge{flex:none; width:36px; height:36px; border-radius:50%; display:grid; place-items:center; font-weight:800; background:var(--surface3); color:var(--muted)}
+.lvl-row.done .lvl-badge{background:linear-gradient(135deg,var(--accent),var(--c5)); color:#fff}
+.lvl-row.next .lvl-badge{background:var(--warn-soft); color:var(--ink); outline:2px dashed var(--gold)}
+.lvl-row .lvl-info{flex:1; font-size:.85rem}
+.lvl-row .lvl-info small{display:block; color:var(--muted); font-size:.7rem; font-variant-numeric:tabular-nums}
+.lvl-row .lvl-state{font-size:1rem; font-weight:800}
+.lvl-row.done .lvl-state{color:var(--good-text)}
+.lvl-row:not(.done){opacity:.75}
+/* ============ Guía progresiva ============ */
+.guide-locked{text-align:center; border-style:dashed !important; color:var(--ink2); font-size:.9rem; opacity:.85}
+.guide-locked span{font-size:.82rem; color:var(--muted)}
+/* ============ Preferencias / accesibilidad ============ */
+:root.big-text body{font-size:17.5px}
+:root.less-motion *, :root.less-motion *::before, :root.less-motion *::after{animation-duration:.01ms !important; transition-duration:.01ms !important}
 /* ============ Responsive ============ */
 @media (max-width:720px){
   .app{padding:0 14px 70px}
@@ -512,8 +539,17 @@ select.ainput{appearance:auto}
 
     <div class="stats-strip" id="homeStats"></div>
 
-    <div class="section-h"><h2>📚 Módulos</h2><span class="line"></span><span class="meta" id="modMeta"></span></div>
+    <div class="section-h"><h2>📘 Unidad 1 · Fundamentos del Cálculo Actuarial</h2><span class="line"></span><span class="meta" id="modMeta"></span></div>
     <div class="mgrid" id="moduleGrid"></div>
+    <div class="section-h" style="margin-top:30px"><h2>📗 Próximas unidades</h2><span class="line"></span></div>
+    <div class="mgrid">
+      <div class="mcard locked" style="--mc:var(--c2)">
+        <span class="lock" title="Disponible próximamente">🔒</span>
+        <div class="m-top"><span class="m-ico">📗</span><span><span class="m-num">Unidad 2</span><h3>Nuevos temas · Próximamente</h3></span></div>
+        <span class="m-desc">Se agregará con los siguientes temas del curso. Cada unidad tiene sus propios módulos y su propio examen diario: los temas no se mezclan entre unidades, salvo los que se comparten.</span>
+        <span class="m-type">En preparación</span>
+      </div>
+    </div>
   </section>
 
   <!-- ================= VISTA: LECCIÓN ================= -->
@@ -621,6 +657,15 @@ select.ainput{appearance:auto}
     <div class="lesson" id="guideBody"></div>
   </section>
 
+  <!-- ================= VISTA: NIVELES ================= -->
+  <section id="view-levels" class="hidden">
+    <div class="session-top">
+      <button class="btn ghost small back" data-nav="home">← Volver</button>
+      <span class="qcount">⬆️ Niveles y recompensas</span>
+    </div>
+    <div id="levelsBody"></div>
+  </section>
+
   <!-- ================= VISTA: PERFIL ================= -->
   <section id="view-profile" class="hidden">
     <div class="session-top">
@@ -662,6 +707,8 @@ const DEFAULT_STATE = () => ({
   streak:0, lastDay:null, totalTime:0, bestBlitz:0,
   examDay:null, examHistory:[],   // examen diario: {t, score, sec}
   stepsOnOk:false, confetti:true,
+  bigText:false, reduceMotion:false, xpGoal:50, guideProgressive:true, avatarBeta:true,
+  dayXP:null,                     // {d:'YYYY-MM-DD', xp, goalHit}
   modules:{},           // id -> {best, stars, attempts, done}
   history:[],           // {t, mod, score, xp, sec}
   concepts:{},          // topic -> {ok, bad}
@@ -695,11 +742,27 @@ function levelInfo(){
   return { lvl, frac: (S.xp-lo)/(hi-lo), toNext: hi-S.xp };
 }
 function addXP(n){
+  const t = todayKey();
+  if(!S.dayXP || S.dayXP.d !== t) S.dayXP = {d:t, xp:0, goalHit:false};
+  S.dayXP.xp += n;
   const before = levelOf(S.xp);
-  S.xp += n; save();
+  S.xp += n;
   const after = levelOf(S.xp);
-  renderHeader();
-  if(after>before){ toast('🎉 ¡Subiste al nivel '+after+'!'); sfx('unlock'); }
+  if(!S.dayXP.goalHit && S.dayXP.xp >= (S.xpGoal||50)){
+    S.dayXP.goalHit = true;
+    toast('🎯 ¡Objetivo diario de XP cumplido!');
+  }
+  save(); renderHeader();
+  if(after > before){
+    toast('🎉 ¡Subiste al nivel '+after+'!'); sfx('unlock');
+    LEVEL_REWARDS.filter(r => r.lvl > before && r.lvl <= after).forEach(r => {
+      const parts = [];
+      if(r.title) parts.push('título “'+r.title+'”');
+      if(r.avatars) parts.push('avatares '+r.avatars.join(' '));
+      if(r.custom) parts.push(r.custom.toLowerCase());
+      if(parts.length) setTimeout(()=>toast('🔓 Nivel '+r.lvl+' desbloquea: '+parts.join(' · '), 4200), 900);
+    });
+  }
 }
 function touchStreak(){
   const today = todayKey();
@@ -747,6 +810,8 @@ function applyTheme(){
   if(S.theme) root.setAttribute('data-theme', S.theme); else root.removeAttribute('data-theme');
   const dark = S.theme==='dark' || (!S.theme && matchMedia('(prefers-color-scheme: dark)').matches);
   $('#btnTheme').textContent = dark ? '☀️' : '🌙';
+  root.classList.toggle('big-text', !!S.bigText);
+  root.classList.toggle('less-motion', !!S.reduceMotion);
 }
 $('#btnTheme').addEventListener('click', ()=>{
   const dark = S.theme==='dark' || (!S.theme && matchMedia('(prefers-color-scheme: dark)').matches);
@@ -832,7 +897,7 @@ const TIPS = [
 ];
 
 /* ==================== Navegación ==================== */
-const VIEWS = ['home','lesson','session','result','memo','escape','flash','blitz','stats','guide','profile'];
+const VIEWS = ['home','lesson','session','result','memo','escape','flash','blitz','stats','guide','profile','levels'];
 let sessionTimer = null, memoTimerInt = null, blitzInt = null;
 function showView(name){
   VIEWS.forEach(v => $('#view-'+v).classList.toggle('hidden', v!==name));
@@ -851,7 +916,7 @@ function renderHeader(){
   $('#lvlBar').style.width = Math.round(li.frac*100)+'%';
   $('#lvlXpTxt').textContent = S.xp+' XP · faltan '+li.toNext;
   $('#streakTxt').textContent = S.streak;
-  $('#btnProfile').textContent = activeProfile().avatar;
+  $('#btnProfile').innerHTML = avatarHTML(activeProfile(), 26);
   $('#btnSound').textContent = S.sound ? '🔊' : '🔇';
   $('#btnSound').setAttribute('aria-pressed', S.sound);
 }
@@ -871,12 +936,15 @@ function overallStats(){
 function renderHome(){
   renderHeader();
   const o = overallStats();
+  const dayXp = (S.dayXP && S.dayXP.d === todayKey()) ? S.dayXP.xp : 0;
+  const goal = S.xpGoal || 50;
   $('#homeStats').innerHTML =
     tile('🏆','Progreso total', Math.round(o.progress*100), '%', o.done+' de '+o.total+' módulos') +
     tile('🎯','Precisión global', Math.round(o.acc*100), '%', o.answered+' respuestas') +
     tile('📈','Promedio', Math.round(o.avg), '%', S.history.length+' actividades') +
     tile('⏱️','Tiempo de estudio', fmtDur(S.totalTime), '', 'acumulado') +
-    tile('⚡','XP total', S.xp, '', 'Nivel '+levelInfo().lvl);
+    tile('⚡','XP total', S.xp, '', 'Nivel '+levelInfo().lvl+' · '+currentTitle()) +
+    tile('📅','Objetivo de hoy', dayXp+'<span class="unit">/'+goal+' XP</span>', '', dayXp>=goal ? '¡Cumplido! ✅' : 'ajústalo en tu perfil');
   $('#modMeta').textContent = o.done+' / '+o.total+' completados · se desbloquea con ≥ 80%';
   // saludo según avance, personalizado con el perfil
   const pname = activeProfile().name.split(' ')[0];
@@ -921,6 +989,9 @@ $('#btnContinue').addEventListener('click', ()=>{
 });
 $('#btnStats').addEventListener('click', ()=>{ sfx('click'); renderStats(); showView('stats'); });
 $('#btnGuide').addEventListener('click', ()=>{ sfx('click'); renderGuide(); showView('guide'); });
+$('#lvlbox').addEventListener('click', ()=>{ sfx('click'); renderLevels(); showView('levels'); });
+$('#lvlbox').setAttribute('role','button'); $('#lvlbox').setAttribute('tabindex','0');
+$('#lvlbox').addEventListener('keydown', e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); renderLevels(); showView('levels'); } });
 /* ==================== Apertura de módulos ==================== */
 function openModule(id){
   const m = MODULES[id];
@@ -1030,7 +1101,7 @@ function recordResult(id, score, xpEarned, sec, recap){
   S.history.unshift({t:Date.now(), mod:id, score, xp:xpEarned, sec:Math.round(sec)});
   if(S.history.length > 80) S.history.length = 80;
   let bonus = passed ? 30 : 0; if(score===100) bonus += 20;
-  S.xp += xpEarned + bonus;
+  addXP(xpEarned + bonus);
   save(); checkBadges(); renderHeader();
   const unlockedNext = nextWasLocked && isUnlocked(id+1);
   renderResult(m, score, stars, xpEarned+bonus, sec, recap, passed, unlockedNext);
@@ -2414,7 +2485,7 @@ function endBlitz(){
   const res = BL; BL = null;
   const xp = res.ok*4;
   if(res.ok > S.bestBlitz) S.bestBlitz = res.ok;
-  S.xp += xp; S.totalTime += 60; save(); touchStreak(); checkBadges(); renderHeader();
+  addXP(xp); S.totalTime += 60; save(); touchStreak(); checkBadges(); renderHeader();
   sfx(res.ok >= 8 ? 'win' : 'bad');
   if(res.ok >= 10) confetti(60);
   const o = openModal('<div style="text-align:center"><div style="font-size:48px">⚡</div>'
@@ -2538,39 +2609,50 @@ function guideHTML(){
   const exFreq = qFreq(), exSev = qSev(), exPrima = qPrimaRiesgo(), exCoas = qCoasIns(), exCop = qCopagoIns(), exDep = qDepLineal();
   const worked = [exFreq, exSev, exPrima, exCop, exCoas, exDep];
   const strip = h => String(h).replace(/<[^>]*>/g,' ').replace(/\s+/g,' ').trim();
-  return [
-  '<div class="lesson-card"><h3>📖 Guía de estudio · Cálculo Actuarial</h3><p>Resumen de conceptos, fórmulas, procedimientos y ejercicios resueltos. Usa el botón <b>Imprimir / Guardar PDF</b> para llevarla contigo.</p></div>',
-  '<div class="lesson-card"><h3>1 · Glosario de conceptos</h3><table><tr><th>Concepto</th><th>Definición</th></tr>'
-    + GLOSSARY.map(g => '<tr><td><b>'+g.t+'</b></td><td>'+g.d+'</td></tr>').join('') + '</table></div>',
-  '<div class="lesson-card"><h3>2 · Fórmulas clave</h3>'
+  const prog = S.guideProgressive !== false;
+  // Cada sección se desbloquea cuando el módulo `req` está desbloqueado (el
+  // "tema siguiente que aún no ves" siempre está disponible para estudiarlo).
+  const secs = [
+  {req:0, html:'<div class="lesson-card"><h3>📖 Guía de estudio · Cálculo Actuarial (Unidad 1)</h3><p>Resumen de conceptos, fórmulas, procedimientos y ejercicios resueltos. Usa el botón <b>Imprimir / Guardar PDF</b> para llevarla contigo.</p>'
+    + (prog ? '<p style="font-size:.82rem;color:var(--muted)">🔓 La guía se desbloquea tema por tema conforme avanzas en los módulos. Si prefieres verla completa, desactiva “Guía de estudio progresiva” en tu perfil ⚙️.</p>' : '') + '</div>'},
+  {req:0, html:'<div class="lesson-card"><h3>1 · Glosario de conceptos</h3><table><tr><th>Concepto</th><th>Definición</th></tr>'
+    + GLOSSARY.map(g => '<tr><td><b>'+g.t+'</b></td><td>'+g.d+'</td></tr>').join('') + '</table></div>'},
+  {req:1, html:'<div class="lesson-card"><h3>2 · Fórmulas clave</h3>'
     + '<div class="formula">Frecuencia = Número de siniestros ÷ Exposición</div>'
     + '<div class="formula">Severidad = Monto total de pérdidas ÷ Número de siniestros</div>'
     + '<div class="formula">Prima de riesgo (prima pura) = Frecuencia × Severidad</div>'
     + '<div class="formula">Costo esperado total = Exposición × Frecuencia × Severidad</div>'
     + '<div class="formula">Siniestralidad = Siniestros pagados ÷ Primas cobradas</div>'
     + '<div class="formula">Prima comercial = Prima pura + Gastos + Utilidad</div>'
-    + '<div class="formula">Depreciación anual (línea recta) = (Costo − Valor residual) ÷ Vida útil</div></div>',
-  '<div class="lesson-card"><h3>3 · Procedimiento: deducible + coaseguro</h3><ol>'
+    + '<div class="formula">Depreciación anual (línea recta) = (Costo − Valor residual) ÷ Vida útil</div></div>'},
+  {req:3, html:'<div class="lesson-card"><h3>3 · Procedimiento: deducible + coaseguro</h3><ol>'
     + '<li>Si el siniestro ≤ deducible → la aseguradora paga $0.</li>'
     + '<li>Base = Monto del siniestro − Deducible.</li>'
     + '<li>Coaseguro del asegurado = % coaseguro × Base.</li>'
     + '<li>Aseguradora paga = Base − Coaseguro (sin exceder el límite de cobertura).</li>'
-    + '<li>Asegurado paga = Deducible + Coaseguro + cualquier excedente del límite.</li></ol></div>',
-  '<div class="lesson-card"><h3>4 · Inflación, devaluación y depreciación</h3><table>'
+    + '<li>Asegurado paga = Deducible + Coaseguro + cualquier excedente del límite.</li></ol></div>'},
+  {req:5, html:'<div class="lesson-card"><h3>4 · Inflación, devaluación y depreciación</h3><table>'
     + '<tr><th>Fenómeno</th><th>¿Qué pierde valor?</th><th>Efecto en seguros</th></tr>'
     + '<tr><td><b>Inflación</b></td><td>El dinero frente a los bienes (suben los precios)</td><td>Sumas aseguradas insuficientes; primas e indemnizaciones suben; se usan pólizas indexadas (UDIS)</td></tr>'
     + '<tr><td><b>Devaluación</b></td><td>La moneda frente a otras divisas</td><td>Refacciones y servicios importados más caros → mayor severidad</td></tr>'
-    + '<tr><td><b>Depreciación</b></td><td>Un activo (auto, maquinaria) por uso/tiempo</td><td>La indemnización de autos se basa en el valor comercial depreciado</td></tr></table></div>',
-  '<div class="lesson-card"><h3>5 · Ejercicios resueltos (se regeneran al recargar)</h3>'
+    + '<tr><td><b>Depreciación</b></td><td>Un activo (auto, maquinaria) por uso/tiempo</td><td>La indemnización de autos se basa en el valor comercial depreciado</td></tr></table></div>'},
+  {req:7, html:'<div class="lesson-card"><h3>5 · Ejercicios resueltos (se regeneran al recargar)</h3>'
     + worked.map((q,i) => '<p><b>Ejercicio '+(i+1)+'.</b> '+strip(q.prompt)+'<br><i>Datos: '+strip(q.dataHtml||'')+'</i></p><ol>'
-      + q.steps.map(s => '<li>'+strip(s)+'</li>').join('') + '</ol>').join('') + '</div>',
-  '<div class="lesson-card"><h3>6 · Banco de repaso: ¿verdadero o falso?</h3><table><tr><th>Afirmación</th><th>Respuesta</th></tr>'
+      + q.steps.map(s => '<li>'+strip(s)+'</li>').join('') + '</ol>').join('') + '</div>'},
+  {req:7, html:'<div class="lesson-card"><h3>6 · Banco de repaso: ¿verdadero o falso?</h3><table><tr><th>Afirmación</th><th>Respuesta</th></tr>'
     + TF_M1.concat(TF_INF, TF_DEV, TF_DEP).map(t => '<tr><td>'+t.s+'</td><td><b>'+(t.a?'V':'F')+'</b> — '+t.e+'</td></tr>').join('')
-    + '</table></div>',
-  '<div class="lesson-card"><h3>7 · Identifica el fenómeno</h3><table><tr><th>Situación</th><th>Fenómeno</th></tr>'
-    + PHENO.map(p => '<tr><td>'+p.s+'</td><td><b>'+p.a+'</b></td></tr>').join('') + '</table></div>',
-  '<div class="lesson-card"><h3>8 · Tips actuariales</h3><ul>' + TIPS.map(t => '<li>'+t+'</li>').join('') + '</ul></div>'
-  ].join('');
+    + '</table></div>'},
+  {req:6, html:'<div class="lesson-card"><h3>7 · Identifica el fenómeno</h3><table><tr><th>Situación</th><th>Fenómeno</th></tr>'
+    + PHENO.map(p => '<tr><td>'+p.s+'</td><td><b>'+p.a+'</b></td></tr>').join('') + '</table></div>'},
+  {req:0, html:'<div class="lesson-card"><h3>8 · Tips actuariales</h3><ul>' + TIPS.map(t => '<li>'+t+'</li>').join('') + '</ul></div>'}
+  ];
+  return secs.map(s => {
+    if(!prog || isUnlocked(s.req)) return s.html;
+    const m = MODULES[s.req];
+    return '<div class="lesson-card guide-locked">🔒 <b>Sección bloqueada</b><br>'
+      + '<span>Se desbloquea al llegar al Módulo '+(s.req+1)+' · '+m.icon+' '+esc(m.name)
+      + '. Aprueba los módulos anteriores con ≥ 80% para estudiarla.</span></div>';
+  }).join('');
 }
 function renderGuide(){
   $('#guideBody').innerHTML = guideHTML();
@@ -2586,6 +2668,10 @@ $('#btnPrint').addEventListener('click', () => {
 });
 
 /* ==================== Examen diario ==================== */
+/* Los exámenes son POR UNIDAD: cada unidad tiene su propio generador y sus
+   temas no se mezclan con los de otras unidades (salvo temas compartidos).
+   Cuando exista la Unidad 2, registrar aquí su builder: {2: buildExamU2}.  */
+const EXAM_BUILDERS = { 1: buildExam };
 function buildExam(){
   const usedTF = new Set(), usedF = new Set(), usedP = new Set();
   return shuffle([
@@ -2605,7 +2691,7 @@ function startExam(){
   touchStreak();
   SES = { id:'exam', exam:true, qs:buildExam(), i:0, pts:0, xp:0, t0:Date.now(), recap:[] };
   showView('session'); renderQ();
-  toast('📝 Examen diario: '+SES.qs.length+' preguntas. Las respuestas se revelan al final. ¡Suerte!');
+  toast('📝 Examen diario · Unidad 1: '+SES.qs.length+' preguntas. Las respuestas se revelan al final. ¡Suerte!');
 }
 function finishExam(){
   const n = SES.qs.length;
@@ -2618,7 +2704,7 @@ function finishExam(){
   if(S.examHistory.length > 60) S.examHistory.length = 60;
   S.totalTime += sec;
   const xp = Math.round(score/2) + (score>=80 ? 25 : 0);
-  S.xp += xp;
+  addXP(xp);
   save(); checkBadges(); renderHeader();
   renderExamResult(score, xp, sec, recap);
   if(score>=80){ sfx('win'); confetti(90); } else sfx('bad');
@@ -2631,7 +2717,7 @@ function renderExamResult(score, xp, sec, recap){
   let html = '<div class="result-card">'
     + '<div class="big-ico">'+(score>=90?'🏅':passed?'🎉':'📚')+'</div>'
     + '<h2>'+title+'</h2>'
-    + '<div class="r-sub">📝 Examen diario · '+new Date().toLocaleDateString('es-MX',{day:'numeric',month:'long'})+'</div>'
+    + '<div class="r-sub">📝 Examen diario · Unidad 1 · '+new Date().toLocaleDateString('es-MX',{day:'numeric',month:'long'})+'</div>'
     + '<div class="r-score-ring"><svg width="130" height="130">'
     + '<circle cx="65" cy="65" r="'+R+'" fill="none" stroke="var(--surface3)" stroke-width="12"/>'
     + '<circle cx="65" cy="65" r="'+R+'" fill="none" stroke="'+(passed?'var(--good)':'var(--bad)')+'" stroke-width="12" stroke-linecap="round" '
@@ -2656,20 +2742,152 @@ function renderExamResult(score, xp, sec, recap){
 }
 $('#btnExam').addEventListener('click', ()=>{ sfx('click'); startExam(); });
 
-/* ==================== Perfil y configuración ==================== */
+/* ==================== Niveles, títulos y recompensas ==================== */
 const AVATARS = ['🎓','🧑‍🎓','👩‍🎓','🦉','🦊','🐼','🚀','🌟','🛡️','📐','🧮','🐯'];
+const LEVEL_REWARDS = [
+  {lvl:1,  title:'Aprendiz de actuario', avatars:['🎓','🧑‍🎓','👩‍🎓','🦉']},
+  {lvl:2,  avatars:['🦊']},
+  {lvl:3,  title:'Estudiante de riesgo', avatars:['🐼'], custom:'Lentes para tu avatar'},
+  {lvl:4,  avatars:['🚀']},
+  {lvl:5,  title:'Analista Jr.', avatars:['🌟'], custom:'Gorra para tu avatar'},
+  {lvl:6,  avatars:['🛡️']},
+  {lvl:7,  title:'Analista de siniestros', avatars:['📐'], custom:'Moño para tu avatar'},
+  {lvl:8,  avatars:['🧮']},
+  {lvl:10, title:'Suscriptor', avatars:['🐯'], custom:'Birrete para tu avatar'},
+  {lvl:12, title:'Tarificador'},
+  {lvl:15, title:'Actuario en formación'},
+  {lvl:20, title:'Actuario Senior'}
+];
+function currentTitle(){
+  let t = 'Aprendiz de actuario';
+  const lvl = levelInfo().lvl;
+  LEVEL_REWARDS.forEach(r => { if(r.title && lvl >= r.lvl) t = r.title; });
+  return t;
+}
+function avatarReqLevel(a){
+  const r = LEVEL_REWARDS.find(x => x.avatars && x.avatars.includes(a));
+  return r ? r.lvl : 1;
+}
+function avatarUnlocked(a){ return levelInfo().lvl >= avatarReqLevel(a); }
+function renderLevels(){
+  const li = levelInfo();
+  let html = '<div class="result-card" style="margin-top:0;max-width:640px">'
+    + '<div class="big-ico">⬆️</div><h2>Nivel '+li.lvl+'</h2>'
+    + '<div class="r-sub">🏷️ '+currentTitle()+'</div>'
+    + '<div class="qprog" style="max-width:340px;margin:16px auto 8px"><i style="width:'+Math.round(li.frac*100)+'%"></i></div>'
+    + '<p style="font-size:.9rem;color:var(--ink2)"><b>'+S.xp+' XP</b> acumulados · faltan <b>'+li.toNext+' XP</b> para el nivel '+(li.lvl+1)+'</p>'
+    + '<p class="q-help">Gana XP con los módulos, el examen diario, el memorama, el escape room y los retos contrarreloj.</p></div>';
+  html += '<div class="panel" style="max-width:640px;margin:16px auto"><h3>🗺️ Ruta de recompensas</h3>'
+    + LEVEL_REWARDS.map(r => {
+        const un = li.lvl >= r.lvl;
+        const parts = [];
+        if(r.title) parts.push('🏷️ Título: <b>'+r.title+'</b>');
+        if(r.avatars) parts.push('😀 Avatares: '+r.avatars.join(' '));
+        if(r.custom) parts.push('🧑‍🎨 '+r.custom+' <i style="color:var(--muted)">(beta)</i>');
+        return '<div class="lvl-row'+(un?' done':'')+((li.lvl+1)===r.lvl?' next':'')+'">'
+          + '<span class="lvl-badge">'+r.lvl+'</span>'
+          + '<span class="lvl-info">'+parts.join('<br>')+'<small>Se alcanza con '+xpForLvl(r.lvl).toLocaleString()+' XP</small></span>'
+          + '<span class="lvl-state">'+(un?'✔':'🔒')+'</span></div>';
+      }).join('')
+    + '</div>';
+  $('#levelsBody').innerHTML = html;
+}
+
+/* ==================== Avatar personalizable (beta, activable en Preferencias) ==================== */
+const AV_SKIN  = ['#f6c9a0','#eab389','#c98d5f','#8d5a3a'];
+const AV_HAIRC = ['#2b2b2b','#5b3a1e','#a56d28','#e0b04c','#8a8a8a','#b03a3a'];
+const AV_BGC   = ['#cde2fb','#dff0df','#fdf3d7','#f3e2fb','#fbe3e3','#dff2f0'];
+const AV_HAIRN = ['Rapado','Corto','Fleco','Largo','Chongo'];
+const AV_EYEN  = ['Clásicos','Felices','Guiño'];
+const AV_ACC   = [
+  {n:'Sin accesorio', lvl:1}, {n:'Lentes', lvl:3}, {n:'Gorra', lvl:5}, {n:'Moño', lvl:7}, {n:'Birrete', lvl:10}
+];
+function defaultCustom(){ return {skin:0, hair:1, hairColor:0, eyes:0, acc:0, bg:0}; }
+function avatarSVG(c, size){
+  c = Object.assign(defaultCustom(), c||{});
+  const skin = AV_SKIN[(c.skin+AV_SKIN.length)%AV_SKIN.length];
+  const hc = AV_HAIRC[(c.hairColor+AV_HAIRC.length)%AV_HAIRC.length];
+  const bg = AV_BGC[(c.bg+AV_BGC.length)%AV_BGC.length];
+  const uid = 'avg' + (avatarSVG._n = (avatarSVG._n||0) + 1);
+  const hair = c.hair%AV_HAIRN.length, eyes = c.eyes%AV_EYEN.length, acc = c.acc%AV_ACC.length;
+  let h = '';
+  if(hair===1) h = '<path d="M27 44 Q27 21 50 21 Q73 21 73 44 Q66 30 50 30 Q34 30 27 44Z" fill="'+hc+'"/>';
+  if(hair===2) h = '<path d="M27 46 Q27 20 50 20 Q73 20 73 46 L69 38 L64 43 L58 37 L50 42 L42 37 L36 43 L31 38 Z" fill="'+hc+'"/>';
+  if(hair===3) h = '<path d="M26 44 Q26 20 50 20 Q74 20 74 44 L74 66 Q74 72 68 70 L68 46 Q62 32 50 32 Q38 32 32 46 L32 70 Q26 72 26 66 Z" fill="'+hc+'"/>';
+  if(hair===4) h = '<circle cx="50" cy="17" r="8" fill="'+hc+'"/><path d="M27 44 Q27 22 50 22 Q73 22 73 44 Q66 31 50 31 Q34 31 27 44Z" fill="'+hc+'"/>';
+  let e = '';
+  if(eyes===0) e = '<circle cx="42" cy="48" r="2.6" fill="#26221f"/><circle cx="58" cy="48" r="2.6" fill="#26221f"/>';
+  if(eyes===1) e = '<path d="M38.5 49 Q42 45 45.5 49" stroke="#26221f" stroke-width="2.4" fill="none" stroke-linecap="round"/><path d="M54.5 49 Q58 45 61.5 49" stroke="#26221f" stroke-width="2.4" fill="none" stroke-linecap="round"/>';
+  if(eyes===2) e = '<circle cx="42" cy="48" r="2.6" fill="#26221f"/><path d="M54.5 48.5 Q58 46 61.5 48.5" stroke="#26221f" stroke-width="2.4" fill="none" stroke-linecap="round"/>';
+  let a = '';
+  if(acc===1) a = '<circle cx="42" cy="48" r="7" fill="none" stroke="#26221f" stroke-width="2"/><circle cx="58" cy="48" r="7" fill="none" stroke="#26221f" stroke-width="2"/><path d="M49 48 L51 48 M35 48 L29 46 M65 48 L71 46" stroke="#26221f" stroke-width="2"/>';
+  if(acc===2) a = '<path d="M28 37 Q28 21 50 21 Q72 21 72 37 L72 40 L28 40 Z" fill="var(--accent)"/><rect x="24" y="37" width="34" height="5" rx="2.5" fill="var(--accent)"/>';
+  if(acc===3) a = '<path d="M50 76 L40 71 L40 81 Z" fill="#b03a3a"/><path d="M50 76 L60 71 L60 81 Z" fill="#b03a3a"/><circle cx="50" cy="76" r="2.6" fill="#7e2222"/>';
+  if(acc===4) a = '<path d="M24 30 L50 20 L76 30 L50 40 Z" fill="#26221f"/><rect x="44" y="32" width="12" height="6" rx="2" fill="#26221f"/><path d="M76 30 L76 42" stroke="#eda100" stroke-width="2"/><circle cx="76" cy="44" r="2.6" fill="#eda100"/>';
+  return '<svg width="'+size+'" height="'+size+'" viewBox="0 0 100 100" role="img" aria-label="Avatar personalizado">'
+    + '<defs><radialGradient id="'+uid+'" cx="42%" cy="34%" r="80%">'
+    + '<stop offset="0%" stop-color="#ffffff" stop-opacity=".5"/><stop offset="55%" stop-color="'+skin+'"/><stop offset="100%" stop-color="'+skin+'"/>'
+    + '</radialGradient></defs>'
+    + '<circle cx="50" cy="50" r="48" fill="'+bg+'"/>'
+    + '<ellipse cx="50" cy="90" rx="27" ry="16" fill="var(--accent)"/>'
+    + '<ellipse cx="50" cy="72" rx="9" ry="6" fill="'+skin+'"/>'
+    + '<ellipse cx="50" cy="49" rx="23" ry="25" fill="url(#'+uid+')"/>'
+    + h + e
+    + '<path d="M43 59 Q50 65 57 59" stroke="#a4562f" stroke-width="2.6" fill="none" stroke-linecap="round"/>'
+    + a
+    + '<circle cx="50" cy="50" r="48" fill="none" stroke="rgba(0,0,0,.14)" stroke-width="2.5"/>'
+    + '</svg>';
+}
+function avatarHTML(p, size){
+  if(S.avatarBeta && p.useCustom) return avatarSVG(p.custom, size);
+  return '<span style="font-size:'+Math.round(size*0.8)+'px;line-height:1">'+p.avatar+'</span>';
+}
+function builderLabel(key, c){
+  switch(key){
+    case 'skin': return 'Tono '+((c.skin%AV_SKIN.length)+1)+' de '+AV_SKIN.length;
+    case 'hair': return AV_HAIRN[c.hair%AV_HAIRN.length];
+    case 'hairColor': return 'Color '+((c.hairColor%AV_HAIRC.length)+1)+' de '+AV_HAIRC.length;
+    case 'eyes': return AV_EYEN[c.eyes%AV_EYEN.length];
+    case 'bg': return 'Fondo '+((c.bg%AV_BGC.length)+1)+' de '+AV_BGC.length;
+    case 'acc': { const x = AV_ACC[c.acc%AV_ACC.length]; return x.n + (x.lvl>1 ? ' · nivel '+x.lvl : ''); }
+  }
+}
+
+/* ==================== Perfil y configuración ==================== */
 function renderProfile(){
   const p = activeProfile();
   const toggleRow = (id, label, on) =>
     '<label class="fld row"><span>'+label+'</span><input type="checkbox" id="'+id+'"'+(on?' checked':'')+'></label>';
   let html = '<div class="dash-grid">';
   // — Tarjeta de perfil —
+  let builder = '';
+  if(S.avatarBeta){
+    builder = '<hr style="border:none;border-top:1px solid var(--line);margin:14px 0">'
+      + toggleRow('pfUseCustom','🧑‍🎨 Usar avatar personalizado (beta)', !!p.useCustom);
+    if(p.useCustom){
+      const c = Object.assign(defaultCustom(), p.custom||{});
+      const bRow = (key, label) => '<div class="builder-row"><span class="b-label">'+label+'</span>'
+        + '<button class="bnav" data-b="'+key+'" data-d="-1" aria-label="anterior">‹</button>'
+        + '<span class="b-val" id="bv-'+key+'">'+builderLabel(key, c)+'</span>'
+        + '<button class="bnav" data-b="'+key+'" data-d="1" aria-label="siguiente">›</button></div>';
+      builder += '<div style="text-align:center;margin:8px 0" id="avPrev">'+avatarSVG(c, 116)+'</div>'
+        + bRow('skin','🖐️ Piel') + bRow('hair','💇 Peinado') + bRow('hairColor','🎨 Color de cabello')
+        + bRow('eyes','👀 Ojos') + bRow('bg','🌈 Fondo') + bRow('acc','🎩 Accesorio')
+        + '<p class="q-help">Los accesorios se desbloquean al subir de nivel (mira la ruta ⬆️ tocando tu barra de XP).</p>';
+    }
+  }
   html += '<div class="panel"><h3>👤 Mi perfil</h3>'
-    + '<div style="text-align:center;font-size:54px">'+p.avatar+'</div>'
-    + '<div class="avatar-pick">'+AVATARS.map(a=>'<button class="av'+(a===p.avatar?' on':'')+'" data-av="'+a+'">'+a+'</button>').join('')+'</div>'
+    + '<div style="text-align:center">'+avatarHTML(p, 96)+'</div>'
+    + '<div class="avatar-pick">'+AVATARS.map(a => {
+        const un = avatarUnlocked(a);
+        return '<button class="av'+(a===p.avatar?' on':'')+(un?'':' locked')+'" data-av="'+a+'"'
+          + (un ? '' : ' title="Se desbloquea en el nivel '+avatarReqLevel(a)+'"')+'>'+(un?a:'🔒')+'</button>';
+      }).join('')+'</div>'
+    + builder
     + '<label class="fld">Nombre<input class="ainput" id="pfName" maxlength="24" value="'+esc(p.name)+'"></label>'
     + '<button class="btn small" id="pfSave">💾 Guardar cambios</button>'
     + '<p class="q-help">Perfil creado el '+new Date(p.created).toLocaleDateString('es-MX')+' · Nivel '+levelInfo().lvl
+    + ' · 🏷️ '+currentTitle()
     + ' · '+S.xp+' XP · '+S.badges.length+'/'+BADGES.length+' insignias</p></div>';
   // — Perfiles del dispositivo —
   html += '<div class="panel"><h3>👥 Perfiles en este dispositivo</h3>'
@@ -2688,9 +2906,17 @@ function renderProfile(){
     + '<label class="fld">🎨 Tema<select class="ainput" id="prefTheme">'
     + '<option value="">🖥️ Según el sistema</option><option value="light">☀️ Claro</option><option value="dark">🌙 Oscuro</option>'
     + '</select></label>'
+    + '<label class="fld">📅 Objetivo diario de XP<select class="ainput" id="prefGoal">'
+    + [25,50,75,100,150].map(g=>'<option value="'+g+'">'+g+' XP al día</option>').join('')
+    + '</select></label>'
     + toggleRow('prefSound','🔊 Sonidos', S.sound)
     + toggleRow('prefConfetti','🎉 Confeti al aprobar', S.confetti !== false)
     + toggleRow('prefSteps','🧮 Mostrar el procedimiento también al acertar', !!S.stepsOnOk)
+    + toggleRow('prefGuide','📖 Guía de estudio progresiva (se desbloquea tema por tema)', S.guideProgressive !== false)
+    + toggleRow('prefBig','🔤 Texto más grande', !!S.bigText)
+    + toggleRow('prefMotion','🌀 Reducir animaciones', !!S.reduceMotion)
+    + toggleRow('prefAvatar','🧪 Avatar personalizable (beta, experimental)', !!S.avatarBeta)
+    + '<p class="q-help">El avatar beta puede desactivarse aquí si algo no se ve bien; tu emoji de siempre lo sustituye.</p>'
     + '</div>';
   // — Datos —
   html += '<div class="panel"><h3>💾 Mis datos</h3>'
@@ -2705,9 +2931,33 @@ function renderProfile(){
   html += '</div>';
   $('#profileBody').innerHTML = html;
   $('#prefTheme').value = S.theme || '';
+  $('#prefGoal').value = String(S.xpGoal || 50);
   // — Eventos —
   $$('#profileBody .avatar-pick .av').forEach(b => b.addEventListener('click', () => {
+    if(b.classList.contains('locked')){ toast('🔒 Ese avatar se desbloquea en el nivel '+avatarReqLevel(b.dataset.av)); sfx('bad'); return; }
     p.avatar = b.dataset.av; saveProfiles(); renderHeader(); renderProfile(); sfx('flip');
+  }));
+  // — Avatar personalizable (beta) —
+  const uc = $('#pfUseCustom');
+  if(uc) uc.addEventListener('change', e => {
+    p.useCustom = e.target.checked;
+    if(p.useCustom && !p.custom) p.custom = defaultCustom();
+    saveProfiles(); renderHeader(); renderProfile(); sfx('click');
+  });
+  $$('#profileBody .bnav').forEach(b => b.addEventListener('click', () => {
+    const key = b.dataset.b, d = +b.dataset.d;
+    const sizes = {skin:AV_SKIN.length, hair:AV_HAIRN.length, hairColor:AV_HAIRC.length, eyes:AV_EYEN.length, bg:AV_BGC.length, acc:AV_ACC.length};
+    const c = p.custom = Object.assign(defaultCustom(), p.custom||{});
+    let v = ((c[key]||0) + d + sizes[key]) % sizes[key];
+    if(key === 'acc'){
+      let hopped = false, guard = 0;
+      while(AV_ACC[v].lvl > levelInfo().lvl && guard++ < 6){ hopped = true; v = (v + d + sizes.acc) % sizes.acc; }
+      if(hopped) toast('🔒 Algunos accesorios se desbloquean al subir de nivel');
+    }
+    c[key] = v; saveProfiles(); sfx('flip');
+    $('#avPrev').innerHTML = avatarSVG(c, 116);
+    $('#bv-'+key).textContent = builderLabel(key, c);
+    renderHeader();
   }));
   $('#pfSave').addEventListener('click', () => {
     const nm = $('#pfName').value.trim();
@@ -2722,9 +2972,16 @@ function renderProfile(){
     createProfile(nm);
   });
   $('#prefTheme').addEventListener('change', e => { S.theme = e.target.value || null; save(); applyTheme(); sfx('click'); });
+  $('#prefGoal').addEventListener('change', e => { S.xpGoal = +e.target.value || 50; if(S.dayXP) S.dayXP.goalHit = S.dayXP.xp >= S.xpGoal; save(); toast('📅 Objetivo diario: '+S.xpGoal+' XP'); sfx('click'); });
   $('#prefSound').addEventListener('change', e => { S.sound = e.target.checked; save(); renderHeader(); if(S.sound) sfx('ok'); });
   $('#prefConfetti').addEventListener('change', e => { S.confetti = e.target.checked; save(); if(S.confetti) confetti(25); });
   $('#prefSteps').addEventListener('change', e => { S.stepsOnOk = e.target.checked; save(); sfx('click'); });
+  $('#prefGuide').addEventListener('change', e => { S.guideProgressive = e.target.checked; save(); sfx('click');
+    toast(S.guideProgressive ? '📖 La guía se desbloqueará conforme avances' : '📖 Guía completa visible'); });
+  $('#prefBig').addEventListener('change', e => { S.bigText = e.target.checked; save(); applyTheme(); sfx('click'); });
+  $('#prefMotion').addEventListener('change', e => { S.reduceMotion = e.target.checked; save(); applyTheme(); sfx('click'); });
+  $('#prefAvatar').addEventListener('change', e => { S.avatarBeta = e.target.checked; save(); renderHeader(); renderProfile(); sfx('click');
+    toast(S.avatarBeta ? '🧪 Avatar beta activado' : '🧪 Avatar beta desactivado: se usa tu emoji'); });
   $('#btnExport').addEventListener('click', exportData);
   $('#btnImport').addEventListener('click', () => $('#importFile').click());
   $('#importFile').addEventListener('change', e => { if(e.target.files[0]) importData(e.target.files[0]); e.target.value=''; });
@@ -2797,7 +3054,8 @@ function showOnboarding(){
   const o = openModal('<div style="text-align:center"><div style="font-size:46px">🛡️</div>'
     + '<h2>¡Bienvenido a ActuarIQ!</h2>'
     + '<p style="color:var(--ink2);font-size:.9rem">Crea tu perfil para guardar tu progreso, XP e insignias en este navegador.</p>'
-    + '<div class="avatar-pick" id="obAv">'+AVATARS.slice(0,8).map(a=>'<button class="av'+(a===chosen?' on':'')+'" data-av="'+a+'">'+a+'</button>').join('')+'</div>'
+    + '<div class="avatar-pick" id="obAv">'+AVATARS.slice(0,4).map(a=>'<button class="av'+(a===chosen?' on':'')+'" data-av="'+a+'">'+a+'</button>').join('')+'</div>'
+    + '<p class="q-help">🔓 Desbloquearás más avatares, títulos y accesorios al subir de nivel.</p>'
     + '<input class="ainput" id="obName" placeholder="Tu nombre…" maxlength="24" style="text-align:center;margin:8px 0;width:100%">'
     + '<div class="q-actions" style="justify-content:center"><button class="btn" id="obGo" style="font-size:1rem">🚀 ¡Comenzar!</button></div></div>');
   o.querySelectorAll('#obAv .av').forEach(b => b.addEventListener('click', () => {
