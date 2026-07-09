@@ -446,25 +446,24 @@ header.top{
 .av-stack .av-base .av-emoji{line-height:1}
 .av-stack .av-frame{position:absolute; inset:0; border-radius:50%; z-index:4; pointer-events:none}
 .av-stack .av-acc{position:absolute; z-index:5; pointer-events:none; line-height:1}
-.av-stack.glow{box-shadow:0 0 16px 3px var(--accent)}
 @keyframes av-spin{to{transform:rotate(360deg)}}
-@keyframes av-twinkle{0%,100%{opacity:.35; transform:scale(.85)} 50%{opacity:1; transform:scale(1.15)}}
+/* ---- Efectos del MARCO: solo decoran el anillo/borde (sin emojis) ---- */
 .av-stack .av-ring{position:absolute; inset:-5px; border-radius:50%; z-index:3; pointer-events:none}
-/* Destellos: anillo giratorio dorado + chispas que titilan */
-.av-stack.sparkle .av-ring{background:conic-gradient(from 0deg,transparent 0deg,var(--gold) 40deg,transparent 90deg,transparent 180deg,#fff3c4 220deg,transparent 270deg,var(--gold) 320deg,transparent 360deg); -webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 6px),#000 calc(100% - 5px)); mask:radial-gradient(farthest-side,transparent calc(100% - 6px),#000 calc(100% - 5px)); animation:av-spin 3.5s linear infinite; filter:drop-shadow(0 0 3px var(--gold))}
-.av-stack.sparkle::before,.av-stack.sparkle::after{content:'✨'; position:absolute; font-size:calc(1em); z-index:6; pointer-events:none; animation:av-twinkle 1.4s ease-in-out infinite}
-.av-stack.sparkle::before{top:-8%; right:-6%; font-size:.7em}
-.av-stack.sparkle::after{bottom:-4%; left:-8%; font-size:.55em; animation-delay:.7s}
-/* Aura brillante */
+.av-ring-mask{-webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 6px),#000 calc(100% - 5px)); mask:radial-gradient(farthest-side,transparent calc(100% - 6px),#000 calc(100% - 5px))}
+/* Anillo de destellos (dorado giratorio) */
+.av-stack.fx-sparkle .av-ring{background:conic-gradient(from 0deg,transparent 0deg,var(--gold) 40deg,transparent 90deg,transparent 180deg,#fff3c4 220deg,transparent 270deg,var(--gold) 320deg,transparent 360deg); -webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 6px),#000 calc(100% - 5px)); mask:radial-gradient(farthest-side,transparent calc(100% - 6px),#000 calc(100% - 5px)); animation:av-spin 3.5s linear infinite; filter:drop-shadow(0 0 3px var(--gold))}
+/* Aura brillante (halo pulsante) */
 @keyframes av-pulse-glow{0%,100%{box-shadow:0 0 10px 2px var(--accent)} 50%{box-shadow:0 0 22px 6px var(--accent)}}
-.av-stack.glow{animation:av-pulse-glow 2s ease-in-out infinite}
-/* Estrellas orbitando */
-.av-stack.stars .av-ring{background:conic-gradient(from 0deg,transparent 0deg,#ffd86b 20deg,transparent 60deg,transparent 300deg,#ffd86b 340deg,transparent 360deg); -webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 5px),#000 calc(100% - 4px)); mask:radial-gradient(farthest-side,transparent calc(100% - 5px),#000 calc(100% - 4px)); animation:av-spin 6s linear infinite}
-.av-stack.stars::before{content:'⭐'; position:absolute; top:-10%; left:44%; font-size:.5em; z-index:6; animation:av-spin 6s linear infinite; transform-origin:center 220%}
-/* Llamas */
-@keyframes av-flame{0%,100%{opacity:.7; transform:translateY(0) scale(1)} 50%{opacity:1; transform:translateY(-8%) scale(1.08)}}
-.av-stack.flame{box-shadow:0 0 16px 3px #ff7a1a}
-.av-stack.flame::before{content:'🔥'; position:absolute; top:-16%; left:50%; transform:translateX(-50%); font-size:.6em; z-index:6; animation:av-flame 1s ease-in-out infinite}
+.av-stack.fx-glow{animation:av-pulse-glow 2s ease-in-out infinite; border-radius:50%}
+/* Anillo neón (aro fijo que brilla) */
+.av-stack.fx-neon .av-ring{border:3px solid #2af5c8; box-shadow:0 0 10px #2af5c8, inset 0 0 6px #2af5c8}
+/* Anillo de fuego (naranja/rojo giratorio) */
+.av-stack.fx-flame .av-ring{background:conic-gradient(from 0deg,#ff3b1a,#ffb63a,#ff7a1a,#ffd24a,#ff3b1a); -webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 6px),#000 calc(100% - 5px)); mask:radial-gradient(farthest-side,transparent calc(100% - 6px),#000 calc(100% - 5px)); animation:av-spin 2.2s linear infinite; filter:drop-shadow(0 0 4px #ff7a1a)}
+/* Anillo arcoíris (multicolor giratorio) */
+.av-stack.fx-rainbow .av-ring{background:conic-gradient(from 0deg,#e34948,#eda100,#1baf7a,#2a78d6,#4a3aa7,#e34948); -webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 6px),#000 calc(100% - 5px)); mask:radial-gradient(farthest-side,transparent calc(100% - 6px),#000 calc(100% - 5px)); animation:av-spin 4s linear infinite}
+/* ---- Partículas al acertar (efecto "al acertar") ---- */
+.hit-p{position:fixed; z-index:130; pointer-events:none; will-change:transform,opacity; animation:hit-fly 1s ease-out forwards}
+@keyframes hit-fly{0%{transform:translate(0,0) scale(.4); opacity:0} 20%{opacity:1} 100%{transform:translate(var(--dx),var(--dy)) scale(1.15); opacity:0}}
 .equip-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(72px,1fr)); gap:8px}
 .equip-item{position:relative; border:2px solid var(--line); border-radius:12px; background:var(--surface); padding:8px 4px; text-align:center; cursor:pointer; transition:transform .12s, border-color .15s}
 .equip-item:hover{transform:translateY(-2px)}
@@ -1156,13 +1155,24 @@ function applyTheme(){
   if(!accent && th) accent = th.accent;
   if(accent){ root.style.setProperty('--accent', accent); root.style.setProperty('--accent-strong', accent); }
   else { root.style.removeProperty('--accent'); root.style.removeProperty('--accent-strong'); }
-  // el tema equipado tiñe el fondo de TODA la app (inicio, juegos, preguntas…)
-  const tintColor = th ? th.accent : (S.accentColor || null);
-  if(th && tintColor){
-    const a = dark ? 0.16 : 0.09, a2 = dark ? 0.05 : 0.02;
-    document.body.style.backgroundImage = 'linear-gradient(160deg, '+hexA(tintColor, a)+', '+hexA(tintColor, a2)+' 60%), linear-gradient(var(--bg), var(--bg))';
-    document.body.style.backgroundAttachment = 'fixed';
+  // el tema equipado tiñe TODA la app (fondo y superficies) para que se note en
+  // el inicio, los juegos y las preguntas, no solo el color de acento.
+  const surfVars = ['--bg','--surface','--surface2','--surface3'];
+  if(th){
+    const c = th.accent;
+    const baseBg      = dark ? '#0d0d0d' : '#f9f9f7';
+    const baseSurface = dark ? '#1a1a19' : '#fcfcfb';
+    const baseS2      = dark ? '#242423' : '#f0efec';
+    const baseS3      = dark ? '#2c2c2a' : '#e9e8e3';
+    const mix = (pct, base) => 'color-mix(in srgb, '+c+' '+pct+'%, '+base+')';
+    const p = dark ? [16,12,14,16] : [12,8,12,14];
+    root.style.setProperty('--bg',       mix(p[0], baseBg));
+    root.style.setProperty('--surface',  mix(p[1], baseSurface));
+    root.style.setProperty('--surface2', mix(p[2], baseS2));
+    root.style.setProperty('--surface3', mix(p[3], baseS3));
+    document.body.style.backgroundImage = '';
   } else {
+    surfVars.forEach(v => root.style.removeProperty(v));
     document.body.style.backgroundImage = '';
     document.body.style.backgroundAttachment = '';
   }
@@ -1215,8 +1225,25 @@ function confetti(n=60){
   }
 }
 /* Efecto "Lluvia de confeti" equipado: pequeño estallido al responder bien. */
+/* Efecto "al acertar" equipado: dispara partículas cuando respondes bien. */
+function hitBurst(kind){
+  if(S.confetti === false) return;
+  if(kind === 'confetti'){ confetti(14); return; }
+  const set = kind === 'stars' ? ['⭐','🌟','✨'] : ['❤️','💖','💕','💗'];
+  for(let i=0;i<10;i++){
+    const el = document.createElement('div'); el.className = 'hit-p'; el.textContent = pick(set);
+    el.style.cssText = 'left:'+ri(38,62)+'vw; top:'+ri(38,58)+'vh; font-size:'+ri(14,26)+'px;'
+      + '--dx:'+ri(-130,130)+'px; --dy:'+ri(-190,-60)+'px; animation-delay:'+(ri(0,3)/10)+'s';
+    document.body.appendChild(el);
+    setTimeout(()=>el.remove(), 1300);
+  }
+}
 function celebrateCorrect(){
-  if(S.equip && S.equip.effect === 'fx-confetti' && S.confetti !== false) confetti(14);
+  if(S.confetti === false) return;
+  const id = S.equip && S.equip.hitfx;
+  if(!id) return;
+  const r = HITFX.find(x=>x.id===id);
+  if(r) hitBurst(r.kind);
 }
 
 /* ==================== Glosario (base de conceptos) ==================== */
@@ -3830,21 +3857,12 @@ function renderBoard(){
   }));
   const at = $('#lbAdminToggle');
   if(at) at.addEventListener('click', async () => {
-    if(lbAdminOn){
-      lbAdminOn = false; lbEditId = null;
-      try{ sessionStorage.removeItem('actuariq_admin'); }catch(e){}
-      sfx('click'); renderBoard(); return;
-    }
-    // ya validado en esta pestaña: no volver a pedir la contraseña
-    let okSession = false;
-    try{ okSession = sessionStorage.getItem('actuariq_admin') === '1'; }catch(e){}
-    if(!okSession){
-      const pass = ($('#lbAdminPass') && $('#lbAdminPass').value) || '';
-      if(!pass){ toast('🔑 Escribe la contraseña de administrador'); sfx('bad'); return; }
-      const good = await lbCheckPass(pass);
-      if(!good){ toast('❌ Contraseña incorrecta'); sfx('bad'); return; }
-      try{ sessionStorage.setItem('actuariq_admin','1'); }catch(e){}
-    }
+    if(lbAdminOn){ lbAdminOn = false; lbEditId = null; sfx('click'); renderBoard(); return; }
+    // siempre exige la contraseña al activar el modo administrador
+    const pass = ($('#lbAdminPass') && $('#lbAdminPass').value) || '';
+    if(!pass){ toast('🔑 Escribe la contraseña de administrador'); sfx('bad'); return; }
+    const good = await lbCheckPass(pass);
+    if(!good){ toast('❌ Contraseña incorrecta'); sfx('bad'); return; }
     lbAdminOn = true; sfx('unlock'); toast('🛠️ Modo administrador activado'); renderBoard();
   });
   const fs = $('#lbfSave');
@@ -3886,26 +3904,15 @@ $('#btnBoard').addEventListener('click', () => { sfx('click'); renderBoard(); sh
    {id, title, subject:'ca3'|'reg'|'nopar'|'stoch'|'fin'|'all', partial:1|2|3|'final',
     due:'YYYY-MM-DD', priority:'alta'|'media'|'baja', desc, steps:[], materials:[],
     notes, published:'YYYY-MM-DD'} */
-const SEED_TASKS = [
-  { id:'t-ca3-001', title:'Serie 1: frecuencia, severidad y prima de riesgo', subject:'ca3', partial:1,
-    due:'2026-07-17', priority:'alta',
-    desc:'Resolver la serie 1 de tarificación: 10 ejercicios de frecuencia, severidad y prima de riesgo con procedimiento completo.',
-    steps:['Repasa el Módulo 2 de la app (Cálculos básicos)','Resuelve los 10 ejercicios en limpio','Verifica tus respuestas con la guía de estudio','Entrega en la clase del viernes'],
-    materials:['Guía de estudio de la app · sección 2 (Fórmulas clave)','Apuntes de clase'],
-    notes:'Se entrega impresa y con procedimiento.', published:'2026-07-09' },
-  { id:'t-all-001', title:'Crear tu perfil en ActuarIQ y unirte al leaderboard', subject:'all', partial:1,
-    due:'2026-07-14', priority:'media',
-    desc:'Crea tu perfil con tu nombre real, personaliza tu avatar y presenta tu primer examen diario para aparecer en la tabla del grupo.',
-    steps:['Abre la app y completa la bienvenida','Presenta el examen diario de hoy'],
-    materials:[], notes:'', published:'2026-07-09' }
-];
-/* Fechas de exámenes por materia (p1/p2/p3/final en 'YYYY-MM-DD'; vacío = sin fecha aún) */
+const SEED_TASKS = [];   // sin tareas fijas: las publica el admin vía tasks.json
+/* Fechas de exámenes por materia (p1/p2/p3/final en 'YYYY-MM-DD'; vacío = sin fecha aún).
+   El archivo tasks.json publicado puede sobrescribir estas fechas. */
 const SEED_CALENDAR = {
-  ca3:   {p1:'', p2:'', p3:'', final:''},
-  reg:   {p1:'', p2:'', p3:'', final:''},
-  nopar: {p1:'', p2:'', p3:'', final:''},
-  stoch: {p1:'', p2:'', p3:'', final:''},
-  fin:   {p1:'', p2:'', p3:'', final:''}
+  ca3:   {p1:'2026-06-10', p2:'2026-07-08', p3:'2026-08-12', final:'2026-08-12'},
+  reg:   {p1:'2026-06-08', p2:'2026-07-06', p3:'2026-08-10', final:'2026-08-10'},
+  nopar: {p1:'2026-06-09', p2:'2026-07-07', p3:'2026-08-11', final:'2026-08-11'},
+  stoch: {p1:'2026-06-11', p2:'2026-07-10', p3:'2026-08-13', final:'2026-08-13'},
+  fin:   {p1:'2026-06-12', p2:'2026-07-10', p3:'2026-08-14', final:'2026-08-14'}
 };
 /* Store compartido a nivel dispositivo (todas las cuentas del navegador lo ven) */
 const SHKEY = 'actuariq_shared_v1';
@@ -4168,15 +4175,11 @@ function bindTaskEvents(){
   const at = $('#tAdminToggle');
   if(at) at.addEventListener('click', async () => {
     if(taskAdminOn){ taskAdminOn = false; taskEditId = null; sfx('click'); renderTasks(); return; }
-    let okSession = false;
-    try{ okSession = sessionStorage.getItem('actuariq_admin') === '1'; }catch(e){}
-    if(!okSession){
-      const pass = ($('#tAdminPass') && $('#tAdminPass').value) || '';
-      if(!pass){ toast('🔑 Escribe la contraseña de administrador'); sfx('bad'); return; }
-      const good = await lbCheckPass(pass);
-      if(!good){ toast('❌ Contraseña incorrecta'); sfx('bad'); return; }
-      try{ sessionStorage.setItem('actuariq_admin','1'); }catch(e){}
-    }
+    // siempre exige la contraseña al activar el modo administrador
+    const pass = ($('#tAdminPass') && $('#tAdminPass').value) || '';
+    if(!pass){ toast('🔑 Escribe la contraseña de administrador'); sfx('bad'); return; }
+    const good = await lbCheckPass(pass);
+    if(!good){ toast('❌ Contraseña incorrecta'); sfx('bad'); return; }
     taskAdminOn = true; sfx('unlock'); toast('🛠️ Modo administrador de tareas activado'); renderTasks();
   });
   // admin: guardar/editar tarea
@@ -4723,8 +4726,8 @@ function currentTitle(){
 }
 
 /* ==================== Tienda de recompensas ==================== */
-const REWARD_TYPE_LABEL = {frame:'🖼️ Marcos', bg:'🌆 Fondos', acc:'🎭 Accesorios', title:'🏷️ Títulos', effect:'✨ Efectos', theme:'🎨 Temas'};
-const REWARD_TYPES = ['frame','bg','acc','title','effect','theme'];
+const REWARD_TYPE_LABEL = {frame:'🖼️ Marcos', bg:'🌆 Fondos', acc:'🎭 Accesorios', title:'🏷️ Títulos', effect:'✨ Efectos del marco', hitfx:'🎉 Efectos al acertar', theme:'🎨 Temas'};
+const REWARD_TYPES = ['frame','bg','acc','title','effect','hitfx','theme'];
 /* ---- Fondos aplicables al avatar ---- */
 const BACKGROUNDS = [
   {id:'bg-aula',      type:'bg', name:'Aula universitaria', ico:'🏫', xp:250,  grad:'linear-gradient(135deg,#6d7cff,#3a4bd0)', emoji:'🏫', desc:'Un salón de clases de fondo.'},
@@ -4744,7 +4747,7 @@ const FRAMES = [
   {id:'frame-silver',  type:'frame', name:'Marco plata',   ico:'🥈', xp:1000, color:'#b7b7b7', desc:'Un marco plateado.'},
   {id:'frame-gold',    type:'frame', name:'Marco oro',     ico:'🥇', xp:3000, color:'#eda100', desc:'Un marco dorado.'},
   {id:'frame-diamond', type:'frame', name:'Marco diamante',ico:'💎', xp:5000, grad:'conic-gradient(from 0deg,#7ad7f0,#b7e9ff,#7ad7f0,#e6f7ff,#7ad7f0)', desc:'El marco más exclusivo.'},
-  {id:'frame-neon',    type:'frame', name:'Marco neón',    ico:'🟢', xp:2000, color:'#2af5c8', glow:true, desc:'Un marco que brilla en la oscuridad.'},
+  {id:'frame-neon',    type:'frame', name:'Marco neón',    ico:'💠', xp:2000, color:'#2af5c8', glow:true, desc:'Un marco que brilla en la oscuridad.'},
   {id:'frame-rainbow', type:'frame', name:'Marco arcoíris',ico:'🌈', test:()=>S.streak>=7, cond:'Racha de 7 días', grad:'conic-gradient(from 0deg,#e34948,#eda100,#1baf7a,#2a78d6,#4a3aa7,#e34948)', desc:'Solo para constantes: racha de 7 días.'}
 ];
 /* ---- Accesorios (SVG/emoji superpuestos, no tapan la cara) ---- */
@@ -4779,13 +4782,20 @@ const ACCESSORIES = [
   {id:'acc-flag',    type:'acc', slot:'sticker', name:'Bandera “Sobreviví”', ico:'🏁', test:()=>(S.examHistory||[]).length>=3, cond:'Presenta 3 exámenes diarios', sticker:'🏁 Sobreviví', stickerBg:'#4a3aa7', pos:s=>'right:-10%;top:2%', desc:'Un cuatrimestre más.'}
 ];
 const accSlot = id => { const a = ACCESSORIES.find(x=>x.id===id); return a ? a.slot : null; };
-/* ---- Efectos visuales (se ven sobre tu avatar; el confeti dispara al acertar) ---- */
+/* ---- Efectos del MARCO: solo decoran el anillo/borde de la foto (sin emojis
+   en el centro). Equipar uno reemplaza al marco (son excluyentes). ---- */
 const EFFECTS = [
-  {id:'fx-sparkle', type:'effect', name:'Destellos', ico:'✨', xp:1200, cls:'sparkle', desc:'Un anillo dorado con chispas girando en tu avatar.'},
-  {id:'fx-glow',    type:'effect', name:'Aura brillante', ico:'🌟', xp:2000, cls:'glow', desc:'Tu avatar late con un halo del color principal.'},
-  {id:'fx-stars',   type:'effect', name:'Estrellas', ico:'⭐', xp:2800, cls:'stars', desc:'Una estrella orbita tu avatar.'},
-  {id:'fx-flame',   type:'effect', name:'En llamas', ico:'🔥', xp:3600, cls:'flame', desc:'Estás que ardes: una flama corona tu avatar.'},
-  {id:'fx-confetti',type:'effect', name:'Lluvia de confeti', ico:'🎊', test:()=>subjStats('ca3').done>=12, cond:'Completa los 12 módulos de Cálculo III', onCorrect:true, desc:'Suelta confeti cada vez que respondes bien.'}
+  {id:'fx-sparkle', type:'effect', name:'Anillo de destellos', ico:'✨', xp:1200, cls:'sparkle', desc:'Un anillo dorado que gira alrededor de tu foto.'},
+  {id:'fx-glow',    type:'effect', name:'Aura brillante',      ico:'🌟', xp:2000, cls:'glow',    desc:'Tu marco late con un halo del color principal.'},
+  {id:'fx-neon',    type:'effect', name:'Anillo neón',         ico:'💠', xp:2800, cls:'neon',    desc:'Un aro neón que brilla en la oscuridad.'},
+  {id:'fx-flame',   type:'effect', name:'Anillo de fuego',     ico:'🔥', xp:3600, cls:'flame',   desc:'Un aro de llamas girando en tu marco.'},
+  {id:'fx-rainbow', type:'effect', name:'Anillo arcoíris',     ico:'🌈', test:()=>subjStats('ca3').done>=12, cond:'Completa los 12 módulos de Cálculo III', cls:'rainbow', desc:'Un aro multicolor girando en tu marco.'}
+];
+/* ---- Efectos AL ACERTAR: partículas que brotan cuando respondes bien ---- */
+const HITFX = [
+  {id:'fx-confetti', type:'hitfx', name:'Lluvia de confeti', ico:'🎊', xp:1500, kind:'confetti', desc:'Suelta confeti cada vez que respondes bien.'},
+  {id:'hit-stars',   type:'hitfx', name:'Estrellas al acertar', ico:'⭐', xp:2600, kind:'stars', desc:'Brotan estrellas cuando respondes bien.'},
+  {id:'hit-hearts',  type:'hitfx', name:'Corazones al acertar', ico:'💗', xp:3400, kind:'hearts', desc:'Brotan corazones cuando respondes bien.'}
 ];
 /* ---- Temas de interfaz (color principal preestablecido) ---- */
 const THEMES = [
@@ -4821,13 +4831,17 @@ const TITLES = [
     test:()=>(S.examHistory||[]).filter(e=>e.score>=90).length>=3, cond:'Logra ≥90% en 3 exámenes diarios'}
 ];
 /* Catálogo completo de la tienda */
-const REWARDS = [].concat(FRAMES, BACKGROUNDS, ACCESSORIES, TITLES, EFFECTS, THEMES);
+const REWARDS = [].concat(FRAMES, BACKGROUNDS, ACCESSORIES, TITLES, EFFECTS, HITFX, THEMES);
 const rewardById = id => REWARDS.find(r => r.id === id);
 function ensureEquip(){
   if(!S.equip) S.equip = {};
   const e = S.equip;
-  ['frame','bg','title','effect','theme','badge'].forEach(k => { if(e[k]===undefined) e[k]=null; });
+  ['frame','bg','title','effect','hitfx','theme','badge'].forEach(k => { if(e[k]===undefined) e[k]=null; });
   if(!Array.isArray(e.acc)) e.acc = e.acc ? [e.acc] : [];   // migración: accesorio único → lista
+  // migración de efectos: confeti/estrellas del viejo slot 'effect' → 'hitfx'
+  if(e.effect==='fx-confetti'){ e.hitfx = e.hitfx || 'fx-confetti'; e.effect = null; }
+  if(e.effect==='fx-stars'){ e.effect = 'fx-sparkle'; }      // fx-stars ya no es efecto de marco
+  if(e.frame && e.effect) e.effect = null;                   // marco y efecto de marco son excluyentes
   return e;
 }
 function isUnlockedReward(id){ return (S.unlockedRewards||[]).includes(id); }
@@ -4953,16 +4967,19 @@ function accHTML(a, size){
   return '<span class="av-acc" style="'+a.pos(size)+'">'+content+'</span>';
 }
 /* p: perfil {avatar, photo}; equipOv: equip a usar (por defecto el del jugador activo) */
+/* Efectos de marco que dibujan un anillo giratorio (los demás usan box-shadow) */
+const RING_FX = {sparkle:1, flame:1, rainbow:1, neon:1};
 function avatarStack(p, size, equipOv){
   const eq = equipOv || ensureEquip();
+  // el marco y el efecto de marco son excluyentes: si hay marco, se ignora el efecto
   const frame = eq.frame ? FRAMES.find(f=>f.id===eq.frame) : null;
+  const effect = (!frame && eq.effect) ? EFFECTS.find(f=>f.id===eq.effect) : null;
   const bg = eq.bg ? BACKGROUNDS.find(b=>b.id===eq.bg) : null;
-  const effect = eq.effect ? EFFECTS.find(f=>f.id===eq.effect) : null;
   const accIds = Array.isArray(eq.acc) ? eq.acc : (eq.acc?[eq.acc]:[]);
-  const cls = ['av-stack']; if(effect && effect.cls) cls.push(effect.cls);
+  const cls = ['av-stack']; if(effect && effect.cls) cls.push('fx-'+effect.cls);
   let inner = '<span class="av-bg" style="'+(bg?bgStyle(bg):'background:var(--surface2)')+'"></span>'
     + '<span class="av-base">'+avatarBase(p, size)+'</span>';
-  if(effect && (effect.cls==='sparkle' || effect.cls==='stars')) inner += '<span class="av-ring"></span>';
+  if(effect && RING_FX[effect.cls]) inner += '<span class="av-ring"></span>';
   if(frame) inner += '<span class="av-frame" style="'+frameStyle(frame, size)+'"></span>';
   accIds.forEach(id => { const a = ACCESSORIES.find(x=>x.id===id); if(a) inner += accHTML(a, size); });
   return '<span class="'+cls.join(' ')+'" style="width:'+size+'px;height:'+size+'px;font-size:'+size+'px">'+inner+'</span>';
@@ -4984,6 +5001,9 @@ function equipReward(r){
     }
   } else {
     eq[r.type] = (eq[r.type] === r.id) ? null : r.id;
+    // el efecto del marco y el marco son excluyentes: al poner uno se quita el otro
+    if(r.type === 'effect' && eq.effect) eq.frame = null;
+    if(r.type === 'frame'  && eq.frame)  eq.effect = null;
   }
   save(); applyTheme(); renderHeader();
   const cur = document.querySelector('#view-profile:not(.hidden)');
@@ -5107,7 +5127,8 @@ function avatarEditorHTML(p){
     + '<label class="fld">🖼️ Marco</label>'+equipGridHTML('frame')
     + '<label class="fld">🌆 Fondo</label>'+equipGridHTML('bg')
     + '<label class="fld">🎭 Accesorios</label>'+equipGridHTML('acc')
-    + '<label class="fld">✨ Efecto</label>'+equipGridHTML('effect')
+    + '<label class="fld">✨ Efecto del marco <span style="font-weight:400;color:var(--muted);font-size:.8rem">(reemplaza al marco)</span></label>'+equipGridHTML('effect')
+    + '<label class="fld">🎉 Efecto al acertar</label>'+equipGridHTML('hitfx')
     + '</details>';
   return '<label class="fld">🧑‍🎨 Tu avatar</label>'
     + '<div class="av-modes">'+seg('emoji','😀 Emoji')+seg('photo','📷 Foto')+seg('custom','🧑 Avatar 3D')+'</div>'

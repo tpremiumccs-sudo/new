@@ -1,5 +1,37 @@
 {
   "app": "actuariq-board",
   "version": 1,
-  "students": []
+  "exported": "2026-07-09T17:05:20.487Z",
+  "students": [
+    {
+      "pid": "pmrcrec7n",
+      "name": "Oliver",
+      "avatar": "🚀",
+      "group": "",
+      "xp": 2506,
+      "lvl": 7,
+      "mods": 12,
+      "streak": 2,
+      "updated": 1783616718625,
+      "nick": "",
+      "photo": null,
+      "avg": 83,
+      "frame": "frame-silver",
+      "title": "Actuario en Construcción",
+      "avatarMode": "custom",
+      "custom": {
+        "skin": 1,
+        "hair": 2,
+        "hairColor": 1,
+        "eyes": 1,
+        "acc": 1,
+        "bg": 5
+      },
+      "badge": null,
+      "acc": [
+        "acc-portafolio"
+      ],
+      "bg": "bg-noche"
+    }
+  ]
 }
