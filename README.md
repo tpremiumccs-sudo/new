@@ -13,7 +13,32 @@ recordar y practicar Cálculo Actuarial. Todo vive en **un solo archivo**
 > 💡 También puede publicarse gratis con GitHub Pages: *Settings → Pages →
 > Deploy from branch* y quedará disponible como página web.
 
-## 📚 Los 12 módulos
+## 📚 Materias del cuatrimestre
+
+La app es **multi-materia**: cada materia guarda su propio avance, exámenes y
+estadísticas, mientras que XP, nivel, racha, insignias y recompensas son
+globales. Cambia de materia desde el chip del encabezado.
+
+| Materia | Estado |
+|---------|--------|
+| 🛡️ Cálculo Actuarial III | 12 módulos con contenido completo |
+| 📉 Modelos de Regresión | En preparación (tareas y calendario disponibles) |
+| 📊 Análisis Estadístico No Paramétrico | En preparación |
+| 🎲 Procesos Estocásticos | En preparación |
+| 💼 Administración Financiera | En preparación |
+
+## 📋 Tareas y calendario de exámenes
+
+- **Tareas** por materia y parcial, con prioridad, fecha límite, pasos,
+  materiales y notas. Cada alumno marca las que ya realizó; el encabezado
+  muestra un **badge con las pendientes**.
+- **Calendario** de exámenes (P1/P2/P3/Final por materia) con cuenta
+  regresiva, próximos exámenes ordenados y tu preparación por materia.
+- **Panel de administrador** (perfil "Oliver" + contraseña) para crear,
+  editar, archivar y eliminar tareas, capturar fechas de examen y
+  exportar/importar todo en JSON.
+
+## 📚 Los 12 módulos de Cálculo Actuarial III
 
 | # | Módulo | Tipo |
 |---|--------|------|

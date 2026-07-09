@@ -497,7 +497,12 @@ header.top{
 .fld.row{display:flex; align-items:center; justify-content:space-between; gap:12px; font-size:.88rem; padding:6px 0; border-bottom:1px dashed var(--line)}
 .fld.row input[type=checkbox]{width:20px; height:20px; accent-color:var(--accent); flex:none}
 .avatar-pick{display:flex; flex-wrap:wrap; gap:6px; justify-content:center; margin:10px 0}
-.avatar-pick .av{width:42px; height:42px; font-size:21px; border-radius:11px; border:2px solid var(--line); background:var(--surface); transition:transform .12s}
+.avatar-pick .av{width:42px; height:42px; font-size:22px; border-radius:11px; border:2px solid var(--line); background:var(--surface);
+  transition:transform .12s; display:inline-grid; place-items:center; line-height:1; padding:0; overflow:hidden}
+.color-swatches{display:flex; gap:8px; flex-wrap:wrap; margin-top:6px}
+.color-swatches .sw{width:34px; height:34px; border-radius:50%; border:3px solid var(--surface3); cursor:pointer; transition:transform .12s}
+.color-swatches .sw:hover{transform:scale(1.12)}
+.color-swatches .sw.on{border-color:var(--ink); transform:scale(1.12)}
 .avatar-pick .av:hover{transform:scale(1.1)}
 .avatar-pick .av.on{border-color:var(--accent); background:color-mix(in srgb,var(--accent) 14%, var(--surface))}
 .profile-row{display:flex; align-items:center; gap:10px; padding:8px 12px; border:1px solid var(--line); border-radius:11px; margin-bottom:8px}
@@ -862,6 +867,7 @@ const DEFAULT_STATE = () => ({
   soundVolume:0.7,      // volumen de los efectos de sonido (0-1)
   lbGroup:'',           // grupo/salón para el leaderboard
   lbRank:null,          // última posición conocida en el leaderboard (para detectar "subiste de rango")
+  lateNight:false,      // estudió de madrugada (título Desvelado Profesional)
   activeSubject:'ca3',  // materia actualmente desplegada
   subjectData:{},       // statsBySubject: materia -> {modules, history, concepts, examDay, examHistory, flashSRS, subjXP}
   subjXP:0,             // XP ganado en la materia activa
@@ -926,6 +932,8 @@ function levelInfo(){
 }
 function addXP(n){
   const t = todayKey();
+  const hr = new Date().getHours();
+  if(hr >= 0 && hr < 5) S.lateNight = true;   // para el título "Desvelado Profesional"
   if(!S.dayXP || S.dayXP.d !== t) S.dayXP = {d:t, xp:0, goalHit:false};
   S.dayXP.xp += n;
   S.subjXP = (S.subjXP||0) + n;   // acumulado de la materia activa
@@ -1116,7 +1124,7 @@ const TIPS = [
 ];
 
 /* ==================== Navegación ==================== */
-const VIEWS = ['home','lesson','session','result','memo','escape','flash','blitz','sudden','board','stats','guide','profile','levels'];
+const VIEWS = ['home','lesson','session','result','memo','escape','flash','blitz','sudden','board','tasks','stats','guide','profile','levels'];
 let sessionTimer = null, memoTimerInt = null, blitzInt = null;
 function showView(name){
   VIEWS.forEach(v => $('#view-'+v).classList.toggle('hidden', v!==name));
@@ -1141,6 +1149,7 @@ function renderHeader(){
   const subj = subjectById(S.activeSubject);
   $('#subjIcon').textContent = subj.icon;
   $('#subjShort').textContent = subj.short;
+  updateTaskBadge();
 }
 /* — Selector de materia — */
 function openSubjectPicker(){
@@ -3236,6 +3245,386 @@ function renderBoard(){
 }
 $('#btnBoard').addEventListener('click', () => { sfx('click'); renderBoard(); showView('board'); lbMaybeFetch(); });
 
+/* ==================== Tareas y calendario de exámenes ====================
+   SEED_TASKS / SEED_CALENDAR: el administrador puede editarlos directamente
+   aquí en el HTML (y publicar) o desde su panel dentro de la vista 📋.
+   Formato de tarea:
+   {id, title, subject:'ca3'|'reg'|'nopar'|'stoch'|'fin'|'all', partial:1|2|3|'final',
+    due:'YYYY-MM-DD', priority:'alta'|'media'|'baja', desc, steps:[], materials:[],
+    notes, published:'YYYY-MM-DD'} */
+const SEED_TASKS = [
+  { id:'t-ca3-001', title:'Serie 1: frecuencia, severidad y prima de riesgo', subject:'ca3', partial:1,
+    due:'2026-07-17', priority:'alta',
+    desc:'Resolver la serie 1 de tarificación: 10 ejercicios de frecuencia, severidad y prima de riesgo con procedimiento completo.',
+    steps:['Repasa el Módulo 2 de la app (Cálculos básicos)','Resuelve los 10 ejercicios en limpio','Verifica tus respuestas con la guía de estudio','Entrega en la clase del viernes'],
+    materials:['Guía de estudio de la app · sección 2 (Fórmulas clave)','Apuntes de clase'],
+    notes:'Se entrega impresa y con procedimiento.', published:'2026-07-09' },
+  { id:'t-all-001', title:'Crear tu perfil en ActuarIQ y unirte al leaderboard', subject:'all', partial:1,
+    due:'2026-07-14', priority:'media',
+    desc:'Crea tu perfil con tu nombre real, personaliza tu avatar y presenta tu primer examen diario para aparecer en la tabla del grupo.',
+    steps:['Abre la app y completa la bienvenida','Presenta el examen diario de hoy'],
+    materials:[], notes:'', published:'2026-07-09' }
+];
+/* Fechas de exámenes por materia (p1/p2/p3/final en 'YYYY-MM-DD'; vacío = sin fecha aún) */
+const SEED_CALENDAR = {
+  ca3:   {p1:'', p2:'', p3:'', final:''},
+  reg:   {p1:'', p2:'', p3:'', final:''},
+  nopar: {p1:'', p2:'', p3:'', final:''},
+  stoch: {p1:'', p2:'', p3:'', final:''},
+  fin:   {p1:'', p2:'', p3:'', final:''}
+};
+/* Store compartido a nivel dispositivo (todas las cuentas del navegador lo ven) */
+const SHKEY = 'actuariq_shared_v1';
+function shLoad(){
+  try{ const s = JSON.parse(localStorage.getItem(SHKEY)||'null');
+    return Object.assign({tasks:{}, deletedTasks:[], archivedTasks:[], calendar:{}}, s||{}); }
+  catch(e){ return {tasks:{}, deletedTasks:[], archivedTasks:[], calendar:{}}; }
+}
+function shSave(sh){ sh.updated = Date.now(); try{ localStorage.setItem(SHKEY, JSON.stringify(sh)); }catch(e){} }
+/* Tareas efectivas = semillas del HTML + altas/ediciones del admin − eliminadas */
+function allTasks(){
+  const sh = shLoad();
+  const map = {};
+  SEED_TASKS.forEach(t => { map[t.id] = Object.assign({}, t); });
+  Object.entries(sh.tasks||{}).forEach(([id, t]) => { map[id] = Object.assign({}, map[id]||{}, t, {id}); });
+  (sh.deletedTasks||[]).forEach(id => delete map[id]);
+  return Object.values(map);
+}
+function pendingTasksCount(){
+  const arch = shLoad().archivedTasks || [];
+  return allTasks().filter(t => !arch.includes(t.id) && !S.taskDone[t.id]).length;
+}
+function updateTaskBadge(){
+  const b = $('#taskBadge'); if(!b) return;
+  const n = pendingTasksCount();
+  b.textContent = n > 9 ? '9+' : n;
+  b.classList.toggle('hidden', !n);
+}
+function calMerged(){
+  const sh = shLoad(); const out = {};
+  SUBJECTS.forEach(s => { out[s.id] = Object.assign({p1:'',p2:'',p3:'',final:''}, SEED_CALENDAR[s.id]||{}, (sh.calendar||{})[s.id]||{}); });
+  return out;
+}
+const PERIOD_NAMES = {p1:'1.er parcial', p2:'2.º parcial', p3:'3.er parcial', final:'Examen final'};
+function daysUntil(d){ if(!d) return null; return Math.round((new Date(d+'T00:00') - new Date(todayKey()+'T00:00'))/86400000); }
+function fmtDay(d){ return d ? new Date(d+'T00:00').toLocaleDateString('es-MX',{weekday:'short', day:'2-digit', month:'short'}) : '—'; }
+function partialLabel(t){ return t.partial==='final' ? '🏁 Final' : '📖 Parcial '+t.partial; }
+function dueChipHTML(t){
+  if(!t.due) return '<span class="due-chip">📅 Sin fecha límite</span>';
+  const dd = daysUntil(t.due);
+  const f = fmtDay(t.due);
+  if(S.taskDone[t.id]) return '<span class="due-chip">📅 '+f+'</span>';
+  if(dd < 0)  return '<span class="due-chip late">⌛ Venció el '+f+'</span>';
+  if(dd === 0) return '<span class="due-chip soon">🚨 ¡Vence HOY!</span>';
+  if(dd <= 3) return '<span class="due-chip soon">⏰ Vence en '+dd+' día'+(dd===1?'':'s')+' · '+f+'</span>';
+  return '<span class="due-chip">📅 '+f+' · faltan '+dd+' días</span>';
+}
+let taskTab = 'activas', taskAdminOn = false, taskEditId = null;
+const tFilters = { subj:'', part:'', state:'', q:'' };
+function taskCardHTML(t, archived){
+  const done = !!S.taskDone[t.id];
+  const dd = daysUntil(t.due);
+  const late = !done && t.due && dd < 0;
+  const soon = !done && !late && t.due != null && dd != null && dd <= 3;
+  const subj = t.subject==='all' ? {icon:'📚', short:'Todas las materias'} : subjectById(t.subject);
+  const prio = t.priority || 'media';
+  const prioIco = prio==='alta' ? '🔴' : prio==='baja' ? '🟢' : '🟡';
+  return '<div class="task-card'+(done?' done':late?' late':soon?' soon':'')+'">'
+    + '<div style="display:flex;gap:12px;align-items:flex-start;flex-wrap:wrap">'
+    + '<div style="flex:1;min-width:220px"><b style="font-size:1.02rem">'+(done?'✅ ':'')+esc(t.title)+'</b>'
+    + '<div class="tag-list" style="margin-top:7px">'
+    + '<span class="tag neutral">'+subj.icon+' '+esc(subj.short)+'</span>'
+    + '<span class="tag neutral">'+partialLabel(t)+'</span>'
+    + '<span class="tag prio-'+prio+'">'+prioIco+' '+prio.charAt(0).toUpperCase()+prio.slice(1)+'</span>'
+    + dueChipHTML(t)
+    + '</div></div>'
+    + '<label style="display:flex;align-items:center;gap:7px;font-size:.85rem;font-weight:700;cursor:pointer;white-space:nowrap">'
+    + '<input type="checkbox" data-tdone="'+esc(t.id)+'"'+(done?' checked':'')+' style="width:19px;height:19px;accent-color:var(--good)"> Ya la realicé</label>'
+    + '</div>'
+    + (t.desc ? '<p style="font-size:.9rem;color:var(--ink2);margin:8px 0 0">'+esc(t.desc)+'</p>' : '')
+    + (t.steps && t.steps.length ? '<details><summary>📋 Pasos sugeridos ('+t.steps.length+')</summary><ol style="margin:6px 0;padding-left:20px">'+t.steps.map(s=>'<li>'+esc(s)+'</li>').join('')+'</ol></details>' : '')
+    + (t.materials && t.materials.length ? '<details><summary>📎 Materiales</summary><ul style="margin:6px 0;padding-left:20px">'+t.materials.map(m=>'<li>'+esc(m)+'</li>').join('')+'</ul></details>' : '')
+    + (t.notes ? '<p class="q-help" style="margin-top:6px">📝 '+esc(t.notes)+'</p>' : '')
+    + '<p class="q-help" style="margin-top:6px">Publicada: '+(t.published||'—')+(done?' · realizada el '+new Date(S.taskDone[t.id]).toLocaleDateString('es-MX'):'')+'</p>'
+    + (taskAdminOn ? '<div class="q-actions" style="justify-content:flex-start;flex-wrap:wrap;margin-top:8px">'
+        + '<button class="btn ghost small" data-tedit="'+esc(t.id)+'">✏️ Editar</button>'
+        + '<button class="btn ghost small" data-tarch="'+esc(t.id)+'">'+(archived?'📤 Desarchivar':'🗂️ Archivar')+'</button>'
+        + '<button class="btn danger small" data-tdel="'+esc(t.id)+'">🗑️ Eliminar</button></div>' : '')
+    + '</div>';
+}
+function taskFiltersHTML(){
+  return '<div class="lb-controls" style="margin-bottom:12px">'
+    + '<input class="ainput" id="tfQ" placeholder="🔎 Buscar tarea…" value="'+esc(tFilters.q)+'">'
+    + '<select class="ainput" id="tfSubj"><option value="">Todas las materias</option>'
+    + SUBJECTS.map(s=>'<option value="'+s.id+'"'+(tFilters.subj===s.id?' selected':'')+'>'+s.icon+' '+esc(s.short)+'</option>').join('')
+    + '<option value="all"'+(tFilters.subj==='all'?' selected':'')+'>📚 Generales</option></select>'
+    + '<select class="ainput" id="tfPart"><option value="">Todos los parciales</option>'
+    + ['1','2','3','final'].map(p=>'<option value="'+p+'"'+(tFilters.part===p?' selected':'')+'>'+(p==='final'?'🏁 Final':'📖 Parcial '+p)+'</option>').join('')+'</select>'
+    + '<select class="ainput" id="tfState"><option value="">Todos los estados</option>'
+    + '<option value="pend"'+(tFilters.state==='pend'?' selected':'')+'>⏳ Pendientes</option>'
+    + '<option value="done"'+(tFilters.state==='done'?' selected':'')+'>✅ Realizadas</option></select>'
+    + '</div>';
+}
+function taskMatchesFilters(t){
+  if(tFilters.subj && t.subject !== tFilters.subj) return false;
+  if(tFilters.part && String(t.partial) !== tFilters.part) return false;
+  if(tFilters.state === 'pend' && S.taskDone[t.id]) return false;
+  if(tFilters.state === 'done' && !S.taskDone[t.id]) return false;
+  if(tFilters.q){
+    const q = tFilters.q.toLowerCase();
+    const blob = (t.title+' '+(t.desc||'')+' '+(t.notes||'')).toLowerCase();
+    if(!blob.includes(q)) return false;
+  }
+  return true;
+}
+function renderCalendarHTML(){
+  const cal = calMerged();
+  const today = todayKey();
+  // — Próximos exámenes de todas las materias —
+  const upcoming = [];
+  SUBJECTS.forEach(s => Object.entries(cal[s.id]).forEach(([per, d]) => {
+    if(d && d >= today) upcoming.push({subj:s, per, d});
+  }));
+  upcoming.sort((a,b) => a.d.localeCompare(b.d));
+  let html = '<div class="panel" style="margin-bottom:14px"><h3>⏳ Próximos exámenes</h3>'
+    + (upcoming.length ? upcoming.slice(0,6).map(u => {
+        const dd = daysUntil(u.d);
+        return '<div class="cal-exam'+(dd<=7?' soon':'')+'"><span class="ce-date">'+fmtDay(u.d)+'</span>'
+          + '<span style="flex:1">'+u.subj.icon+' <b>'+esc(u.subj.short)+'</b> · '+PERIOD_NAMES[u.per]+'</span>'
+          + '<span class="due-chip'+(dd<=3?' soon':'')+'">'+(dd===0?'¡HOY!':dd===1?'mañana':'en '+dd+' días')+'</span></div>';
+      }).join('')
+      : '<p style="color:var(--muted);font-size:.87rem">Aún no hay fechas de exámenes capturadas.'+(lbIsAdmin()?' Actívate como admin abajo para capturarlas.':'')+'</p>')
+    + '</div>';
+  // — Tareas que vencen pronto —
+  const arch = shLoad().archivedTasks || [];
+  const soonTasks = allTasks().filter(t => !arch.includes(t.id) && !S.taskDone[t.id] && t.due && daysUntil(t.due) >= 0 && daysUntil(t.due) <= 7)
+    .sort((a,b) => a.due.localeCompare(b.due));
+  html += '<div class="panel" style="margin-bottom:14px"><h3>📌 Tareas que vencen esta semana</h3>'
+    + (soonTasks.length ? soonTasks.map(t => {
+        const subj = t.subject==='all' ? {icon:'📚', short:'Todas'} : subjectById(t.subject);
+        return '<div class="cal-exam"><span class="ce-date">'+fmtDay(t.due)+'</span>'
+          + '<span style="flex:1">'+subj.icon+' '+esc(t.title)+'</span>'+dueChipHTML(t)+'</div>';
+      }).join('')
+      : '<p style="color:var(--good-text);font-size:.87rem;font-weight:700">🎉 Nada vence en los próximos 7 días.</p>')
+    + '</div>';
+  // — Fechas y preparación por materia —
+  html += '<div class="dash-grid">' + SUBJECTS.map(s => {
+    const c = cal[s.id];
+    const st = subjStats(s.id);
+    const rows = Object.entries(c).map(([per, d]) => {
+      const dd = daysUntil(d);
+      return '<div class="cal-exam"><span class="ce-date">'+fmtDay(d)+'</span>'
+        + '<span style="flex:1">'+PERIOD_NAMES[per]+'</span>'
+        + (taskAdminOn ? '<input type="date" class="ainput" style="max-width:150px;padding:6px 8px" data-cal="'+s.id+':'+per+'" value="'+esc(d||'')+'">'
+           : (d ? (dd>=0 ? '<span class="due-chip'+(dd<=7?' soon':'')+'">'+(dd===0?'¡HOY!':'en '+dd+' días')+'</span>' : '<span class="due-chip">ya pasó</span>') : '<span class="due-chip">sin fecha</span>'))
+        + '</div>';
+    }).join('');
+    return '<div class="panel"><h3>'+s.icon+' '+esc(s.short)+'</h3>'+rows
+      + '<h4 style="margin:12px 0 6px;font-size:.82rem;color:var(--ink2)">🎯 Tu preparación</h4>'
+      + '<div class="hbar-row"><span class="hb-label">Módulos</span><span class="hbar-track"><i style="width:'+(st.total?Math.round(st.done/st.total*100):0)+'%"></i></span><span class="hb-val">'+st.done+'/'+(st.total||'—')+'</span></div>'
+      + '<div class="hbar-row"><span class="hb-label">Promedio</span><span class="hbar-track"><i style="width:'+st.avg+'%"></i></span><span class="hb-val">'+(st.attempts?st.avg+'%':'—')+'</span></div>'
+      + '<p class="q-help">'+(st.total ? (st.done===st.total ? '🏆 Materia dominada en la app' : st.attempts ? 'Sigue practicando para llegar al examen preparado' : 'Aún no practicas esta materia en la app') : 'Contenido de práctica en preparación')+'</p>'
+      + '</div>';
+  }).join('') + '</div>';
+  return html;
+}
+function taskAdminHTML(){
+  if(!lbIsAdmin()) return '';
+  const editing = taskEditId ? allTasks().find(t => t.id === taskEditId) : null;
+  let html = '<div class="panel" style="margin-top:16px"><h3>🛠️ Panel de administrador · Tareas</h3>'
+    + '<div class="q-actions" style="justify-content:flex-start;flex-wrap:wrap">'
+    + '<button class="btn small'+(taskAdminOn?'':' ghost')+'" id="tAdminToggle">'+(taskAdminOn?'🟢 Modo administrador: ON':'⚪ Modo administrador: OFF')+'</button>'
+    + (taskAdminOn ? '' : '<input class="ainput" id="tAdminPass" type="password" placeholder="Contraseña de administrador" style="max-width:220px">')
+    + '</div>';
+  if(taskAdminOn){
+    html += '<hr style="border:none;border-top:1px solid var(--line);margin:14px 0">'
+      + '<h4 style="margin:0 0 8px">'+(editing ? '✏️ Editar: '+esc(editing.title) : '➕ Nueva tarea')+'</h4>'
+      + '<div class="lb-controls">'
+      + '<input class="ainput" id="tfTitle" placeholder="Título de la tarea" maxlength="90" value="'+esc(editing?editing.title:'')+'">'
+      + '</div><div class="lb-controls">'
+      + '<select class="ainput" id="tfSubject">'
+      + SUBJECTS.map(s=>'<option value="'+s.id+'"'+(editing&&editing.subject===s.id?' selected':'')+'>'+s.icon+' '+esc(s.short)+'</option>').join('')
+      + '<option value="all"'+(editing&&editing.subject==='all'?' selected':'')+'>📚 Todas las materias</option></select>'
+      + '<select class="ainput" id="tfPartial">'
+      + ['1','2','3','final'].map(p=>'<option value="'+p+'"'+(editing&&String(editing.partial)===p?' selected':'')+'>'+(p==='final'?'🏁 Final':'📖 Parcial '+p)+'</option>').join('')+'</select>'
+      + '<input class="ainput" type="date" id="tfDue" value="'+esc(editing&&editing.due?editing.due:'')+'" style="max-width:170px">'
+      + '<select class="ainput" id="tfPrio" style="max-width:150px">'
+      + ['alta','media','baja'].map(p=>'<option value="'+p+'"'+((editing?editing.priority:'media')===p?' selected':'')+'>Prioridad '+p+'</option>').join('')+'</select>'
+      + '</div>'
+      + '<textarea class="ainput" id="tfDesc" rows="2" placeholder="Descripción" style="width:100%;margin:8px 0;resize:vertical">'+esc(editing?(editing.desc||''):'')+'</textarea>'
+      + '<textarea class="ainput" id="tfSteps" rows="3" placeholder="Pasos sugeridos (uno por línea)" style="width:100%;margin:0 0 8px;resize:vertical">'+esc(editing?(editing.steps||[]).join('\n'):'')+'</textarea>'
+      + '<textarea class="ainput" id="tfMaterials" rows="2" placeholder="Materiales (uno por línea)" style="width:100%;margin:0 0 8px;resize:vertical">'+esc(editing?(editing.materials||[]).join('\n'):'')+'</textarea>'
+      + '<input class="ainput" id="tfNotes" placeholder="Notas (opcional)" style="width:100%;margin:0 0 8px" value="'+esc(editing?(editing.notes||''):'')+'">'
+      + '<div class="q-actions" style="justify-content:flex-start;flex-wrap:wrap">'
+      + '<button class="btn small" id="tfSave">'+(editing?'💾 Guardar cambios':'➕ Publicar tarea')+'</button>'
+      + (editing ? '<button class="btn ghost small" id="tfCancel">Cancelar</button>' : '')
+      + '<button class="btn ghost small" id="tExport">⬇️ Exportar tareas+calendario</button>'
+      + '<button class="btn ghost small" id="tImport">⬆️ Importar</button>'
+      + '<input type="file" id="tImportFile" accept=".json,application/json" class="hidden">'
+      + '</div>'
+      + '<p class="q-help">En la pestaña 📅 Calendario puedes capturar las fechas de exámenes con el modo admin activado. Usa ✏️ / 🗂️ / 🗑️ en cada tarjeta para editar, archivar o eliminar. Las tareas también pueden dejarse fijas editando <code>SEED_TASKS</code> en el HTML.</p>';
+  } else {
+    html += '<p class="q-help">Escribe la contraseña y toca el botón para administrar tareas y fechas de exámenes.</p>';
+  }
+  return html + '</div>';
+}
+function renderTasks(){
+  const sh = shLoad();
+  const arch = sh.archivedTasks || [];
+  const today = todayKey();
+  const all = allTasks();
+  const pend = pendingTasksCount();
+  // pestañas activas
+  $$('#taskTabs [data-ttab]').forEach(b => {
+    const on = b.dataset.ttab === taskTab;
+    b.classList.toggle('ghost', !on);
+  });
+  let html = '';
+  if(taskTab === 'calendario'){
+    html = renderCalendarHTML();
+  } else {
+    let list;
+    if(taskTab === 'archivo') list = all.filter(t => arch.includes(t.id));
+    else if(taskTab === 'vencidas') list = all.filter(t => !arch.includes(t.id) && t.due && t.due < today && !S.taskDone[t.id]);
+    else list = all.filter(t => !arch.includes(t.id) && !(t.due && t.due < today && !S.taskDone[t.id]));
+    list = list.filter(taskMatchesFilters);
+    // ordenar: por fecha de entrega (las sin fecha al final)
+    list.sort((a,b) => (a.due||'9999').localeCompare(b.due||'9999'));
+    html = '<p style="font-weight:700;font-size:.9rem;margin:0 0 10px">'
+      + (pend ? '⏳ Tienes <b>'+pend+'</b> tarea'+(pend===1?'':'s')+' pendiente'+(pend===1?'':'s')+' en total.' : '🎉 ¡Todo al día! No tienes tareas pendientes.')
+      + '</p>'
+      + taskFiltersHTML()
+      + (list.length ? list.map(t => taskCardHTML(t, arch.includes(t.id))).join('')
+         : '<div class="panel" style="text-align:center;color:var(--muted)">'
+           + (taskTab==='vencidas' ? '🎉 No tienes tareas vencidas.' : taskTab==='archivo' ? 'El archivo está vacío.' : 'No hay tareas que coincidan con el filtro.')+'</div>');
+  }
+  html += taskAdminHTML();
+  $('#tasksBody').innerHTML = html;
+  bindTaskEvents();
+}
+function bindTaskEvents(){
+  // filtros
+  const fq = $('#tfQ');
+  if(fq){
+    fq.addEventListener('input', e => { tFilters.q = e.target.value; renderTasks(); const el=$('#tfQ'); el.focus(); el.setSelectionRange(el.value.length, el.value.length); });
+    $('#tfSubj').addEventListener('change', e => { tFilters.subj = e.target.value; renderTasks(); });
+    $('#tfPart').addEventListener('change', e => { tFilters.part = e.target.value; renderTasks(); });
+    $('#tfState').addEventListener('change', e => { tFilters.state = e.target.value; renderTasks(); });
+  }
+  // marcar realizada
+  $$('#tasksBody [data-tdone]').forEach(ch => ch.addEventListener('change', e => {
+    const id = ch.dataset.tdone;
+    if(e.target.checked){ S.taskDone[id] = Date.now(); toast('✅ Tarea marcada como realizada'); sfx('ok'); }
+    else { delete S.taskDone[id]; sfx('click'); }
+    save(); updateTaskBadge(); renderTasks();
+  }));
+  // fechas del calendario (admin)
+  $$('#tasksBody [data-cal]').forEach(inp => inp.addEventListener('change', e => {
+    const [sid, per] = inp.dataset.cal.split(':');
+    const sh = shLoad();
+    sh.calendar[sid] = sh.calendar[sid] || {};
+    sh.calendar[sid][per] = e.target.value || '';
+    shSave(sh); toast('📅 Fecha guardada: '+subjectById(sid).short+' · '+PERIOD_NAMES[per]); sfx('ok'); renderTasks();
+  }));
+  // admin: activar/desactivar
+  const at = $('#tAdminToggle');
+  if(at) at.addEventListener('click', async () => {
+    if(taskAdminOn){ taskAdminOn = false; taskEditId = null; sfx('click'); renderTasks(); return; }
+    let okSession = false;
+    try{ okSession = sessionStorage.getItem('actuariq_admin') === '1'; }catch(e){}
+    if(!okSession){
+      const pass = ($('#tAdminPass') && $('#tAdminPass').value) || '';
+      if(!pass){ toast('🔑 Escribe la contraseña de administrador'); sfx('bad'); return; }
+      const good = await lbCheckPass(pass);
+      if(!good){ toast('❌ Contraseña incorrecta'); sfx('bad'); return; }
+      try{ sessionStorage.setItem('actuariq_admin','1'); }catch(e){}
+    }
+    taskAdminOn = true; sfx('unlock'); toast('🛠️ Modo administrador de tareas activado'); renderTasks();
+  });
+  // admin: guardar/editar tarea
+  const ts = $('#tfSave');
+  if(ts) ts.addEventListener('click', () => {
+    const title = $('#tfTitle').value.trim();
+    if(!title){ toast('Escribe el título de la tarea'); sfx('bad'); return; }
+    const sh = shLoad();
+    const id = taskEditId || ('t-'+Date.now().toString(36));
+    const base = taskEditId ? (allTasks().find(t=>t.id===taskEditId) || {}) : {};
+    sh.tasks[id] = Object.assign({}, base, {
+      id, title,
+      subject: $('#tfSubject').value,
+      partial: $('#tfPartial').value === 'final' ? 'final' : +$('#tfPartial').value,
+      due: $('#tfDue').value || '',
+      priority: $('#tfPrio').value,
+      desc: $('#tfDesc').value.trim(),
+      steps: $('#tfSteps').value.split('\n').map(x=>x.trim()).filter(Boolean),
+      materials: $('#tfMaterials').value.split('\n').map(x=>x.trim()).filter(Boolean),
+      notes: $('#tfNotes').value.trim(),
+      published: base.published || todayKey()
+    });
+    sh.deletedTasks = (sh.deletedTasks||[]).filter(x => x !== id);
+    shSave(sh);
+    toast(taskEditId ? '💾 Tarea actualizada' : '➕ Tarea publicada'); sfx('ok');
+    taskEditId = null; updateTaskBadge(); renderTasks();
+  });
+  const tc = $('#tfCancel');
+  if(tc) tc.addEventListener('click', () => { taskEditId = null; renderTasks(); });
+  // admin: por tarjeta
+  $$('#tasksBody [data-tedit]').forEach(b => b.addEventListener('click', () => { taskEditId = b.dataset.tedit; renderTasks();
+    const pn = $('#tfTitle'); if(pn) pn.scrollIntoView({behavior:'smooth', block:'center'}); }));
+  $$('#tasksBody [data-tarch]').forEach(b => b.addEventListener('click', () => {
+    const sh = shLoad(); const id = b.dataset.tarch;
+    if(sh.archivedTasks.includes(id)) sh.archivedTasks = sh.archivedTasks.filter(x=>x!==id);
+    else sh.archivedTasks.push(id);
+    shSave(sh); sfx('click'); updateTaskBadge(); renderTasks();
+  }));
+  $$('#tasksBody [data-tdel]').forEach(b => b.addEventListener('click', () => {
+    const t = allTasks().find(x=>x.id===b.dataset.tdel);
+    if(!t || !confirm('¿Eliminar la tarea "'+t.title+'" para todos?')) return;
+    const sh = shLoad();
+    delete sh.tasks[t.id];
+    if(!sh.deletedTasks.includes(t.id)) sh.deletedTasks.push(t.id);
+    shSave(sh); if(taskEditId===t.id) taskEditId=null;
+    toast('🗑️ Tarea eliminada'); sfx('bad'); updateTaskBadge(); renderTasks();
+  }));
+  // admin: exportar / importar tareas + calendario
+  const te = $('#tExport');
+  if(te) te.addEventListener('click', () => {
+    const sh = shLoad();
+    const payload = {app:'actuariq-tasks', version:1, exported:new Date().toISOString(),
+      tasks: allTasks(), archivedTasks: sh.archivedTasks||[], deletedTasks: sh.deletedTasks||[], calendar: calMerged()};
+    const blob = new Blob([JSON.stringify(payload, null, 2)], {type:'application/json'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob); a.download = 'actuariq-tareas.json';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(()=>URL.revokeObjectURL(a.href), 3000);
+    toast('⬇️ Tareas y calendario exportados'); sfx('ok');
+  });
+  const ti = $('#tImport');
+  if(ti) ti.addEventListener('click', () => $('#tImportFile').click());
+  const tif = $('#tImportFile');
+  if(tif) tif.addEventListener('change', e => {
+    const file = e.target.files[0]; e.target.value = '';
+    if(!file) return;
+    const rd = new FileReader();
+    rd.onload = () => {
+      try{
+        const payload = JSON.parse(rd.result);
+        if(!payload || payload.app !== 'actuariq-tasks' || !Array.isArray(payload.tasks)) throw new Error('formato');
+        const sh = shLoad();
+        payload.tasks.forEach(t => { if(t && t.id && t.title) sh.tasks[t.id] = t; });
+        if(Array.isArray(payload.archivedTasks)) sh.archivedTasks = payload.archivedTasks;
+        if(Array.isArray(payload.deletedTasks)) sh.deletedTasks = payload.deletedTasks;
+        if(payload.calendar) SUBJECTS.forEach(s => { if(payload.calendar[s.id]) { sh.calendar[s.id] = Object.assign({}, sh.calendar[s.id]||{}, payload.calendar[s.id]); } });
+        shSave(sh);
+        toast('⬆️ Tareas y calendario importados'); sfx('unlock'); updateTaskBadge(); renderTasks();
+      }catch(err){ toast('❌ El archivo no es un JSON de tareas válido'); sfx('bad'); }
+    };
+    rd.readAsText(file);
+  });
+}
+$('#btnTasks').addEventListener('click', () => { sfx('click'); renderTasks(); showView('tasks'); });
+$$('#taskTabs [data-ttab]').forEach(b => b.addEventListener('click', () => { sfx('click'); taskTab = b.dataset.ttab; renderTasks(); }));
+
 /* ==================== Insignias ==================== */
 const BADGES = [
   {id:'first',   ico:'🎓', name:'Primer paso',        desc:'Completa tu primer módulo',        test:()=>Object.values(S.modules).some(m=>m.done)},
@@ -3285,11 +3674,49 @@ function renderStats(){
     + tile('📝','Exámenes diarios', exams.length, '', exams.length ? 'promedio '+exAvg+'%' : 'aún sin exámenes')
     + '</div>';
   html += '<div class="dash-grid">';
+  const subjActive = subjectById(S.activeSubject);
+  // — 🌍 Generales (todas las materias) —
+  const perSubj = SUBJECTS.map(s => Object.assign({s}, subjStats(s.id)));
+  const withHist = perSubj.filter(x => x.attempts > 0);
+  const globalAvg = withHist.length ? Math.round(withHist.reduce((a,x)=>a+x.avg,0)/withHist.length) : 0;
+  const withMods = perSubj.filter(x => x.total > 0);
+  const globalProg = withMods.length ? Math.round(withMods.reduce((a,x)=>a+x.progress,0)/withMods.length*100) : 0;
+  const topSubj = [...perSubj].sort((a,b)=>b.xp-a.xp)[0];
+  const rankedG = lbRanked(lbLoad());
+  const myPosG = rankedG.findIndex(s=>s.pid===PROFILES.active)+1;
+  const upcomingG = [];
+  { const cal = calMerged(), today = todayKey();
+    SUBJECTS.forEach(s => Object.entries(cal[s.id]).forEach(([per,d]) => { if(d && d >= today) upcomingG.push({s, per, d}); }));
+    upcomingG.sort((a,b)=>a.d.localeCompare(b.d)); }
+  html += '<div class="panel"><h3>🌍 Generales · todas las materias</h3>'
+    + '<div class="tag-list" style="margin-bottom:10px">'
+    + '<span class="tag neutral">⚡ '+S.xp.toLocaleString()+' XP · nivel '+levelInfo().lvl+'</span>'
+    + '<span class="tag neutral">📈 Promedio general: '+(withHist.length?globalAvg+'%':'—')+'</span>'
+    + '<span class="tag neutral">🔥 Racha: '+S.streak+(S.streak===1?' día':' días')+'</span>'
+    + '<span class="tag neutral">📚 Materias con actividad: '+withHist.length+'/'+SUBJECTS.length+'</span>'
+    + '<span class="tag neutral">🏆 Progreso total: '+globalProg+'%</span>'
+    + '<span class="tag neutral">📋 Tareas pendientes: '+pendingTasksCount()+'</span>'
+    + (topSubj && topSubj.xp>0 ? '<span class="tag dom">⭐ Más estudiada: '+topSubj.s.icon+' '+esc(topSubj.s.short)+' ('+topSubj.xp+' XP)</span>' : '')
+    + (myPosG ? '<span class="tag neutral">🥇 Leaderboard: #'+myPosG+' de '+rankedG.length+'</span>' : '')
+    + '</div>'
+    + (upcomingG.length ? '<p style="font-size:.85rem;font-weight:700;margin:6px 0 4px">⏳ Próximos exámenes:</p>'
+        + upcomingG.slice(0,2).map(u => '<div class="cal-exam"><span class="ce-date">'+fmtDay(u.d)+'</span>'
+          + '<span style="flex:1">'+u.s.icon+' '+esc(u.s.short)+' · '+PERIOD_NAMES[u.per]+'</span>'
+          + '<span class="due-chip'+(daysUntil(u.d)<=7?' soon':'')+'">'+(daysUntil(u.d)===0?'¡HOY!':'en '+daysUntil(u.d)+' días')+'</span></div>').join('')
+      : '<p class="q-help">Sin fechas de exámenes capturadas todavía (pestaña 📋 → 📅 Calendario).</p>')
+    + '<table class="hist-table" style="margin-top:10px"><tr><th>Materia</th><th class="num">XP</th><th class="num">Módulos</th><th class="num">Avance</th><th class="num">Promedio</th><th class="num">Intentos</th></tr>'
+    + perSubj.map(x => '<tr'+(x.s.id===S.activeSubject?' style="font-weight:700"':'')+'><td>'+x.s.icon+' '+esc(x.s.short)+(x.s.id===S.activeSubject?' ✔':'')+'</td>'
+        + '<td class="num">'+x.xp.toLocaleString()+'</td>'
+        + '<td class="num">'+(x.total ? x.done+'/'+x.total : '—')+'</td>'
+        + '<td class="num">'+(x.total ? Math.round(x.progress*100)+'%' : '—')+'</td>'
+        + '<td class="num">'+(x.attempts ? x.avg+'%' : '—')+'</td>'
+        + '<td class="num">'+x.attempts+'</td></tr>').join('')
+    + '</table></div>';
   // Mi tarjeta de jugador
   const p = activeProfile();
   const li = levelInfo();
-  const ranked = lbRanked(lbLoad());
-  const myPos = ranked.findIndex(s=>s.pid===PROFILES.active)+1;
+  const ranked = rankedG;
+  const myPos = myPosG;
   const nr = nextReward();
   html += '<div class="panel"><h3>👤 Mi tarjeta</h3>'
     + '<div style="text-align:center">'+avatarFramedHTML(p, 84)
@@ -3311,7 +3738,7 @@ function renderStats(){
   // Último examen + temas por repasar
   const lastEx = exams[0];
   const lastTopics = (lastEx && lastEx.failedTopics) ? lastEx.failedTopics : [];
-  html += '<div class="panel"><h3>📝 Último examen</h3>'
+  html += '<div class="panel"><h3>📝 Último examen · '+esc(subjActive.short)+'</h3>'
     + (lastEx
       ? '<p style="font-size:1.5rem;font-weight:800;margin:4px 0">'+lastEx.score+'%</p>'
         + '<p class="q-help" style="margin:0 0 10px">'+fmtDate(lastEx.t)+' · '+fmtDur(lastEx.sec)+(lastEx.n?' · '+lastEx.n+' preguntas':'')+(lastEx.xp!=null?' · +'+lastEx.xp+' XP':'')+'</p>'
@@ -3334,7 +3761,7 @@ function renderStats(){
       }).join('') : '<p style="color:var(--muted);font-size:.85rem">Tus recompensas desbloqueadas aparecerán aquí. La próxima te espera en la tienda 🎁.</p>')
     + '</div>';
   // Progreso por módulo
-  html += '<div class="panel"><h3>📚 Progreso por módulo</h3>'
+  html += '<div class="panel"><h3>📚 Progreso por módulo · '+esc(subjActive.short)+'</h3>'
     + MODULES.map((m,i) => { const st = modState(m.id);
       return '<div class="hbar-row"><span class="hb-label" title="'+esc(m.name)+'">'+m.icon+' '+esc(m.name)+'</span>'
         + '<span class="hbar-track"><i style="width:'+st.best+'%"></i></span>'
@@ -3343,7 +3770,7 @@ function renderStats(){
   // Progreso por tema
   const topics = Object.entries(S.concepts).map(([k,c]) => ({k, n:c.ok+c.bad, acc:c.ok/(c.ok+c.bad)}))
     .filter(t => t.n>0).sort((a,b)=>b.n-a.n).slice(0,12);
-  html += '<div class="panel"><h3>🧩 Progreso por tema</h3>'
+  html += '<div class="panel"><h3>🧩 Progreso por tema · '+esc(subjActive.short)+'</h3>'
     + (topics.length ? topics.map(t =>
         '<div class="hbar-row"><span class="hb-label">'+(TOPIC_NAMES[t.k]||t.k)+'</span>'
         + '<span class="hbar-track"><i style="width:'+Math.round(t.acc*100)+'%"></i></span>'
@@ -3359,7 +3786,7 @@ function renderStats(){
     else if(n>=2 && acc<0.6) ref.push(name);
     else if(n>0) prog.push(name);
   });
-  html += '<div class="panel"><h3>🏅 Conceptos dominados</h3><div class="tag-list">'
+  html += '<div class="panel"><h3>🏅 Conceptos dominados · '+esc(subjActive.short)+'</h3><div class="tag-list">'
     + (dom.length ? dom.map(d=>'<span class="tag dom">✔ '+d+'</span>').join('') : '<span class="tag neutral">Aún ninguno: sigue practicando</span>')
     + '</div><h3 style="margin-top:16px">🔁 Por reforzar</h3><div class="tag-list">'
     + (ref.length ? ref.map(d=>'<span class="tag ref">⚠ '+d+'</span>').join('') : '<span class="tag neutral">Nada pendiente por ahora 🎉</span>')
@@ -3373,14 +3800,14 @@ function renderStats(){
     + '</div></div>';
   // Mejores resultados
   const best = [...S.history].sort((a,b)=>b.score-a.score).slice(0,5);
-  html += '<div class="panel"><h3>🥇 Mejores resultados</h3>'
+  html += '<div class="panel"><h3>🥇 Mejores resultados · '+esc(subjActive.short)+'</h3>'
     + (best.length ? '<table class="hist-table"><tr><th>Módulo</th><th>Calif.</th><th>XP</th></tr>'
         + best.map(h => '<tr><td>'+MODULES[h.mod].icon+' '+esc(MODULES[h.mod].name)+'</td><td class="num"><b>'+h.score+'%</b></td><td class="num">+'+h.xp+'</td></tr>').join('')
         + '</table>'
       : '<p style="color:var(--muted);font-size:.85rem">Completa una actividad para ver tus marcas.</p>')
     + '</div>';
   // Últimas actividades
-  html += '<div class="panel"><h3>🕓 Últimas actividades</h3>'
+  html += '<div class="panel"><h3>🕓 Últimas actividades · '+esc(subjActive.short)+'</h3>'
     + (S.history.length ? '<table class="hist-table"><tr><th>Fecha</th><th>Módulo</th><th>Calif.</th><th>Tiempo</th></tr>'
         + S.history.slice(0,8).map(h => '<tr><td>'+fmtDate(h.t)+'</td><td>'+MODULES[h.mod].icon+' '+esc(MODULES[h.mod].name).slice(0,26)+'</td>'
           + '<td class="num">'+h.score+'%</td><td class="num">'+fmtDur(h.sec)+'</td></tr>').join('')
@@ -3388,7 +3815,7 @@ function renderStats(){
       : '<p style="color:var(--muted);font-size:.85rem">Tu historial aparecerá aquí.</p>')
     + '</div>';
   // Exámenes diarios
-  html += '<div class="panel"><h3>📝 Exámenes diarios</h3>'
+  html += '<div class="panel"><h3>📝 Exámenes diarios · '+esc(subjActive.short)+'</h3>'
     + (exams.length ? '<table class="hist-table"><tr><th>Fecha</th><th>Calificación</th><th>Tiempo</th></tr>'
         + exams.slice(0,10).map(e => '<tr><td>'+fmtDate(e.t)+'</td><td class="num"><b>'+e.score+'%</b></td><td class="num">'+fmtDur(e.sec)+'</td></tr>').join('')
         + '</table><p class="q-help">Promedio: <b>'+exAvg+'%</b> · Un examen por día.</p>'
@@ -3633,7 +4060,27 @@ const REWARDS = [
   {id:'title-analista',   type:'title', name:'Analista Junior',       ico:'🏷️', xp:500,  desc:'Título alterno que sustituye tu rango de nivel.'},
   {id:'title-frecuencia', type:'title', name:'Maestro de Frecuencia', ico:'🏷️', xp:1200, desc:'Título alterno que sustituye tu rango de nivel.'},
   {id:'title-severidad',  type:'title', name:'Experto en Severidad',  ico:'🏷️', xp:2000, desc:'Título alterno que sustituye tu rango de nivel.'},
-  {id:'title-prima',      type:'title', name:'Rey de la Prima',       ico:'🏷️', xp:4000, desc:'Título alterno que sustituye tu rango de nivel.'}
+  {id:'title-prima',      type:'title', name:'Rey de la Prima',       ico:'🏷️', xp:4000, desc:'Título alterno que sustituye tu rango de nivel.'},
+  /* — Títulos divertidos: por XP o por logros especiales (campo test + cond) — */
+  {id:'title-construccion', type:'title', name:'Actuario en Construcción', ico:'🚧', xp:300,  desc:'Para quien apenas empieza, pero con casco.'},
+  {id:'title-cafe',        type:'title', name:'Rey del Café',            ico:'☕', xp:800,  desc:'Ninguna madrugada de estudio te detiene.'},
+  {id:'title-excel',       type:'title', name:'Excel Warrior',           ico:'📗', xp:1600, desc:'Domador de celdas y tablas dinámicas.'},
+  {id:'title-humana',      type:'title', name:'Calculadora Humana',      ico:'🧮', xp:2500, desc:'¿Quién necesita calculadora?'},
+  {id:'title-riesgo',      type:'title', name:'Maestro del Riesgo',      ico:'🎲', xp:6000, desc:'El riesgo te respeta a ti.'},
+  {id:'title-sobrev',      type:'title', name:'Sobreviviente del Parcial', ico:'🏳️', desc:'Presentaste tu primer examen diario y viviste para contarlo.',
+    test:()=>(S.examHistory||[]).length>=1, cond:'Presenta tu primer examen diario'},
+  {id:'title-estudio',     type:'title', name:'El que sí estudió',       ico:'🤓', desc:'Cinco días seguidos: tu profesor estaría orgulloso.',
+    test:()=>S.streak>=5, cond:'Logra una racha de 5 días'},
+  {id:'title-cazador',     type:'title', name:'Cazador de Fórmulas',     ico:'🏹', desc:'100% en el módulo de fórmulas: puntería perfecta.',
+    test:()=>{ const st = (subjSnapshot('ca3').modules||{})[9]; return !!(st && st.best>=100); }, cond:'Saca 100% en el módulo Completar fórmulas'},
+  {id:'title-noc',         type:'title', name:'No era opción C',         ico:'🅲', desc:'La sabiduría llega después de muchas preguntas.',
+    test:()=>(S.totalAnswered||0)>=40, cond:'Responde 40 preguntas'},
+  {id:'title-siniestros',  type:'title', name:'Señor de los Siniestros', ico:'🌩️', desc:'Los 12 módulos de Cálculo Actuarial III doblegados.',
+    test:()=>subjStats('ca3').done>=12, cond:'Completa los 12 módulos de Cálculo III'},
+  {id:'title-desvelado',   type:'title', name:'Desvelado Profesional',   ico:'🌙', desc:'Estudiar después de medianoche también cuenta. O más.',
+    test:()=>!!S.lateNight, cond:'Estudia de madrugada (12 am – 5 am)'},
+  {id:'title-domador',     type:'title', name:'Domador de Exámenes',     ico:'🎪', desc:'Tres exámenes con ≥90: los exámenes te temen.',
+    test:()=>(S.examHistory||[]).filter(e=>e.score>=90).length>=3, cond:'Logra ≥90% en 3 exámenes diarios'}
 ];
 const REWARD_TYPE_LABEL = {frame:'🖼️ Marcos', bg:'🌆 Fondos', acc:'🎒 Accesorios', title:'🏷️ Títulos'};
 const FRAME_BORDER = {'frame-bronze':'#cd7f32', 'frame-silver':'#b7b7b7', 'frame-gold':'#eda100', 'frame-diamond':'#7ad7f0'};
@@ -3643,11 +4090,13 @@ const BG_GRAD = {
 };
 function ensureEquip(){ if(!S.equip) S.equip = {frame:null, bg:null, acc:null, title:null}; return S.equip; }
 function nextReward(){
-  return REWARDS.filter(r => !(S.unlockedRewards||[]).includes(r.id)).sort((a,b)=>a.xp-b.xp)[0] || null;
+  // solo recompensas por XP: las de logro (test) tienen su propia condición
+  return REWARDS.filter(r => r.xp != null && !(S.unlockedRewards||[]).includes(r.id)).sort((a,b)=>a.xp-b.xp)[0] || null;
 }
 function checkRewards(){
   REWARDS.forEach(r => {
-    if(!(S.unlockedRewards||[]).includes(r.id) && S.xp >= r.xp){
+    const earned = r.test ? r.test() : (r.xp != null && S.xp >= r.xp);
+    if(!(S.unlockedRewards||[]).includes(r.id) && earned){
       S.unlockedRewards.push(r.id);
       S.rewardLog.unshift({id:r.id, t:Date.now()});
       if(S.rewardLog.length > 30) S.rewardLog.length = 30;
@@ -3685,13 +4134,15 @@ function renderShopHTML(){
       + '<div class="reward-grid">' + items.map(r => {
           const unlocked = (S.unlockedRewards||[]).includes(r.id);
           const equipped = ensureEquip()[r.type] === r.id;
-          const pctv = Math.min(100, Math.round(S.xp/r.xp*100));
+          const pctv = r.xp != null ? Math.min(100, Math.round(S.xp/r.xp*100)) : 0;
           return '<div class="reward-card'+(unlocked?' unlocked':'')+'">'
             + '<div class="rw-ico">'+r.ico+'</div>'
             + '<div class="rw-name">'+esc(r.name)+'</div>'
             + (unlocked
                 ? '<button class="btn small'+(equipped?'':' ghost')+'" data-eq="'+r.type+'" data-id="'+r.id+'">'+(equipped?'✔ Equipado':'Equipar')+'</button>'
-                : '<div class="rw-lock"><span class="pbar"><i style="width:'+pctv+'%"></i></span><small>'+S.xp+' / '+r.xp+' XP</small></div>')
+                : (r.test
+                    ? '<div class="rw-lock"><small>🎯 '+esc(r.cond||'Logro especial')+'</small></div>'
+                    : '<div class="rw-lock"><span class="pbar"><i style="width:'+pctv+'%"></i></span><small>'+S.xp+' / '+r.xp+' XP</small></div>'))
             + '</div>';
         }).join('') + '</div></div>';
   }).join('');
@@ -3816,10 +4267,21 @@ function renderProfile(){
           + (un ? '' : ' title="Se desbloquea en el nivel '+avatarReqLevel(a)+'"')+'>'+(un?a:'🔒')+'</button>';
       }).join('')+'</div>'
     + builder
-    + '<label class="fld">Nombre<input class="ainput" id="pfName" maxlength="24" value="'+esc(p.name)+'"></label>'
-    + '<button class="btn small" id="pfSave">💾 Guardar cambios</button>'
+    + '<label class="fld">Nombre completo<input class="ainput" id="pfName" maxlength="30" value="'+esc(p.name)+'"></label>'
+    + '<div class="lb-controls">'
+    + '<input class="ainput" id="pfNick" maxlength="16" placeholder="Apodo (opcional)" value="'+esc(p.nick||'')+'">'
+    + '<input class="ainput" id="pfGroup" maxlength="12" placeholder="Grupo" style="max-width:110px" value="'+esc(p.group||'')+'">'
+    + '<input class="ainput" id="pfQuarter" maxlength="10" placeholder="Cuatrimestre" style="max-width:140px" value="'+esc(p.quarter||'6.º')+'">'
+    + '</div>'
+    + '<button class="btn small" id="pfSave" style="margin-top:8px">💾 Guardar cambios</button>'
+    + '<div class="tag-list" style="margin-top:12px">'
+    + '<span class="tag neutral">'+subjectById(S.activeSubject).icon+' Materia activa: '+esc(subjectById(S.activeSubject).short)+'</span>'
+    + '<span class="tag neutral">🏷️ '+esc(currentTitle())+'</span>'
+    + '<span class="tag neutral">🔥 Racha: '+S.streak+(S.streak===1?' día':' días')+'</span>'
+    + '<span class="tag neutral">🏆 Progreso general: '+(function(){ const ws = SUBJECTS.map(x=>subjStats(x.id)).filter(x=>x.total>0);
+        return ws.length ? Math.round(ws.reduce((a,x)=>a+x.progress,0)/ws.length*100) : 0; })()+'%</span>'
+    + '</div>'
     + '<p class="q-help">Perfil creado el '+new Date(p.created).toLocaleDateString('es-MX')+' · Nivel '+levelInfo().lvl
-    + ' · 🏷️ '+currentTitle()
     + ' · '+S.xp+' XP · '+S.badges.length+'/'+BADGES.length+' insignias</p></div>';
   // — Perfiles del dispositivo —
   html += '<div class="panel"><h3>👥 Perfiles en este dispositivo</h3>'
@@ -3860,6 +4322,16 @@ function renderProfile(){
     + toggleRow('prefMotion','🌀 Reducir animaciones', !!S.reduceMotion)
     + toggleRow('prefAvatar','🧪 Avatar personalizable (beta, experimental)', !!S.avatarBeta)
     + '<p class="q-help">El avatar beta puede desactivarse aquí si algo no se ve bien; tu emoji de siempre lo sustituye.</p>'
+    + '<hr style="border:none;border-top:1px solid var(--line);margin:14px 0">'
+    + '<label class="fld" style="margin-bottom:6px">🖼️ Logo de la página (se guarda en este dispositivo)</label>'
+    + '<div class="q-actions" style="justify-content:flex-start;flex-wrap:wrap;align-items:center">'
+    + '<span style="width:40px;height:40px;border-radius:11px;overflow:hidden;display:inline-grid;place-items:center;background:linear-gradient(135deg,var(--accent),var(--c5));font-size:20px">'
+    + (getLogo() ? '<img src="'+getLogo()+'" alt="logo" style="width:100%;height:100%;object-fit:cover">' : '🛡️')+'</span>'
+    + '<button class="btn ghost small" id="btnLogoUp">📤 Subir logo</button>'
+    + (getLogo() ? '<button class="btn ghost small" id="btnLogoReset">↩️ Restablecer 🛡️</button>' : '')
+    + '<input type="file" id="logoFile" accept="image/*" class="hidden">'
+    + '</div>'
+    + '<p class="q-help">La imagen se recorta a cuadrado y sustituye el escudo del encabezado.</p>'
     + '</div>';
   // — Modos de juego —
   const gm = Object.assign({exam:true, flash:true, blitz:true, sudden:true, review:true}, S.gameModes||{});
@@ -3923,6 +4395,9 @@ function renderProfile(){
   $('#pfSave').addEventListener('click', () => {
     const nm = $('#pfName').value.trim();
     if(nm) p.name = nm;
+    p.nick = $('#pfNick').value.trim();
+    p.group = $('#pfGroup').value.trim();
+    p.quarter = $('#pfQuarter').value.trim() || '6.º';
     saveProfiles(); renderHeader(); renderProfile(); toast('💾 Perfil actualizado'); sfx('ok');
   });
   $$('#profileBody [data-use]').forEach(b => b.addEventListener('click', () => switchProfile(b.dataset.use)));
@@ -3959,6 +4434,13 @@ function renderProfile(){
   $('#prefMotion').addEventListener('change', e => { S.reduceMotion = e.target.checked; save(); applyTheme(); sfx('click'); });
   $('#prefAvatar').addEventListener('change', e => { S.avatarBeta = e.target.checked; save(); renderHeader(); renderProfile(); sfx('click');
     toast(S.avatarBeta ? '🧪 Avatar beta activado' : '🧪 Avatar beta desactivado: se usa tu emoji'); });
+  $('#btnLogoUp').addEventListener('click', () => $('#logoFile').click());
+  $('#logoFile').addEventListener('change', e => { if(e.target.files[0]) setLogoFromFile(e.target.files[0]); e.target.value=''; });
+  const lr = $('#btnLogoReset');
+  if(lr) lr.addEventListener('click', () => {
+    try{ localStorage.removeItem(LOGOKEY); }catch(e){}
+    applyLogo(); renderProfile(); toast('↩️ Logo restablecido'); sfx('click');
+  });
   const GM_TOGGLES = {gmExam:'exam', gmFlash:'flash', gmBlitz:'blitz', gmSudden:'sudden', gmReview:'review'};
   Object.keys(GM_TOGGLES).forEach(elId => {
     $('#'+elId).addEventListener('change', e => {
@@ -4009,8 +4491,9 @@ function deleteProfile(id){
 }
 function exportData(){
   const p = activeProfile();
-  const payload = { app:'actuariq', version:1, exported:new Date().toISOString(),
-    profile:{ name:p.name, avatar:p.avatar, created:p.created }, data:S };
+  const payload = { app:'actuariq', version:2, exported:new Date().toISOString(),
+    profile:{ name:p.name, avatar:p.avatar, created:p.created, nick:p.nick||'', group:p.group||'',
+      quarter:p.quarter||'6.º', useCustom:!!p.useCustom, custom:p.custom||null }, data:S };
   const blob = new Blob([JSON.stringify(payload, null, 2)], {type:'application/json'});
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
@@ -4039,6 +4522,7 @@ function importData(file){
         const p = activeProfile();
         if(payload.profile.name) p.name = payload.profile.name;
         if(payload.profile.avatar) p.avatar = payload.profile.avatar;
+        ['nick','group','quarter','useCustom','custom'].forEach(k => { if(payload.profile[k] !== undefined) p[k] = payload.profile[k]; });
         saveProfiles();
       }
       save(); applyTheme(); renderHeader(); renderProfile();
@@ -4049,19 +4533,74 @@ function importData(file){
 }
 $('#btnProfile').addEventListener('click', ()=>{ sfx('click'); renderProfile(); showView('profile'); });
 
+/* ==================== Logo personalizable (nivel dispositivo) ==================== */
+const LOGOKEY = 'actuariq_logo_v1';
+function getLogo(){ try{ return localStorage.getItem(LOGOKEY); }catch(e){ return null; } }
+function applyLogo(){
+  const d = getLogo();
+  const mark = $('.logo .mark');
+  if(!mark) return;
+  if(d) mark.innerHTML = '<img src="'+d+'" alt="logo" style="width:100%;height:100%;object-fit:cover;border-radius:10px">';
+  else mark.textContent = '🛡️';
+}
+function setLogoFromFile(file){
+  if(!file || !file.type.startsWith('image/')){ toast('❌ Elige un archivo de imagen'); sfx('bad'); return; }
+  const rd = new FileReader();
+  rd.onload = () => {
+    const img = new Image();
+    img.onload = () => {
+      // se reduce a 128×128 para que quepa cómodo en localStorage
+      const cv = document.createElement('canvas'); cv.width = cv.height = 128;
+      const cx = cv.getContext('2d');
+      const side = Math.min(img.width, img.height);
+      cx.drawImage(img, (img.width-side)/2, (img.height-side)/2, side, side, 0, 0, 128, 128);
+      let data;
+      try{ data = cv.toDataURL('image/png'); localStorage.setItem(LOGOKEY, data); }
+      catch(e){ toast('❌ No se pudo guardar el logo (imagen demasiado grande)'); sfx('bad'); return; }
+      applyLogo(); renderProfile(); toast('🖼️ Logo actualizado en este dispositivo'); sfx('ok');
+    };
+    img.onerror = () => { toast('❌ No se pudo leer la imagen'); sfx('bad'); };
+    img.src = rd.result;
+  };
+  rd.readAsDataURL(file);
+}
+
 /* ==================== Bienvenida (primer uso) ==================== */
 function showOnboarding(){
   let chosen = activeProfile().avatar;
-  const o = openModal('<div style="text-align:center"><div style="font-size:46px">🛡️</div>'
-    + '<h2>¡Bienvenido a ActuarIQ!</h2>'
-    + '<p style="color:var(--ink2);font-size:.9rem">Crea tu perfil para guardar tu progreso, XP e insignias en este navegador.</p>'
-    + '<div class="avatar-pick" id="obAv">'+AVATARS.slice(0,4).map(a=>'<button class="av'+(a===chosen?' on':'')+'" data-av="'+a+'">'+a+'</button>').join('')+'</div>'
-    + '<p class="q-help">🔓 Desbloquearás más avatares, títulos y accesorios al subir de nivel.</p>'
-    + '<input class="ainput" id="obName" placeholder="Tu nombre…" maxlength="24" style="text-align:center;margin:8px 0;width:100%">'
-    + '<div class="q-actions" style="justify-content:center"><button class="btn" id="obGo" style="font-size:1rem">🚀 ¡Comenzar!</button></div></div>');
+  let chosenColor = S.accentColor || '';
+  const COLORS = [
+    {v:'',        c:'#2a78d6', n:'Azul'},   {v:'#1baf7a', c:'#1baf7a', n:'Verde'},
+    {v:'#4a3aa7', c:'#4a3aa7', n:'Morado'}, {v:'#e34948', c:'#e34948', n:'Rojo'},
+    {v:'#eb6834', c:'#eb6834', n:'Naranja'},{v:'#d55181', c:'#d55181', n:'Rosa'}
+  ];
+  const o = openModal('<div style="text-align:center"><div style="font-size:44px">🛡️</div>'
+    + '<h2 style="margin:.2em 0 .1em">¡Bienvenido a ActuarIQ!</h2>'
+    + '<p style="color:var(--ink2);font-size:.88rem;margin-top:0">Tu plataforma de estudio del cuatrimestre. Personalízala en 20 segundos:</p></div>'
+    + '<label class="fld">🙋 Tu nombre completo<input class="ainput" id="obName" placeholder="Nombre y apellido…" maxlength="30"></label>'
+    + '<div class="fld">😀 Tu avatar (desbloquearás más al subir de nivel)'
+    + '<div class="avatar-pick" id="obAv" style="justify-content:flex-start">'
+    + AVATARS.slice(0,4).map(a=>'<button class="av'+(a===chosen?' on':'')+'" data-av="'+a+'">'+a+'</button>').join('')+'</div></div>'
+    + '<label class="fld">📚 ¿Qué materia quieres estudiar primero?<select class="ainput" id="obSubj">'
+    + SUBJECTS.map(s=>'<option value="'+s.id+'"'+(s.id===S.activeSubject?' selected':'')+'>'+s.icon+' '+esc(s.name)+(s.soon?' · en preparación':'')+'</option>').join('')
+    + '</select></label>'
+    + '<label class="fld">🎯 Tu meta diaria de XP<select class="ainput" id="obGoal">'
+    + [25,50,75,100].map(g=>'<option value="'+g+'"'+(g===50?' selected':'')+'>'+g+' XP al día'+(g===50?' (recomendado)':'')+'</option>').join('')
+    + '</select></label>'
+    + '<div class="fld">🎨 Tu color favorito<div class="color-swatches" id="obColors">'
+    + COLORS.map(c=>'<button class="sw'+(c.v===chosenColor?' on':'')+'" data-c="'+esc(c.v)+'" title="'+c.n+'" aria-label="'+c.n+'" style="background:'+c.c+'"></button>').join('')
+    + '</div></div>'
+    + '<p class="q-help">Tu progreso, XP, insignias y recompensas se guardan en este navegador.</p>'
+    + '<div class="q-actions" style="justify-content:center"><button class="btn" id="obGo" style="font-size:1.02rem;padding:12px 34px">🚀 ¡Comenzar!</button></div>');
   o.querySelectorAll('#obAv .av').forEach(b => b.addEventListener('click', () => {
     chosen = b.dataset.av;
     o.querySelectorAll('#obAv .av').forEach(x => x.classList.toggle('on', x === b));
+    sfx('flip');
+  }));
+  o.querySelectorAll('#obColors .sw').forEach(b => b.addEventListener('click', () => {
+    chosenColor = b.dataset.c;
+    o.querySelectorAll('#obColors .sw').forEach(x => x.classList.toggle('on', x === b));
+    S.accentColor = chosenColor || null; applyTheme();   // vista previa inmediata
     sfx('flip');
   }));
   const go = () => {
@@ -4069,8 +4608,14 @@ function showOnboarding(){
     const nm = o.querySelector('#obName').value.trim();
     if(nm) p.name = nm;
     p.avatar = chosen;
+    if(!p.quarter) p.quarter = '6.º';
+    S.xpGoal = +o.querySelector('#obGoal').value || 50;
+    S.accentColor = chosenColor || null;
     PROFILES.onboarded = true; saveProfiles();
-    closeModal(); renderHeader(); renderHome();
+    save(); applyTheme();
+    const subjSel = o.querySelector('#obSubj').value;
+    closeModal(); renderHeader();
+    if(subjSel !== S.activeSubject) switchSubject(subjSel); else renderHome();
     toast('👤 ¡Perfil listo, '+esc(p.name)+'! Mucho éxito 🍀'); sfx('unlock');
   };
   o.querySelector('#obGo').addEventListener('click', go);
@@ -4079,6 +4624,7 @@ function showOnboarding(){
 
 /* ==================== Arranque ==================== */
 applyTheme();
+applyLogo();
 renderHeader();
 renderHome();
 showView('home');
