@@ -411,6 +411,38 @@ header.top{
 .blitz-timer.low{border-color:var(--bad); animation:pulse 1s infinite}
 .blitz-bonus{height:24px; font-weight:800; font-size:.9rem; color:var(--good-text); margin-bottom:2px}
 .blitz-bonus.pop-anim{animation:pop .5s ease}
+/* ============ Tienda de recompensas ============ */
+.pbar{flex:1; height:7px; border-radius:99px; background:var(--surface3); overflow:hidden}
+.pbar i{display:block; height:100%; background:var(--accent); border-radius:99px; transition:width .5s}
+.reward-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(118px,1fr)); gap:10px}
+.reward-card{background:var(--surface2); border:1px solid var(--line); border-radius:var(--radius-s); padding:12px 8px; text-align:center; display:flex; flex-direction:column; align-items:center; gap:6px}
+.reward-card.unlocked{border-color:var(--accent)}
+.rw-ico{font-size:28px}
+.rw-name{font-size:.78rem; font-weight:700; min-height:2.1em; line-height:1.2}
+.rw-lock{width:100%; display:flex; flex-direction:column; gap:4px; align-items:center}
+.rw-lock .pbar{width:100%}
+.rw-lock small{color:var(--muted); font-size:.68rem}
+/* ============ Leaderboard ============ */
+.lb-controls{display:flex; gap:10px; flex-wrap:wrap; margin-bottom:12px}
+.lb-controls .ainput{max-width:220px}
+.lb-table tr.first td{background:color-mix(in srgb, var(--gold) 14%, var(--surface)); font-weight:800}
+.lb-table tr.me td{background:color-mix(in srgb, var(--accent) 9%, var(--surface))}
+.lb-medal{font-size:1.05rem}
+.lb-av{font-size:20px; line-height:1}
+.lb-motiv{margin:10px 0 0; padding:10px 14px; border-radius:var(--radius-s); background:var(--surface2); font-size:.88rem; font-weight:700; color:var(--ink2)}
+/* ============ Revisión de respuestas ============ */
+.rv-item{background:var(--surface); border:1px solid var(--line); border-left:4px solid var(--line); border-radius:var(--radius-s); padding:14px 16px; margin-bottom:10px}
+.rv-item.ok{border-left-color:var(--good)}
+.rv-item.bad{border-left-color:var(--bad)}
+.rv-head{display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:6px}
+.rv-tag{font-size:.72rem; font-weight:800; padding:3px 10px; border-radius:99px}
+.rv-tag.ok{background:var(--good-soft); color:var(--good-text)}
+.rv-tag.bad{background:var(--bad-soft); color:var(--bad-text)}
+.rv-meta{font-size:.74rem; color:var(--muted); font-weight:700; text-transform:uppercase; letter-spacing:.04em}
+.rv-q{font-weight:700; margin-bottom:8px}
+.rv-line{font-size:.86rem; color:var(--ink2); margin-top:4px}
+.rv-steps{margin-top:8px; font-size:.86rem}
+.rv-steps summary{cursor:pointer; font-weight:700; color:var(--accent)}
 /* ============ Modal / toast / confetti ============ */
 .overlay{position:fixed; inset:0; background:rgba(9,9,12,.55); z-index:90; display:grid; place-items:center; padding:20px; animation:fadeIn .25s ease both}
 .modal{background:var(--surface); border-radius:20px; max-width:520px; width:100%; padding:28px; box-shadow:var(--shadow); animation:pop .35s cubic-bezier(.22,1.3,.36,1) both; max-height:86vh; overflow:auto}
@@ -518,6 +550,7 @@ select.ainput{appearance:auto}
   </div>
   <span class="chip streak" title="Racha de días de estudio"><span class="icon">🔥</span><b id="streakTxt">0</b></span>
   <button class="iconbtn" id="btnProfile" title="Mi perfil y configuración">🎓</button>
+  <button class="iconbtn" id="btnBoard" title="Leaderboard del grupo">🏆</button>
   <button class="iconbtn" id="btnStats" title="Panel de estadísticas">📊</button>
   <button class="iconbtn" id="btnGuide" title="Guía de estudio (imprimir / PDF)">🖨️</button>
   <button class="iconbtn" id="btnSound" aria-pressed="true" title="Sonido">🔊</button>
@@ -654,6 +687,15 @@ select.ainput{appearance:auto}
     <div id="sdHost" style="margin-top:14px"></div>
   </section>
 
+  <!-- ================= VISTA: LEADERBOARD ================= -->
+  <section id="view-board" class="hidden">
+    <div class="session-top">
+      <button class="btn ghost small back" data-nav="home">← Salir</button>
+      <span class="qcount">🏆 Leaderboard</span>
+    </div>
+    <div id="boardBody"></div>
+  </section>
+
   <!-- ================= VISTA: ESTADÍSTICAS ================= -->
   <section id="view-stats" class="hidden">
     <div class="session-top">
@@ -696,6 +738,7 @@ select.ainput{appearance:auto}
 
 <div id="modalHost"></div>
 <div id="toasts"></div>
+<audio id="sfxFallback" preload="auto" src="data:audio/wav;base64,UklGRsQFAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YaAFAACAgYWJi4iAdWpjY2x9kqSvrp+FZ0w9P1N2nsHV0rmOXTEYGjdqptr5+dWbWiMEBSdgodr6+9ujYigGAyFYmdT4/eCrai4IAhxRkc71/uWycjULARdJisfy/+q5eTsPABNCgsDu/+7AgkITAA87ebnq//LHikkXAQs1crLl/vXOkVEcAgguaqvg/fjUmVghAwYoYqPb+/raoWAnBQQjWpvV+fzfqWgtCAIdUpPP9v7ksHAzCgEYS4vJ8//puHc5DgAURITC7//tv4BAEgAQPXu76//xxohHFgAMNnS05/71zI9PGwEJMGyt4v330pdWIAMGKmSl3Pv62J9eJQUEJFyd1/n83qdmKwcCH1SV0ff9465uMQoBGk2NyvT+6LZ1OA0AFUaGxPD/7L19PxEAET99vez/8MSGRhUADTh1tuj+9MqNTRoBCjFuruP999GVVB8CBytmp978+dedXCQEBSVen9j6+9ylZCoGAyBWl9L3/eKtbDAJARtPj8z1/ue0dDYMABZHiMbx/+u7ez0QABJAf7/t/+/ChEQUAA45d7jp//PJi0sYAQozcLDk/vbPk1IdAggtaKnf/PnVm1ojBAUnYKHa+vvbo2IoBgMhWJnU+P3gq2ouCAIcUZHO9f7lsnI1CwEXSYrH8v/quXk7DwATQoLA7v/uwIJCEwAPO3m56v/yx4pJFwELNXKy5f71zpFRHAIILmqr4P341JlYIQMGKGKj2/v62qFgJwUEI1qb1fn836loLQgCHVKTz/b+5LBwMwoBGEuLyfP/6bh3OQ4AFESEwu//7b+AQBIAED17u+v/8caIRxYADDZ0tOf+9cyPTxsBCTBsreL999KXViADBipkpdz7+tifXiUFBCRcndf5/N6nZisHAh9UldH3/eOubjEKARpNjcr0/ui2dTgNABVGhsTw/+y9fT8RABE/fb3s//DEhkYVAA04dbbo/vTKjU0aAQoxbq7j/ffRlVQfAgcrZqfe/PnXnVwkBAUlXp/Y+vvcpWQqBgMgVpfS9/3irWwwCQEbT4/M9f7ntHQ2DAAWR4jG8f/ru3s9EAASQH+/7f/vwoREFAAOOXe46f/zyYtLGAEKM3Cw5P72z5NSHQIILWip3/z51ZtaIwQFJ2Ch2vr726NiKAYDIViZ1Pj94KtqLggCHFGRzvX+5bJyNQsBF0mKx/L/6rl5Ow8AE0KCwO7/7sCCQhMADzt5uer/8seKSRcBCzVysuX+9c6RURwCCC5qq+D9+NSZWCEDBihio9v7+tqhYCcFBCNam9X5/N+paC0IAh1Sk8/2/uSwcDMKARhLi8nz/+m4dzkOABREhMLv/+2/gEASABA9e7vr//HGiEcWAAw2dLTn/vXMj08bAQkwbK3i/ffSl1YgAwYqZKXc+vjXn18oCAgnXZzT9PbZpWcwDgolV5TL7vTbq284FAwjUozD6PHdsHdAGhAiTYW74e7dtH5IIRMiSX6z2+rduIRQKBciRXer1Obdu4tXLxwjQnGkzeHcvpBeNiAkQGydxtzawJVlPCUmPmeWv9fYwZpsQysoPWOQuNLVwp5ySjArPV+KsszSw6F4UDYuPVyFq8fPwqR9VzsyPVl/pcHLwaeCXUE2Pld7n7vHwKiGY0c6QFZ3mrXDvqqKaEw/QlVzlLC+vKqNbVJDRFVwkKq6uqqQcldIR1Vui6W1t6qSdl1NSlVsh6Cws6mUemJRTVdqg5ursKiVfWZWUVhpgJenrKaWgGtbVVppfpKiqKSWg29fWVxpe46dpKGWhXJkXV9qeouZoJ+VhnZoYWJreIiVnJuUh3lsZWVseIWRmJiSh3twaWlueIONlJWQh31zbWxweIGKkJGOh353cXBzeICHjI2LhoB5dXR1en+EiImIhYB8eXh5e3+ChYaFg4B+fHt8fX+BgYKBgYB/f38="></audio>
 <div id="printGuide"></div>
 
 <script>
@@ -721,7 +764,7 @@ const clamp = (n,a,b) => Math.max(a,Math.min(b,n));
 const PKEY = 'actuariq_profiles_v1';
 const DEFAULT_STATE = () => ({
   xp:0, sound:true, theme:null,
-  streak:0, lastDay:null, totalTime:0, bestBlitz:0, bestBlitzCombo:0, bestSudden:0,
+  streak:0, lastDay:null, totalTime:0, bestBlitz:0, bestBlitzCombo:0, bestSudden:0, totalAnswered:0,
   examDay:null, examHistory:[],   // examen diario: {t, score, sec}
   stepsOnOk:false, confetti:true,
   bigText:false, reduceMotion:false, xpGoal:50, guideProgressive:true, avatarBeta:true,
@@ -730,7 +773,14 @@ const DEFAULT_STATE = () => ({
   history:[],           // {t, mod, score, xp, sec}
   concepts:{},          // topic -> {ok, bad}
   badges:[],            // ids de insignias ganadas
-  gameModes:{exam:true, flash:true, blitz:true, sudden:true, review:true} // modos de juego activos en el inicio
+  gameModes:{exam:true, flash:true, blitz:true, sudden:true, review:true}, // modos de juego activos en el inicio
+  unlockedRewards:[],   // ids de recompensas de la tienda ya desbloqueadas
+  rewardLog:[],          // [{id, t}] historial de desbloqueos recientes
+  equip:{frame:null, bg:null, acc:null, title:null}, // recompensas equipadas actualmente
+  accentColor:null,     // color principal personalizado (hex) o null = por defecto
+  soundVolume:0.7,      // volumen de los efectos de sonido (0-1)
+  lbGroup:'',           // grupo/salón para el leaderboard
+  lbRank:null           // última posición conocida en el leaderboard (para detectar "subiste de rango")
 });
 let PROFILES;
 try { PROFILES = JSON.parse(localStorage.getItem(PKEY) || 'null'); } catch(e){ PROFILES = null; }
@@ -797,29 +847,61 @@ function trackConcept(topic, ok){
   ok ? c.ok++ : c.bad++;
 }
 
-/* ==================== Sonido (WebAudio, opcional) ==================== */
-let AC = null;
+/* ==================== Sonido (WebAudio con fallback <audio>) ==================== */
+let AC = null, audioBlocked = false;
+const SFX_NOTES = {
+  click:  [[440,.05,.03,'sine']],
+  ok:     [[523,.09,.05,'sine'],[784,.12,.06,'sine',.09]],
+  bad:    [[196,.18,.08,'square']],
+  flip:   [[330,.06,.03,'triangle']],
+  unlock: [[523,.1,.05,'sine'],[659,.1,.05,'sine',.1],[784,.14,.06,'sine',.2],[1047,.2,.07,'sine',.3]],
+  win:    [[523,.12,.06,'sine'],[659,.12,.06,'sine',.12],[784,.2,.07,'sine',.24]]
+};
+function getAC(){
+  if(AC) return AC;
+  const Ctx = window.AudioContext || window.webkitAudioContext;
+  if(!Ctx) return null;
+  try{ AC = new Ctx(); }catch(e){ AC = null; }
+  return AC;
+}
+/* Debe llamarse desde un gesto del usuario (clic) para desbloquear el audio en navegadores restrictivos. */
+function primeAudio(){
+  try{
+    const ctx = getAC();
+    if(!ctx){ audioBlocked = true; return false; }
+    if(ctx.state === 'suspended') ctx.resume();
+    audioBlocked = (ctx.state === 'suspended');
+    if(!audioBlocked) sfx('ok');
+    return !audioBlocked;
+  }catch(e){ audioBlocked = true; return false; }
+}
+function fallbackBeep(){
+  try{
+    const el = $('#sfxFallback');
+    if(!el) return;
+    el.volume = clamp(S.soundVolume!=null ? S.soundVolume : 0.7, 0, 1);
+    el.currentTime = 0;
+    el.play().catch(()=>{ audioBlocked = true; });
+  }catch(e){}
+}
 function sfx(kind){
   if(!S.sound) return;
+  const vol = clamp(S.soundVolume!=null ? S.soundVolume : 0.7, 0, 1);
+  if(vol <= 0) return;
   try{
-    AC = AC || new (window.AudioContext||window.webkitAudioContext)();
-    if(AC.state==='suspended') AC.resume();
-    const notes = {
-      click:  [[440,.05,.03,'sine']],
-      ok:     [[523,.09,.05,'sine'],[784,.12,.06,'sine',.09]],
-      bad:    [[196,.18,.08,'square']],
-      flip:   [[330,.06,.03,'triangle']],
-      unlock: [[523,.1,.05,'sine'],[659,.1,.05,'sine',.1],[784,.14,.06,'sine',.2],[1047,.2,.07,'sine',.3]],
-      win:    [[523,.12,.06,'sine'],[659,.12,.06,'sine',.12],[784,.2,.07,'sine',.24]]
-    }[kind] || [];
+    const ctx = getAC();
+    if(!ctx){ fallbackBeep(); return; }
+    if(ctx.state==='suspended'){ ctx.resume(); }
+    const notes = SFX_NOTES[kind] || [];
+    if(!notes.length) return;
     notes.forEach(([f,dur,gain,type,delay])=>{
-      const t = AC.currentTime + (delay||0);
-      const o = AC.createOscillator(), g = AC.createGain();
+      const t = ctx.currentTime + (delay||0);
+      const o = ctx.createOscillator(), g = ctx.createGain();
       o.type = type; o.frequency.value = f;
-      g.gain.setValueAtTime(gain, t); g.gain.exponentialRampToValueAtTime(.0001, t+dur);
-      o.connect(g); g.connect(AC.destination); o.start(t); o.stop(t+dur+.02);
+      g.gain.setValueAtTime(gain*vol, t); g.gain.exponentialRampToValueAtTime(.0001, t+dur);
+      o.connect(g); g.connect(ctx.destination); o.start(t); o.stop(t+dur+.02);
     });
-  }catch(e){}
+  }catch(e){ audioBlocked = true; fallbackBeep(); }
 }
 
 /* ==================== Tema ==================== */
@@ -830,6 +912,9 @@ function applyTheme(){
   $('#btnTheme').textContent = dark ? '☀️' : '🌙';
   root.classList.toggle('big-text', !!S.bigText);
   root.classList.toggle('less-motion', !!S.reduceMotion);
+  // color principal personalizado (se limpia al elegir el predeterminado)
+  if(S.accentColor){ root.style.setProperty('--accent', S.accentColor); root.style.setProperty('--accent-strong', S.accentColor); }
+  else { root.style.removeProperty('--accent'); root.style.removeProperty('--accent-strong'); }
 }
 $('#btnTheme').addEventListener('click', ()=>{
   const dark = S.theme==='dark' || (!S.theme && matchMedia('(prefers-color-scheme: dark)').matches);
@@ -915,7 +1000,7 @@ const TIPS = [
 ];
 
 /* ==================== Navegación ==================== */
-const VIEWS = ['home','lesson','session','result','memo','escape','flash','blitz','sudden','stats','guide','profile','levels'];
+const VIEWS = ['home','lesson','session','result','memo','escape','flash','blitz','sudden','board','stats','guide','profile','levels'];
 let sessionTimer = null, memoTimerInt = null, blitzInt = null;
 function showView(name){
   VIEWS.forEach(v => $('#view-'+v).classList.toggle('hidden', v!==name));
@@ -962,7 +1047,8 @@ function renderHome(){
     tile('📈','Promedio', Math.round(o.avg), '%', S.history.length+' actividades') +
     tile('⏱️','Tiempo de estudio', fmtDur(S.totalTime), '', 'acumulado') +
     tile('⚡','XP total', S.xp, '', 'Nivel '+levelInfo().lvl+' · '+currentTitle()) +
-    tile('📅','Objetivo de hoy', dayXp+'<span class="unit">/'+goal+' XP</span>', '', dayXp>=goal ? '¡Cumplido! ✅' : 'ajústalo en tu perfil');
+    tile('📅','Objetivo de hoy', dayXp+'<span class="unit">/'+goal+' XP</span>', '', dayXp>=goal ? '¡Cumplido! ✅' : 'ajústalo en tu perfil') +
+    tile('🔥','Racha diaria', S.streak, S.streak===1?' día':' días', S.lastDay===todayKey() ? '¡Ya estudiaste hoy! ✅' : '⚠️ Estudia hoy para mantenerla');
   $('#modMeta').textContent = o.done+' / '+o.total+' completados · se desbloquea con ≥ 80%';
   // saludo según avance, personalizado con el perfil
   const pname = activeProfile().name.split(' ')[0];
@@ -1059,15 +1145,19 @@ function renderQ(){
   host.appendChild(card);
   RENDER[q.type](q, card);
 }
+/* Dificultad estimada según el tipo de pregunta */
+const qDifficulty = q => q.type==='numeric' ? 'Difícil' : (q.type==='mc'||q.type==='tf') ? 'Fácil' : 'Media';
 /* Cierra la pregunta: frac ∈ [0,1] */
 function settle(q, frac, detailHtml){
   frac = clamp(frac, 0, 1);
   SES.pts += frac;
   const ok = frac >= 0.99;
   trackConcept(q.topic, frac >= 0.75);
+  S.totalAnswered = (S.totalAnswered||0) + 1;
   const xp = Math.round(12*frac);
   SES.xp += xp;
-  SES.recap.push({ ok, frac, prompt: q.plain || q.prompt.replace(/<[^>]*>/g,''), note: (SES.exam || !ok) ? (q.correctText||'') : '' });
+  SES.recap.push({ ok, frac, prompt: q.plain || q.prompt.replace(/<[^>]*>/g,''), note: (SES.exam || !ok) ? (q.correctText||'') : '',
+    topic: q.topic||'', diff: qDifficulty(q), chosen: q._chosen||'', explain: q.explain||'', steps: q.steps||null, correct: q.correctText||'' });
   if(SES.exam){
     // modo examen: no se revela la respuesta hasta el final
     sfx('flip');
@@ -1127,7 +1217,7 @@ function recordResult(id, score, xpEarned, sec, recap){
   if(S.history.length > 80) S.history.length = 80;
   let bonus = passed ? 30 : 0; if(score===100) bonus += 20;
   addXP(xpEarned + bonus);
-  save(); checkBadges(); renderHeader();
+  save(); checkBadges(); checkRewards(); renderHeader();
   const unlockedNext = nextWasLocked && isUnlocked(id+1);
   renderResult(m, score, stars, xpEarned+bonus, sec, recap, passed, unlockedNext);
   if(passed){ sfx('win'); confetti(score===100 ? 120 : 70); } else sfx('bad');
@@ -1157,14 +1247,10 @@ function renderResult(m, score, stars, xp, sec, recap, passed, unlockedNext){
     + '<button class="btn'+(passed?' ghost':'')+'" id="rRetry">🔄 Reintentar</button>'
     + (passed && m.id+1 < MODULES.length && isUnlocked(m.id+1) ? '<button class="btn good" id="rNext">Siguiente módulo →</button>' : '')
     + '</div></div>';
-  if(recap.length){
-    html += '<div class="recap"><div class="section-h"><h2 style="font-size:1rem">📋 Repaso de la sesión</h2><span class="line"></span></div>'
-      + recap.map(r=>'<div class="recap-item '+(r.ok?'ok':'bad')+'"><span class="ri-ico">'+(r.ok?'✔':'✘')+'</span>'
-        + '<span>'+esc(r.prompt).slice(0,160)+(r.note?'<br><b style="font-size:.78rem">Correcto: '+r.note+'</b>':'')+'</span></div>').join('')
-      + '</div>';
-  }
+  if(recap.length) html += reviewSectionHTML(recap, '📋 Repaso de la sesión');
   $('#view-result').innerHTML = html;
   showView('result');
+  if(recap.length) bindReview();
   $('#rHome').onclick = ()=>{ sfx('click'); goHome(); };
   $('#rRetry').onclick = ()=>{ sfx('click'); openModule(m.id); };
   const nx = $('#rNext'); if(nx) nx.onclick = ()=>{ sfx('click'); openModule(m.id+1); };
@@ -1183,6 +1269,7 @@ RENDER.mc = (q, card) => {
     b.innerHTML = '<span class="key">'+KEYS[i]+'</span><span>'+op.t+'</span>';
     b.onclick = () => {
       wrap.querySelectorAll('.opt').forEach(o => o.disabled = true);
+      q._chosen = op.t.replace(/<[^>]*>/g,'');
       if(SES && SES.exam){ b.classList.add('sel'); }
       else {
         q.options.forEach((o2, j) => { if(o2.ok) wrap.children[j].classList.add('correct'); });
@@ -1202,6 +1289,7 @@ RENDER.tf = (q, card) => {
     const b = document.createElement('button'); b.className = 'opt'; b.textContent = label;
     b.onclick = () => {
       wrap.querySelectorAll('.opt').forEach(o => o.disabled = true);
+      q._chosen = label;
       const ok = val === q.answer;
       if(SES && SES.exam){ b.classList.add('sel'); }
       else {
@@ -1225,6 +1313,7 @@ RENDER.fill = (q, card) => {
   const inp = row.querySelector('input'); inp.focus();
   const go = () => {
     if(!inp.value.trim()) return;
+    q._chosen = inp.value.trim();
     const ok = q.accept.map(normTxt).includes(normTxt(inp.value));
     inp.disabled = true; btn.disabled = true;
     if(!(SES && SES.exam)) inp.classList.add(ok ? 'ok' : 'err');
@@ -1248,6 +1337,7 @@ RENDER.numeric = (q, card) => {
     const raw = inp.value.replace(/\$|\s/g,'').replace(/,/g,'');
     if(raw === '' || isNaN(+raw)) { inp.classList.add('err'); setTimeout(()=>inp.classList.remove('err'), 500); return; }
     const val = +raw;
+    q._chosen = (q.unit==='$'?'$':'') + val.toLocaleString('es-MX');
     const tol = q.tol != null ? q.tol : Math.max(0.01, Math.abs(q.answer)*0.005);
     const ok = Math.abs(val - q.answer) <= tol;
     inp.disabled = true; btn.disabled = true;
@@ -1505,6 +1595,7 @@ RENDER.formula = (q, card) => {
   const inp = row.querySelector('input'); inp.focus();
   const go = () => {
     if(!inp.value.trim()) return;
+    q._chosen = inp.value.trim();
     const norm = normFormula(inp.value);
     const ok = q.accept.includes(norm);
     inp.disabled = true; btn.disabled = true;
@@ -2498,7 +2589,7 @@ function blitzNext(){
     const b = document.createElement('button'); b.className = 'opt'; b.innerHTML = '<span>'+op.t+'</span>';
     b.onclick = () => {
       if(!BL) return;
-      BL.total++;
+      BL.total++; S.totalAnswered = (S.totalAnswered||0) + 1;
       wrap.querySelectorAll('.opt').forEach(o => o.disabled = true);
       if(op.ok){
         BL.ok++; BL.combo++;
@@ -2534,7 +2625,7 @@ function endBlitz(){
   const xp = res.ok*4 + res.bestCombo*2;
   if(res.ok > S.bestBlitz) S.bestBlitz = res.ok;
   if(res.bestCombo > (S.bestBlitzCombo||0)) S.bestBlitzCombo = res.bestCombo;
-  addXP(xp); S.totalTime += 60; save(); touchStreak(); checkBadges(); renderHeader();
+  addXP(xp); S.totalTime += 60; save(); touchStreak(); checkBadges(); checkRewards(); renderHeader();
   sfx(res.ok >= 8 ? 'win' : 'bad');
   if(res.ok >= 10) confetti(60);
   const o = openModal('<div style="text-align:center"><div style="font-size:48px">⚡</div>'
@@ -2566,6 +2657,7 @@ function suddenNext(){
     const b = document.createElement('button'); b.className = 'opt'; b.innerHTML = '<span>'+op.t+'</span>';
     b.onclick = () => {
       if(!SD) return;
+      S.totalAnswered = (S.totalAnswered||0) + 1;
       wrap.querySelectorAll('.opt').forEach(o => o.disabled = true);
       if(op.ok){
         SD.combo++;
@@ -2587,7 +2679,7 @@ function endSudden(){
   const res = SD; SD = null;
   const xp = res.best*3;
   if(res.best > (S.bestSudden||0)) S.bestSudden = res.best;
-  addXP(xp); save(); touchStreak(); checkBadges(); renderHeader();
+  addXP(xp); save(); touchStreak(); checkBadges(); checkRewards(); renderHeader();
   sfx(res.best >= 10 ? 'win' : 'bad');
   if(res.best >= 15) confetti(80);
   const o = openModal('<div style="text-align:center"><div style="font-size:48px">💀</div>'
@@ -2619,7 +2711,7 @@ function finishReview(){
   S.totalTime += sec;
   const bonus = score===100 ? 15 : 0;
   addXP(xpEarned + bonus);
-  save(); checkBadges(); renderHeader();
+  save(); checkBadges(); checkRewards(); renderHeader();
   renderReviewResult(score, xpEarned+bonus, sec, recap);
   if(score>=80){ sfx('win'); confetti(50); } else sfx('bad');
 }
@@ -2643,18 +2735,199 @@ function renderReviewResult(score, xp, sec, recap){
     + '<button class="btn ghost" id="rHome">🏠 Inicio</button>'
     + '<button class="btn" id="rAgain">🔄 Otro repaso</button>'
     + '</div></div>';
-  if(recap.length){
-    html += '<div class="recap"><div class="section-h"><h2 style="font-size:1rem">📋 Repaso de la sesión</h2><span class="line"></span></div>'
-      + recap.map(r=>'<div class="recap-item '+(r.ok?'ok':'bad')+'"><span class="ri-ico">'+(r.ok?'✔':'✘')+'</span>'
-        + '<span>'+esc(r.prompt).slice(0,160)+(r.note?'<br><b style="font-size:.78rem">Correcto: '+r.note+'</b>':'')+'</span></div>').join('')
-      + '</div>';
-  }
+  if(recap.length) html += reviewSectionHTML(recap, '📋 Repaso de la sesión');
   $('#view-result').innerHTML = html;
   showView('result');
+  if(recap.length) bindReview();
   $('#rHome').onclick = ()=>{ sfx('click'); goHome(); };
   $('#rAgain').onclick = ()=>{ sfx('click'); startReview(); };
 }
 $('#btnReview').addEventListener('click', () => { sfx('click'); startReview(); });
+
+/* ==================== Leaderboard ==================== */
+/* La tabla vive en localStorage a nivel del dispositivo (compartida entre perfiles).
+   El perfil activo sincroniza su fila con su progreso real; el resto de filas se
+   alimenta con el panel de administrador o importando un JSON del profesor. */
+const LBKEY = 'actuariq_leaderboard_v1';
+let lbFilterQ = '', lbFilterGroup = '', lbAdminOn = false, lbEditId = null;
+function lbLoad(){
+  try{ const b = JSON.parse(localStorage.getItem(LBKEY)||'null'); return (b && Array.isArray(b.students)) ? b : {students:[]}; }
+  catch(e){ return {students:[]}; }
+}
+function lbSave(b){ b.updated = Date.now(); try{ localStorage.setItem(LBKEY, JSON.stringify(b)); }catch(e){} }
+function lbSyncSelf(){
+  const b = lbLoad();
+  const p = activeProfile();
+  let ent = b.students.find(s => s.pid === PROFILES.active);
+  if(!ent){ ent = {pid:PROFILES.active}; b.students.push(ent); }
+  ent.name = p.name; ent.avatar = p.avatar; ent.group = S.lbGroup || '';
+  ent.xp = S.xp; ent.lvl = levelInfo().lvl;
+  ent.mods = Object.values(S.modules).filter(m=>m.done).length;
+  ent.streak = S.streak; ent.updated = Date.now();
+  lbSave(b);
+  return b;
+}
+function lbRanked(b){ return [...b.students].sort((a,x)=>(x.xp||0)-(a.xp||0)); }
+function lbIsAdmin(){ return activeProfile().name.trim().toLowerCase() === 'oliver'; }
+function lbMotivation(pos, total){
+  if(!pos) return '🎯 Aparece en la tabla completando actividades para ganar XP.';
+  if(pos===1) return '👑 ¡Eres el número 1! Defiende tu corona con la racha diaria.';
+  if(pos<=3) return '🥈 ¡Estás en el podio! El primer lugar está a unos cuantos XP.';
+  if(pos <= Math.ceil(total/2)) return '💪 Vas en la parte alta de la tabla. ¡Sigue sumando XP!';
+  return '🚀 Cada actividad suma XP. ¡Tú puedes escalar posiciones!';
+}
+function renderBoard(){
+  const b = lbSyncSelf();
+  const ranked = lbRanked(b);
+  const myPos = ranked.findIndex(s => s.pid === PROFILES.active) + 1;
+  // aviso de "subiste de rango" comparando con la última posición conocida
+  if(myPos && S.lbRank && myPos < S.lbRank){ toast('📈 ¡Subiste de rango! Ahora eres #'+myPos); confetti(45); sfx('unlock'); }
+  if(myPos && myPos !== S.lbRank){ S.lbRank = myPos; save(); }
+  const groups = [...new Set(b.students.map(s=>s.group).filter(Boolean))].sort();
+  const medal = i => i===0?'🥇':i===1?'🥈':i===2?'🥉':'';
+  const visible = ranked.filter(s =>
+    (!lbFilterGroup || s.group === lbFilterGroup) &&
+    (!lbFilterQ || (s.name||'').toLowerCase().includes(lbFilterQ.toLowerCase())));
+  let html = '<div class="panel">'
+    + '<div class="lb-controls">'
+    + '<input class="ainput" id="lbSearch" placeholder="🔎 Buscar por nombre…" value="'+esc(lbFilterQ)+'">'
+    + '<select class="ainput" id="lbGroupSel"><option value="">Todos los grupos</option>'
+    + groups.map(g=>'<option value="'+esc(g)+'"'+(g===lbFilterGroup?' selected':'')+'>'+esc(g)+'</option>').join('')
+    + '</select>'
+    + '<input class="ainput" id="lbMyGroup" placeholder="Mi grupo/salón (opcional)" maxlength="20" value="'+esc(S.lbGroup||'')+'">'
+    + '</div>'
+    + '<table class="hist-table lb-table"><tr><th>#</th><th></th><th>Estudiante</th><th class="num">XP</th><th class="num">Nivel</th><th class="num">Módulos</th><th class="num">Racha</th><th>Actualizado</th>'+(lbAdminOn?'<th></th>':'')+'</tr>'
+    + (visible.length ? visible.map(s => {
+        const rank = ranked.indexOf(s);
+        return '<tr class="'+(rank===0?'first ':'')+(s.pid===PROFILES.active?'me':'')+'">'
+          + '<td>'+(rank+1)+' <span class="lb-medal">'+medal(rank)+'</span></td>'
+          + '<td><span class="lb-av">'+(s.avatar||'🎓')+'</span></td>'
+          + '<td>'+esc(s.name||'—')+(s.group?' <small style="color:var(--muted)">('+esc(s.group)+')</small>':'')+'</td>'
+          + '<td class="num"><b>'+(s.xp||0).toLocaleString()+'</b></td>'
+          + '<td class="num">'+(s.lvl||1)+'</td>'
+          + '<td class="num">'+(s.mods||0)+'</td>'
+          + '<td class="num">'+(s.streak||0)+' 🔥</td>'
+          + '<td>'+(s.updated?fmtDate(s.updated):'—')+'</td>'
+          + (lbAdminOn ? '<td><button class="btn ghost small" data-lbedit="'+esc(s.pid)+'">✏️</button> <button class="btn ghost small" data-lbdel="'+esc(s.pid)+'">🗑️</button></td>' : '')
+          + '</tr>';
+      }).join('') : '<tr><td colspan="9" style="color:var(--muted)">Sin estudiantes que coincidan con el filtro.</td></tr>')
+    + '</table>'
+    + '<p class="lb-motiv">'+lbMotivation(myPos, ranked.length)+'</p>'
+    + '<div class="q-actions" style="justify-content:flex-start;flex-wrap:wrap;margin-top:12px">'
+    + '<button class="btn ghost small" id="lbExport">⬇️ Exportar JSON</button>'
+    + '<button class="btn ghost small" id="lbImport">⬆️ Importar JSON</button>'
+    + '<input type="file" id="lbImportFile" accept=".json,application/json" class="hidden">'
+    + '</div></div>';
+  // — Panel de administrador (visible solo para el perfil "Oliver") —
+  if(lbIsAdmin()){
+    const editing = lbEditId ? b.students.find(s=>s.pid===lbEditId) : null;
+    html += '<div class="panel" style="margin-top:16px"><h3>🛠️ Panel de administrador</h3>'
+      + '<div class="q-actions" style="justify-content:flex-start;flex-wrap:wrap">'
+      + '<button class="btn small'+(lbAdminOn?'':' ghost')+'" id="lbAdminToggle">'+(lbAdminOn?'🟢 Modo administrador: ON':'⚪ Modo administrador: OFF')+'</button>'
+      + '<input class="ainput" id="lbAdminPass" type="password" placeholder="Contraseña local (visual)" style="max-width:220px">'
+      + '</div>'
+      + (lbAdminOn ?
+        '<hr style="border:none;border-top:1px solid var(--line);margin:14px 0">'
+        + '<h4 style="margin:0 0 8px">'+(editing?'✏️ Editar a '+esc(editing.name):'➕ Agregar estudiante')+'</h4>'
+        + '<div class="lb-controls">'
+        + '<input class="ainput" id="lbfName" placeholder="Nombre" maxlength="24" value="'+esc(editing?editing.name:'')+'">'
+        + '<input class="ainput" id="lbfGroup" placeholder="Grupo" maxlength="20" style="max-width:130px" value="'+esc(editing?(editing.group||''):'')+'">'
+        + '<input class="ainput" id="lbfXP" type="number" min="0" placeholder="XP" style="max-width:110px" value="'+(editing?(editing.xp||0):'')+'">'
+        + '<input class="ainput" id="lbfStreak" type="number" min="0" placeholder="Racha" style="max-width:100px" value="'+(editing?(editing.streak||0):'')+'">'
+        + '<input class="ainput" id="lbfMods" type="number" min="0" max="12" placeholder="Módulos" style="max-width:110px" value="'+(editing?(editing.mods||0):'')+'">'
+        + '</div>'
+        + '<div class="q-actions" style="justify-content:flex-start;flex-wrap:wrap">'
+        + '<button class="btn small" id="lbfSave">'+(editing?'💾 Guardar cambios':'➕ Agregar')+'</button>'
+        + (editing?'<button class="btn ghost small" id="lbfCancel">Cancelar</button>':'')
+        + '<button class="btn ghost small" id="lbSort">↕️ Ordenar por XP</button>'
+        + '<button class="btn danger small" id="lbReset">🗑️ Resetear leaderboard</button>'
+        + '</div>'
+        + '<p class="q-help">El nivel se calcula solo a partir del XP. Usa ✏️ y 🗑️ en cada fila para editar o eliminar. La contraseña es únicamente decorativa (los datos viven en este navegador).</p>'
+        : '<p class="q-help">Activa el modo administrador para agregar, editar o eliminar estudiantes.</p>')
+      + '</div>';
+  }
+  $('#boardBody').innerHTML = html;
+  // — Eventos —
+  $('#lbSearch').addEventListener('input', e => { lbFilterQ = e.target.value; renderBoard(); });
+  $('#lbGroupSel').addEventListener('change', e => { lbFilterGroup = e.target.value; renderBoard(); });
+  $('#lbMyGroup').addEventListener('change', e => { S.lbGroup = e.target.value.trim(); save(); renderBoard(); });
+  $('#lbExport').addEventListener('click', () => {
+    const blob = new Blob([JSON.stringify({app:'actuariq-board', version:1, exported:new Date().toISOString(), students:lbRanked(lbLoad())}, null, 2)], {type:'application/json'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob); a.download = 'actuariq-leaderboard-'+todayKey()+'.json';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(()=>URL.revokeObjectURL(a.href), 3000);
+    toast('⬇️ Leaderboard exportado'); sfx('ok');
+  });
+  $('#lbImport').addEventListener('click', () => $('#lbImportFile').click());
+  $('#lbImportFile').addEventListener('change', e => {
+    const file = e.target.files[0]; e.target.value = '';
+    if(!file) return;
+    const rd = new FileReader();
+    rd.onload = () => {
+      try{
+        const payload = JSON.parse(rd.result);
+        const inc = (payload && payload.app==='actuariq-board' && Array.isArray(payload.students)) ? payload.students
+          : (Array.isArray(payload) ? payload : null);
+        if(!inc) throw new Error('formato');
+        const b = lbLoad();
+        let added = 0, updated = 0;
+        inc.forEach(x => {
+          if(!x || !x.name) return;
+          let ent = b.students.find(s => (x.pid && s.pid===x.pid) || s.name.toLowerCase()===String(x.name).toLowerCase());
+          if(ent){ if(ent.pid !== PROFILES.active){ Object.assign(ent, x, {pid:ent.pid}); updated++; } }
+          else { b.students.push({pid: x.pid || ('m'+Date.now().toString(36)+Math.random().toString(36).slice(2,6)), name:String(x.name).slice(0,24), avatar:x.avatar||'🎓', group:x.group||'', xp:+x.xp||0, lvl:levelOf(+x.xp||0), mods:+x.mods||0, streak:+x.streak||0, updated:Date.now()}); added++; }
+        });
+        lbSave(b); renderBoard();
+        toast('⬆️ Importado: '+added+' nuevos, '+updated+' actualizados'); sfx('unlock');
+      }catch(err){ toast('❌ El archivo no es un JSON de leaderboard válido'); sfx('bad'); }
+    };
+    rd.readAsText(file);
+  });
+  $$('#boardBody [data-lbedit]').forEach(btn => btn.addEventListener('click', () => { lbEditId = btn.dataset.lbedit; renderBoard(); }));
+  $$('#boardBody [data-lbdel]').forEach(btn => btn.addEventListener('click', () => {
+    const bd = lbLoad();
+    const s = bd.students.find(x=>x.pid===btn.dataset.lbdel);
+    if(!s) return;
+    if(s.pid === PROFILES.active){ toast('No puedes eliminar tu propia fila: se sincroniza con tu progreso.'); return; }
+    if(!confirm('¿Eliminar a "'+s.name+'" del leaderboard?')) return;
+    bd.students = bd.students.filter(x=>x.pid!==s.pid);
+    lbSave(bd); if(lbEditId===s.pid) lbEditId=null;
+    renderBoard(); toast('🗑️ Estudiante eliminado'); sfx('click');
+  }));
+  const at = $('#lbAdminToggle');
+  if(at) at.addEventListener('click', () => { lbAdminOn = !lbAdminOn; if(!lbAdminOn) lbEditId=null; sfx('click'); renderBoard(); });
+  const fs = $('#lbfSave');
+  if(fs) fs.addEventListener('click', () => {
+    const name = $('#lbfName').value.trim();
+    if(!name){ toast('Escribe el nombre del estudiante'); return; }
+    const xp = Math.max(0, +$('#lbfXP').value||0);
+    const bd = lbLoad();
+    if(lbEditId){
+      const ent = bd.students.find(x=>x.pid===lbEditId);
+      if(ent){
+        if(ent.pid === PROFILES.active){ toast('Tu propia fila se sincroniza con tu progreso real; no se edita a mano.'); lbEditId=null; renderBoard(); return; }
+        Object.assign(ent, {name:name.slice(0,24), group:$('#lbfGroup').value.trim(), xp, lvl:levelOf(xp), streak:Math.max(0,+$('#lbfStreak').value||0), mods:clamp(+$('#lbfMods').value||0,0,MODULES.length), updated:Date.now()});
+        toast('💾 Estudiante actualizado');
+      }
+      lbEditId = null;
+    } else {
+      bd.students.push({pid:'m'+Date.now().toString(36), name:name.slice(0,24), avatar:'🎓', group:$('#lbfGroup').value.trim(), xp, lvl:levelOf(xp), streak:Math.max(0,+$('#lbfStreak').value||0), mods:clamp(+$('#lbfMods').value||0,0,MODULES.length), updated:Date.now()});
+      toast('➕ Estudiante agregado');
+    }
+    lbSave(bd); sfx('ok'); renderBoard();
+  });
+  const fc = $('#lbfCancel');
+  if(fc) fc.addEventListener('click', () => { lbEditId = null; renderBoard(); });
+  const so = $('#lbSort');
+  if(so) so.addEventListener('click', () => { const bd = lbLoad(); bd.students = lbRanked(bd); lbSave(bd); renderBoard(); toast('↕️ Ordenado por XP'); sfx('click'); });
+  const rs = $('#lbReset');
+  if(rs) rs.addEventListener('click', () => {
+    if(!confirm('¿Borrar TODO el leaderboard? Tu fila se volverá a crear con tu progreso actual.')) return;
+    lbSave({students:[]}); lbEditId=null; renderBoard(); toast('🗑️ Leaderboard reiniciado'); sfx('bad');
+  });
+}
+$('#btnBoard').addEventListener('click', () => { sfx('click'); renderBoard(); showView('board'); });
 
 /* ==================== Insignias ==================== */
 const BADGES = [
@@ -2673,7 +2946,13 @@ const BADGES = [
   {id:'scholar', ico:'📚', name:'Estudioso',          desc:'60 minutos de estudio',            test:()=>S.totalTime>=3600},
   {id:'tryhard', ico:'💪', name:'Persistente',        desc:'20 actividades realizadas',        test:()=>S.history.length>=20},
   {id:'exam1',   ico:'📝', name:'Primer examen',      desc:'Completa un examen diario',        test:()=>(S.examHistory||[]).length>=1},
-  {id:'exam90',  ico:'🏅', name:'Sobresaliente',      desc:'≥ 90% en un examen diario',        test:()=>(S.examHistory||[]).some(e=>e.score>=90)}
+  {id:'exam90',  ico:'🏅', name:'Sobresaliente',      desc:'≥ 90% en un examen diario',        test:()=>(S.examHistory||[]).some(e=>e.score>=90)},
+  {id:'streak15', ico:'🔥', name:'Racha de fuego',    desc:'Racha de 15 días seguidos',        test:()=>S.streak>=15},
+  {id:'streak30', ico:'👑', name:'Racha legendaria',  desc:'Racha de 30 días seguidos',        test:()=>S.streak>=30},
+  {id:'ans10',   ico:'✍️', name:'Primeras respuestas', desc:'Responde 10 preguntas',           test:()=>(S.totalAnswered||0)>=10},
+  {id:'ans25',   ico:'📝', name:'Practicante',        desc:'Responde 25 preguntas',            test:()=>(S.totalAnswered||0)>=25},
+  {id:'ans50',   ico:'🧾', name:'Curtido',            desc:'Responde 50 preguntas',            test:()=>(S.totalAnswered||0)>=50},
+  {id:'ans100',  ico:'🗂️', name:'Veterano',           desc:'Responde 100 preguntas',           test:()=>(S.totalAnswered||0)>=100}
 ];
 function checkBadges(){
   BADGES.forEach(b => {
@@ -2699,6 +2978,54 @@ function renderStats(){
     + tile('📝','Exámenes diarios', exams.length, '', exams.length ? 'promedio '+exAvg+'%' : 'aún sin exámenes')
     + '</div>';
   html += '<div class="dash-grid">';
+  // Mi tarjeta de jugador
+  const p = activeProfile();
+  const li = levelInfo();
+  const ranked = lbRanked(lbLoad());
+  const myPos = ranked.findIndex(s=>s.pid===PROFILES.active)+1;
+  const nr = nextReward();
+  html += '<div class="panel"><h3>👤 Mi tarjeta</h3>'
+    + '<div style="text-align:center">'+avatarFramedHTML(p, 84)
+    + '<div style="font-weight:800;margin-top:6px">'+esc(p.name)+'</div>'
+    + '<div style="font-size:.82rem;color:var(--ink2)">🏷️ '+currentTitle()+'</div></div>'
+    + '<div class="qprog" style="margin:12px 0 4px"><i style="width:'+Math.round(li.frac*100)+'%"></i></div>'
+    + '<p class="q-help" style="margin:0 0 10px">Nivel '+li.lvl+' · '+S.xp+' XP · faltan '+li.toNext+' para subir</p>'
+    + '<div class="tag-list">'
+    + '<span class="tag neutral">🔥 Racha: '+S.streak+(S.streak===1?' día':' días')+'</span>'
+    + (myPos ? '<span class="tag neutral">🏆 #'+myPos+' del leaderboard</span>' : '')
+    + '<span class="tag neutral">🎖️ '+S.badges.length+'/'+BADGES.length+' insignias</span>'
+    + '<span class="tag neutral">✅ '+o.done+'/'+o.total+' módulos</span>'
+    + '</div>'
+    + (nr ? '<p style="font-size:.85rem;font-weight:700;margin:12px 0 4px">⏭️ Próxima recompensa: '+nr.ico+' '+esc(nr.name)+'</p>'
+        + '<div class="pbar"><i style="width:'+Math.min(100,Math.round(S.xp/nr.xp*100))+'%"></i></div>'
+        + '<p class="q-help">'+S.xp+' / '+nr.xp+' XP · equípala desde tu perfil 🎁</p>'
+      : '<p style="font-size:.85rem;font-weight:700;color:var(--good-text);margin-top:12px">🏆 Desbloqueaste toda la tienda de recompensas</p>')
+    + '</div>';
+  // Último examen + temas por repasar
+  const lastEx = exams[0];
+  const lastTopics = (lastEx && lastEx.failedTopics) ? lastEx.failedTopics : [];
+  html += '<div class="panel"><h3>📝 Último examen</h3>'
+    + (lastEx
+      ? '<p style="font-size:1.5rem;font-weight:800;margin:4px 0">'+lastEx.score+'%</p>'
+        + '<p class="q-help" style="margin:0 0 10px">'+fmtDate(lastEx.t)+' · '+fmtDur(lastEx.sec)+(lastEx.n?' · '+lastEx.n+' preguntas':'')+(lastEx.xp!=null?' · +'+lastEx.xp+' XP':'')+'</p>'
+        + '<h3 style="margin-top:14px">📚 Temas por repasar</h3>'
+        + (lastTopics.length
+          ? '<div class="tag-list">'+lastTopics.map(t => {
+              const mod = TOPIC_MODULE[t];
+              return mod!=null ? '<button class="tag ref" style="cursor:pointer;border:none;font:inherit" data-goto-mod="'+mod+'">⚠ '+(TOPIC_NAMES[t]||t)+' →</button>'
+                : '<span class="tag ref">⚠ '+(TOPIC_NAMES[t]||t)+'</span>'; }).join('')+'</div>'
+            + '<p class="q-help">Toca un tema para ir directo al módulo donde se practica.</p>'
+          : '<p style="color:var(--good-text);font-size:.85rem;font-weight:700">🎉 Sin errores en tu último examen.</p>')
+      : '<p style="color:var(--muted);font-size:.85rem">Aún no presentas el examen diario. ¡Inténtalo desde la pantalla de inicio!</p>')
+    + '</div>';
+  // Logros recientes (recompensas de la tienda)
+  const rlog = (S.rewardLog||[]).slice(0,8);
+  html += '<div class="panel"><h3>🕘 Logros recientes</h3>'
+    + (rlog.length ? rlog.map(e => {
+        const r = REWARDS.find(x=>x.id===e.id);
+        return r ? '<div class="profile-row"><span class="pr-av">'+r.ico+'</span><span class="pr-name">'+esc(r.name)+'</span><small style="color:var(--muted)">'+fmtDate(e.t)+'</small></div>' : '';
+      }).join('') : '<p style="color:var(--muted);font-size:.85rem">Tus recompensas desbloqueadas aparecerán aquí. La próxima te espera en la tienda 🎁.</p>')
+    + '</div>';
   // Progreso por módulo
   html += '<div class="panel"><h3>📚 Progreso por módulo</h3>'
     + MODULES.map((m,i) => { const st = modState(m.id);
@@ -2762,6 +3089,7 @@ function renderStats(){
     + '</div>';
   html += '</div>';
   $('#statsBody').innerHTML = html;
+  $$('#statsBody [data-goto-mod]').forEach(b => b.addEventListener('click', () => { sfx('click'); openModule(+b.dataset.gotoMod); }));
 }
 
 /* ==================== Guía de estudio (pantalla + PDF) ==================== */
@@ -2860,19 +3188,69 @@ function finishExam(){
   const recap = SES.recap;
   SES = null;
   S.examDay = todayKey();
-  S.examHistory.unshift({t:Date.now(), score, sec:Math.round(sec)});
+  const failedTopics = [...new Set(recap.filter(r=>!r.ok).map(r=>r.topic).filter(Boolean))];
+  const xp = Math.round(score/2) + (score>=80 ? 25 : 0);
+  S.examHistory.unshift({t:Date.now(), score, sec:Math.round(sec), n, xp, failedTopics});
   if(S.examHistory.length > 60) S.examHistory.length = 60;
   S.totalTime += sec;
-  const xp = Math.round(score/2) + (score>=80 ? 25 : 0);
+  const rwBefore = (S.unlockedRewards||[]).length;
   addXP(xp);
-  save(); checkBadges(); renderHeader();
-  renderExamResult(score, xp, sec, recap);
+  save(); checkBadges(); checkRewards(); renderHeader();
+  const newRewards = (S.unlockedRewards||[]).slice(rwBefore).map(id => REWARDS.find(r=>r.id===id)).filter(Boolean);
+  renderExamResult(score, xp, sec, recap, newRewards);
   if(score>=80){ sfx('win'); confetti(90); } else sfx('bad');
 }
-function renderExamResult(score, xp, sec, recap){
+/* Tema → módulo donde se estudia (para el botón "Repasar este tema") */
+const TOPIC_MODULE = {
+  riesgo:0, exposicion:0, siniestro:0, poliza:0, prima:0, sumaasegurada:0, indemnizacion:0,
+  cobertura:0, exclusiones:0, personas:0,
+  copago:2, coaseguro:3, deducible:4,
+  frecuencia:1, severidad:1, primariesgo:1, costoesperado:1, siniestralidad:1,
+  inflacion:5, devaluacion:6, depreciacion:7, formulas:9, casos:11, escape:10
+};
+/* — Revisión de respuestas enriquecida (examen, módulos y repaso mixto) — */
+function reviewItemHTML(r, i){
+  const mod = TOPIC_MODULE[r.topic];
+  return '<div class="rv-item '+(r.ok?'ok':'bad')+'" data-ok="'+(r.ok?1:0)+'" data-topic="'+esc(r.topic||'')+'" data-diff="'+(r.diff||'')+'">'
+    + '<div class="rv-head"><span class="rv-tag '+(r.ok?'ok':'bad')+'">'+(r.ok?'✔ Correcta':'✘ Incorrecta')+'</span>'
+    + '<span class="rv-meta">Pregunta '+(i+1)+' · '+(TOPIC_NAMES[r.topic]||'Concepto')+' · '+(r.diff||'')+'</span></div>'
+    + '<div class="rv-q">'+esc(r.prompt)+'</div>'
+    + (r.chosen ? '<div class="rv-line">🖊️ <b>Tu respuesta:</b> '+esc(r.chosen)+'</div>' : '')
+    + (r.correct ? '<div class="rv-line">✔️ <b>Respuesta correcta:</b> '+r.correct+'</div>' : '')
+    + (r.explain ? '<div class="rv-line">📌 '+r.explain+'</div>' : '')
+    + (r.steps ? '<details class="rv-steps"'+(r.ok?'':' open')+'><summary>🧮 Fórmula y procedimiento paso a paso</summary><ol class="steps">'+r.steps.map(s=>'<li>'+s+'</li>').join('')+'</ol></details>' : '')
+    + (!r.ok && mod!=null ? '<div style="margin-top:8px"><button class="btn ghost small" data-goto-mod="'+mod+'">📚 Repasar este tema → '+MODULES[mod].icon+' '+esc(MODULES[mod].name)+'</button></div>' : '')
+    + '</div>';
+}
+function reviewSectionHTML(recap, title){
+  const topics = [...new Set(recap.map(r=>r.topic).filter(Boolean))];
+  return '<div class="recap" id="rvWrap"><div class="section-h"><h2 style="font-size:1rem">'+(title||'📋 Revisión de respuestas')+'</h2><span class="line"></span></div>'
+    + '<div class="lb-controls">'
+    + '<select class="ainput" id="rvState"><option value="">Ver todas</option><option value="bad">Solo incorrectas</option><option value="ok">Solo correctas</option></select>'
+    + '<select class="ainput" id="rvTopic"><option value="">Todos los temas</option>'+topics.map(t=>'<option value="'+esc(t)+'">'+(TOPIC_NAMES[t]||t)+'</option>').join('')+'</select>'
+    + '<select class="ainput" id="rvDiff"><option value="">Toda dificultad</option><option>Fácil</option><option>Media</option><option>Difícil</option></select>'
+    + '</div>'
+    + recap.map(reviewItemHTML).join('')
+    + '<p class="q-help hidden" id="rvEmpty">No hay preguntas que coincidan con el filtro.</p></div>';
+}
+function bindReview(){
+  const applyF = () => {
+    const st = $('#rvState').value, tp = $('#rvTopic').value, df = $('#rvDiff').value;
+    let shown = 0;
+    $$('#rvWrap .rv-item').forEach(el => {
+      const show = (!st || (st==='ok') === (el.dataset.ok==='1')) && (!tp || el.dataset.topic===tp) && (!df || el.dataset.diff===df);
+      el.classList.toggle('hidden', !show); if(show) shown++;
+    });
+    $('#rvEmpty').classList.toggle('hidden', shown>0);
+  };
+  ['rvState','rvTopic','rvDiff'].forEach(id => { const el = $('#'+id); if(el) el.addEventListener('change', () => { sfx('click'); applyF(); }); });
+  $$('#rvWrap [data-goto-mod]').forEach(b => b.addEventListener('click', () => { sfx('click'); openModule(+b.dataset.gotoMod); }));
+}
+function renderExamResult(score, xp, sec, recap, newRewards){
   const R = 56, C = 2*Math.PI*R;
   const passed = score >= 80;
   const okCount = recap.filter(r=>r.ok).length;
+  const failedTopics = [...new Set(recap.filter(r=>!r.ok).map(r=>r.topic).filter(Boolean))];
   const title = score>=90 ? '¡Sobresaliente! 🏅' : passed ? '¡Muy buen examen!' : score>=60 ? 'Buen intento' : 'A repasar y volver mañana';
   let html = '<div class="result-card">'
     + '<div class="big-ico">'+(score>=90?'🏅':passed?'🎉':'📚')+'</div>'
@@ -2884,19 +3262,19 @@ function renderExamResult(score, xp, sec, recap){
     + 'stroke-dasharray="'+C+'" stroke-dashoffset="'+(C*(1-score/100))+'" style="transition:stroke-dashoffset 1s cubic-bezier(.22,1,.36,1)"/>'
     + '</svg><span class="val">'+score+'%</span></div>'
     + '<p style="font-weight:700">Tu calificación de hoy: '+score+'/100</p>'
-    + '<div class="r-meta"><span><b>'+okCount+'/'+recap.length+'</b>aciertos</span>'
+    + '<div class="r-meta"><span><b>'+okCount+'/'+recap.length+'</b>aciertos</span><span><b>'+(recap.length-okCount)+'</b>errores</span>'
     + '<span><b>+'+xp+'</b>XP</span><span><b>'+fmtDur(sec)+'</b>tiempo</span></div>'
+    + (newRewards && newRewards.length ? '<p style="font-weight:700;color:var(--good-text)">🎁 Recompensas desbloqueadas: '+newRewards.map(r=>r.ico+' '+esc(r.name)).join(' · ')+'</p>' : '')
+    + (failedTopics.length ? '<p style="font-size:.86rem;color:var(--ink2)">📚 Temas relacionados por repasar: <b>'+failedTopics.map(t=>TOPIC_NAMES[t]||t).join(', ')+'</b></p>' : '')
     + '<p style="font-size:.85rem;color:var(--ink2)">Solo se permite un examen por día: el próximo estará disponible mañana. Abajo puedes revisar cada pregunta.</p>'
     + '<div class="q-actions" style="justify-content:center">'
     + '<button class="btn ghost" id="rHome">🏠 Inicio</button>'
     + '<button class="btn" id="rStats">📊 Mis estadísticas</button>'
     + '</div></div>';
-  html += '<div class="recap"><div class="section-h"><h2 style="font-size:1rem">📋 Revisión del examen</h2><span class="line"></span></div>'
-    + recap.map(r => '<div class="recap-item '+(r.ok?'ok':'bad')+'"><span class="ri-ico">'+(r.ok?'✔':'✘')+'</span>'
-      + '<span>'+esc(r.prompt).slice(0,180)+(r.note && !r.ok ? '<br><b style="font-size:.78rem">Respuesta correcta: '+r.note+'</b>' : '')+'</span></div>').join('')
-    + '</div>';
+  html += reviewSectionHTML(recap, '📋 Revisión del examen');
   $('#view-result').innerHTML = html;
   showView('result');
+  bindReview();
   $('#rHome').onclick = ()=>{ sfx('click'); goHome(); };
   $('#rStats').onclick = ()=>{ sfx('click'); renderStats(); showView('stats'); };
 }
@@ -2919,10 +3297,96 @@ const LEVEL_REWARDS = [
   {lvl:20, title:'Actuario Senior'}
 ];
 function currentTitle(){
+  if(S.equip && S.equip.title){
+    const chosen = REWARDS.find(r => r.id===S.equip.title && r.type==='title');
+    if(chosen) return chosen.name;
+  }
   let t = 'Aprendiz de actuario';
   const lvl = levelInfo().lvl;
   LEVEL_REWARDS.forEach(r => { if(r.title && lvl >= r.lvl) t = r.title; });
   return t;
+}
+
+/* ==================== Tienda de recompensas ==================== */
+const REWARDS = [
+  {id:'frame-bronze',    type:'frame', name:'Marco bronce',           ico:'🥉', xp:100,  desc:'Un marco de bronce alrededor de tu avatar.'},
+  {id:'frame-silver',    type:'frame', name:'Marco plata',            ico:'🥈', xp:1000, desc:'Un marco plateado para lucir tu constancia.'},
+  {id:'frame-gold',      type:'frame', name:'Marco oro',              ico:'🥇', xp:3000, desc:'Un marco dorado para los más dedicados.'},
+  {id:'frame-diamond',   type:'frame', name:'Marco diamante',         ico:'💎', xp:5000, desc:'El marco más exclusivo de ActuarIQ.'},
+  {id:'bg-aula',         type:'bg',    name:'Aula universitaria',     ico:'🏫', xp:250,  desc:'Fondo de aula para tu tarjeta de perfil.'},
+  {id:'bg-oficina',      type:'bg',    name:'Oficina actuarial',      ico:'🏢', xp:800,  desc:'Fondo de oficina actuarial.'},
+  {id:'bg-aseguradora',  type:'bg',    name:'Aseguradora',            ico:'🏬', xp:1500, desc:'Fondo de aseguradora corporativa.'},
+  {id:'bg-bolsa',        type:'bg',    name:'Bolsa de valores',       ico:'📈', xp:4000, desc:'Fondo de bolsa de valores.'},
+  {id:'acc-lupa',        type:'acc',   name:'Lupa',                   ico:'🔍', xp:400,  desc:'Accesorio de lupa para tu tarjeta de perfil.'},
+  {id:'acc-calculadora', type:'acc',   name:'Calculadora',            ico:'🧮', xp:750,  desc:'Accesorio de calculadora.'},
+  {id:'acc-grafica',     type:'acc',   name:'Gráfica',                ico:'📊', xp:1200, desc:'Accesorio de gráfica de resultados.'},
+  {id:'acc-portafolio',  type:'acc',   name:'Portafolio',             ico:'💼', xp:1800, desc:'Accesorio de portafolio ejecutivo.'},
+  {id:'acc-medalla',     type:'acc',   name:'Medalla',                ico:'🏅', xp:2500, desc:'Accesorio de medalla al mérito.'},
+  {id:'title-analista',   type:'title', name:'Analista Junior',       ico:'🏷️', xp:500,  desc:'Título alterno que sustituye tu rango de nivel.'},
+  {id:'title-frecuencia', type:'title', name:'Maestro de Frecuencia', ico:'🏷️', xp:1200, desc:'Título alterno que sustituye tu rango de nivel.'},
+  {id:'title-severidad',  type:'title', name:'Experto en Severidad',  ico:'🏷️', xp:2000, desc:'Título alterno que sustituye tu rango de nivel.'},
+  {id:'title-prima',      type:'title', name:'Rey de la Prima',       ico:'🏷️', xp:4000, desc:'Título alterno que sustituye tu rango de nivel.'}
+];
+const REWARD_TYPE_LABEL = {frame:'🖼️ Marcos', bg:'🌆 Fondos', acc:'🎒 Accesorios', title:'🏷️ Títulos'};
+const FRAME_BORDER = {'frame-bronze':'#cd7f32', 'frame-silver':'#b7b7b7', 'frame-gold':'#eda100', 'frame-diamond':'#7ad7f0'};
+const BG_GRAD = {
+  'bg-aula':'linear-gradient(135deg,#4a3aa7,#2a78d6)', 'bg-oficina':'linear-gradient(135deg,#2a78d6,#1c5cab)',
+  'bg-aseguradora':'linear-gradient(135deg,#1baf7a,#0c6b46)', 'bg-bolsa':'linear-gradient(135deg,#eda100,#c98500)'
+};
+function ensureEquip(){ if(!S.equip) S.equip = {frame:null, bg:null, acc:null, title:null}; return S.equip; }
+function nextReward(){
+  return REWARDS.filter(r => !(S.unlockedRewards||[]).includes(r.id)).sort((a,b)=>a.xp-b.xp)[0] || null;
+}
+function checkRewards(){
+  REWARDS.forEach(r => {
+    if(!(S.unlockedRewards||[]).includes(r.id) && S.xp >= r.xp){
+      S.unlockedRewards.push(r.id);
+      S.rewardLog.unshift({id:r.id, t:Date.now()});
+      if(S.rewardLog.length > 30) S.rewardLog.length = 30;
+      save();
+      showRewardModal(r);
+      sfx('unlock'); confetti(70);
+    }
+  });
+}
+function showRewardModal(r){
+  const o = openModal('<div style="text-align:center"><div style="font-size:52px">'+(r.ico||'🏷️')+'</div>'
+    + '<h2>¡Recompensa desbloqueada!</h2><div class="r-sub">'+esc(r.name)+'</div>'
+    + '<p style="color:var(--ink2);font-size:.9rem">'+esc(r.desc)+'</p>'
+    + '<div class="q-actions" style="justify-content:center"><button class="btn" id="rwOk">😎 ¡Genial!</button></div></div>');
+  o.querySelector('#rwOk').addEventListener('click', ()=>{ closeModal(); sfx('click'); });
+}
+function avatarFramedHTML(p, size){
+  const eq = ensureEquip();
+  const frame = REWARDS.find(r => r.id===eq.frame);
+  const bgR = REWARDS.find(r => r.id===eq.bg);
+  const accR = REWARDS.find(r => r.id===eq.acc);
+  const border = frame ? '3px solid '+FRAME_BORDER[frame.id] : '2px solid transparent';
+  const bgCss = bgR ? BG_GRAD[bgR.id] : 'var(--surface2)';
+  const wrap = size + 12;
+  return '<span style="position:relative;display:inline-flex;align-items:center;justify-content:center;width:'+wrap+'px;height:'+wrap+'px;border-radius:50%;border:'+border+';background:'+bgCss+'">'
+    + avatarHTML(p, size)
+    + (accR ? '<span style="position:absolute;bottom:-3px;right:-3px;background:var(--surface);border-radius:50%;padding:3px;font-size:'+Math.round(size*0.34)+'px;line-height:1;box-shadow:var(--shadow)" title="'+esc(accR.name)+'">'+accR.ico+'</span>' : '')
+    + '</span>';
+}
+function renderShopHTML(){
+  const types = ['frame','bg','acc','title'];
+  return types.map(type => {
+    const items = REWARDS.filter(r => r.type===type);
+    return '<div style="margin-bottom:16px"><h4 style="margin:0 0 8px">'+REWARD_TYPE_LABEL[type]+'</h4>'
+      + '<div class="reward-grid">' + items.map(r => {
+          const unlocked = (S.unlockedRewards||[]).includes(r.id);
+          const equipped = ensureEquip()[r.type] === r.id;
+          const pctv = Math.min(100, Math.round(S.xp/r.xp*100));
+          return '<div class="reward-card'+(unlocked?' unlocked':'')+'">'
+            + '<div class="rw-ico">'+r.ico+'</div>'
+            + '<div class="rw-name">'+esc(r.name)+'</div>'
+            + (unlocked
+                ? '<button class="btn small'+(equipped?'':' ghost')+'" data-eq="'+r.type+'" data-id="'+r.id+'">'+(equipped?'✔ Equipado':'Equipar')+'</button>'
+                : '<div class="rw-lock"><span class="pbar"><i style="width:'+pctv+'%"></i></span><small>'+S.xp+' / '+r.xp+' XP</small></div>')
+            + '</div>';
+        }).join('') + '</div></div>';
+  }).join('');
 }
 function avatarReqLevel(a){
   const r = LEVEL_REWARDS.find(x => x.avatars && x.avatars.includes(a));
@@ -3037,7 +3501,7 @@ function renderProfile(){
     }
   }
   html += '<div class="panel"><h3>👤 Mi perfil</h3>'
-    + '<div style="text-align:center">'+avatarHTML(p, 96)+'</div>'
+    + '<div style="text-align:center">'+avatarFramedHTML(p, 96)+'</div>'
     + '<div class="avatar-pick">'+AVATARS.map(a => {
         const un = avatarUnlocked(a);
         return '<button class="av'+(a===p.avatar?' on':'')+(un?'':' locked')+'" data-av="'+a+'"'
@@ -3069,7 +3533,18 @@ function renderProfile(){
     + '<label class="fld">📅 Objetivo diario de XP<select class="ainput" id="prefGoal">'
     + [25,50,75,100,150].map(g=>'<option value="'+g+'">'+g+' XP al día</option>').join('')
     + '</select></label>'
+    + '<label class="fld">🎨 Color principal<select class="ainput" id="prefAccent">'
+    + '<option value="">🔵 Azul (predeterminado)</option><option value="#1baf7a">🟢 Verde</option><option value="#4a3aa7">🟣 Morado</option>'
+    + '<option value="#e34948">🔴 Rojo</option><option value="#eb6834">🟠 Naranja</option><option value="#d55181">🌸 Rosa</option>'
+    + '</select></label>'
     + toggleRow('prefSound','🔊 Sonidos', S.sound)
+    + '<label class="fld">🔉 Volumen de los sonidos'
+    + '<input type="range" id="prefVolume" min="0" max="100" step="5" value="'+Math.round((S.soundVolume!=null?S.soundVolume:0.7)*100)+'"></label>'
+    + '<div class="q-actions" style="justify-content:flex-start;flex-wrap:wrap;margin:4px 0 8px">'
+    + '<button class="btn small" id="btnEnableSound">🔓 Activar sonidos</button>'
+    + '<button class="btn ghost small" id="btnTestSound">🎵 Probar sonido</button>'
+    + '</div>'
+    + '<p class="q-help" id="soundHint">Si tu navegador bloquea el audio, toca “Activar sonidos” para habilitarlo.</p>'
     + toggleRow('prefConfetti','🎉 Confeti al aprobar', S.confetti !== false)
     + toggleRow('prefSteps','🧮 Mostrar el procedimiento también al acertar', !!S.stepsOnOk)
     + toggleRow('prefGuide','📖 Guía de estudio progresiva (se desbloquea tema por tema)', S.guideProgressive !== false)
@@ -3088,6 +3563,13 @@ function renderProfile(){
     + toggleRow('gmSudden','💀 Muerte súbita', gm.sudden !== false)
     + toggleRow('gmReview','🎯 Repaso mixto', gm.review !== false)
     + '</div>';
+  // — Tienda de recompensas —
+  const nr = nextReward();
+  html += '<div class="panel"><h3>🎁 Tienda de recompensas</h3>'
+    + '<p class="q-help">Desbloquea marcos, fondos, accesorios y títulos acumulando XP. Toca "Equipar" para lucirlos en tu tarjeta de perfil y en el leaderboard.</p>'
+    + (nr ? '<p style="font-size:.85rem;font-weight:700;color:var(--ink2)">⏭️ Próxima recompensa: '+nr.ico+' '+esc(nr.name)+' · '+S.xp+' / '+nr.xp+' XP</p>' : '<p style="font-size:.85rem;font-weight:700;color:var(--good-text)">🏆 ¡Desbloqueaste toda la tienda!</p>')
+    + renderShopHTML()
+    + '</div>';
   // — Datos —
   html += '<div class="panel"><h3>💾 Mis datos</h3>'
     + '<p style="font-size:.85rem;color:var(--ink2)">Tu progreso vive solo en este navegador. Exporta un respaldo <b>JSON</b> para guardarlo o moverlo a otro dispositivo, e impórtalo cuando lo necesites.</p>'
@@ -3101,6 +3583,7 @@ function renderProfile(){
   html += '</div>';
   $('#profileBody').innerHTML = html;
   $('#prefTheme').value = S.theme || '';
+  $('#prefAccent').value = S.accentColor || '';
   $('#prefGoal').value = String(S.xpGoal || 50);
   // — Eventos —
   $$('#profileBody .avatar-pick .av').forEach(b => b.addEventListener('click', () => {
@@ -3144,6 +3627,22 @@ function renderProfile(){
   $('#prefTheme').addEventListener('change', e => { S.theme = e.target.value || null; save(); applyTheme(); sfx('click'); });
   $('#prefGoal').addEventListener('change', e => { S.xpGoal = +e.target.value || 50; if(S.dayXP) S.dayXP.goalHit = S.dayXP.xp >= S.xpGoal; save(); toast('📅 Objetivo diario: '+S.xpGoal+' XP'); sfx('click'); });
   $('#prefSound').addEventListener('change', e => { S.sound = e.target.checked; save(); renderHeader(); if(S.sound) sfx('ok'); });
+  $('#prefAccent').addEventListener('change', e => { S.accentColor = e.target.value || null; save(); applyTheme(); sfx('click'); });
+  $('#prefVolume').addEventListener('input', e => { S.soundVolume = clamp((+e.target.value||0)/100, 0, 1); save(); });
+  $('#prefVolume').addEventListener('change', () => sfx('ok'));
+  $('#btnEnableSound').addEventListener('click', () => {
+    S.sound = true; save(); renderHeader();
+    const el = $('#prefSound'); if(el) el.checked = true;
+    const ok = primeAudio();
+    $('#soundHint').textContent = ok ? '✅ Sonidos habilitados.' : '⚠️ Toca “Activar sonidos” para habilitar audio (tu navegador lo bloqueó).';
+    toast(ok ? '🔊 Sonidos habilitados' : '⚠️ Toca “Activar sonidos” para habilitar audio');
+  });
+  $('#btnTestSound').addEventListener('click', () => {
+    if(!S.sound){ toast('🔇 Los sonidos están apagados; actívalos primero.'); return; }
+    primeAudio();
+    if(audioBlocked){ $('#soundHint').textContent = '⚠️ Toca “Activar sonidos” para habilitar audio.'; }
+    sfx('win');
+  });
   $('#prefConfetti').addEventListener('change', e => { S.confetti = e.target.checked; save(); if(S.confetti) confetti(25); });
   $('#prefSteps').addEventListener('change', e => { S.stepsOnOk = e.target.checked; save(); sfx('click'); });
   $('#prefGuide').addEventListener('change', e => { S.guideProgressive = e.target.checked; save(); sfx('click');
@@ -3161,6 +3660,12 @@ function renderProfile(){
       toast(e.target.checked ? '✅ Modo activado en tu inicio' : '➖ Modo desactivado en tu inicio');
     });
   });
+  $$('#profileBody [data-eq]').forEach(b => b.addEventListener('click', () => {
+    const type = b.dataset.eq, id = b.dataset.id;
+    const eq = ensureEquip();
+    eq[type] = (eq[type] === id) ? null : id;
+    save(); sfx('click'); renderProfile(); renderHeader();
+  }));
   $('#btnExport').addEventListener('click', exportData);
   $('#btnImport').addEventListener('click', () => $('#importFile').click());
   $('#importFile').addEventListener('change', e => { if(e.target.files[0]) importData(e.target.files[0]); e.target.value=''; });

@@ -37,15 +37,27 @@ ejercicios numéricos **cambian en cada intento**.
 
 - **XP y niveles** con barra de experiencia en el encabezado.
 - **Estrellas por módulo**: ★ 80 %, ★★ 90 %, ★★★ 100 %.
-- **14 insignias** (Perfeccionista, Escapista, Memoria de elefante, rachas…).
-- **Racha diaria** 🔥 de días de estudio.
+- **23 insignias** (Perfeccionista, Escapista, rachas de 3/7/15/30 días,
+  preguntas respondidas, racha de rayo…).
+- **Racha diaria** 🔥 de días de estudio, con recordatorio visual en el inicio.
 - **Examen diario** 📝: 12 preguntas mixtas, un solo intento por día, con
-  calificación, revisión completa al final e historial de resultados.
-- **Reto contrarreloj** ⚡: 60 segundos de preguntas rápidas.
+  calificación, revisión completa con filtros e historial de resultados.
+- **Reto contrarreloj** ⚡: inicia con 60 s y cada acierto suma **+5 s**
+  (máx. 90 s), con contador de racha y bonus de XP.
+- **Muerte súbita** 💀: preguntas sin límite de tiempo, un error y se acaba.
+- **Repaso mixto** 🎯: 10 preguntas variadas de los módulos desbloqueados,
+  sin presión de tiempo (no afecta estrellas).
 - **Flashcards** 🃏 con las 25 tarjetas del glosario.
+- Los modos de juego se pueden **activar/desactivar** desde el perfil.
 - **Retroalimentación inmediata**: si fallas, verás la respuesta correcta, la
   fórmula y la **solución paso a paso**; si aciertas, un tip actuarial.
-- **Sonidos opcionales** (WebAudio) y animaciones suaves.
+- **Tienda de recompensas** 🎁: marcos (bronce→diamante), fondos, accesorios
+  y títulos desbloqueables por XP, con modal de recompensa y confetti.
+- **Leaderboard** 🏆 con medallas, filtro por grupo, búsqueda, aviso de
+  "subiste de rango", exportación/importación JSON y panel de administrador.
+- **Sonidos opcionales** (WebAudio con fallback `<audio>`), control de
+  volumen, botones "Activar/Probar sonidos" y animaciones suaves.
+- **Color principal personalizable** (azul, verde, morado, rojo, naranja, rosa).
 
 ## 📊 Panel de progreso
 
