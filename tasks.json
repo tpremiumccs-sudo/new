@@ -1,0 +1,15 @@
+{
+  "app": "actuariq-tasks",
+  "version": 1,
+  "exported": "2026-07-09T00:00:00.000Z",
+  "tasks": [],
+  "archivedTasks": [],
+  "deletedTasks": [],
+  "calendar": {
+    "ca3":   {"p1":"","p2":"","p3":"","final":""},
+    "reg":   {"p1":"","p2":"","p3":"","final":""},
+    "nopar": {"p1":"","p2":"","p3":"","final":""},
+    "stoch": {"p1":"","p2":"","p3":"","final":""},
+    "fin":   {"p1":"","p2":"","p3":"","final":""}
+  }
+}

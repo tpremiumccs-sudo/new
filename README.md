@@ -68,7 +68,8 @@ ejercicios numéricos **cambian en cada intento**.
 - **Examen diario** 📝: 12 preguntas mixtas, un solo intento por día, con
   calificación, revisión completa con filtros e historial de resultados.
 - **Reto contrarreloj** ⚡: inicia con 60 s y cada acierto suma **+5 s**
-  (máx. 90 s), con contador de racha y bonus de XP.
+  (máx. 90 s); cada falla resta cada vez más tiempo (−5, −10, −15…), con
+  contador de racha y bonus de XP. Banco de preguntas amplio y sin repetición.
 - **Muerte súbita** 💀: preguntas sin límite de tiempo, un error y se acaba.
 - **Repaso mixto** 🎯: 10 preguntas variadas de los módulos desbloqueados,
   sin presión de tiempo (no afecta estrellas).
@@ -90,9 +91,13 @@ ejercicios numéricos **cambian en cada intento**.
   por logros. Reglas de equipamiento: un marco/fondo/título/efecto/tema a la
   vez y varios accesorios combinables.
 - **Leaderboard compartido** 🏆 con medallas para el top 3, búsqueda por
-  nombre o apodo, ordenar por XP/nivel/racha/promedio, y avatar/foto con el
-  marco y título equipados. Se sincroniza con `leaderboard.json`; el
-  administrador (perfil "Oliver" + contraseña) lo edita y publica.
+  nombre, ordenar por XP/nivel/racha/promedio, y avatar con el marco, la
+  insignia destacada y el título equipados. Se sincroniza con
+  `leaderboard.json`; el administrador (perfil "Oliver" + contraseña
+  `OliverPapi`) lo edita y publica.
+- **Tareas compartidas** 📋 vía `tasks.json`: el admin exporta el archivo y lo
+  sube al repositorio; todos los alumnos reciben tareas y fechas al abrir la
+  vista o tocar “Actualizar”. Todas las fechas y horas usan **CDMX (UTC-6)**.
 - **PWA instalable** 📱: agrégala a la pantalla de inicio del celular;
   funciona offline después de la primera visita (service worker + manifest).
 - **Sonidos** (WebAudio con fallback `<audio>`) que se activan/desactivan con
@@ -127,12 +132,14 @@ La barra de XP del encabezado abre la **ruta de niveles**: cada nivel
 desbloquea avatares, títulos (Aprendiz → Actuario Senior) y accesorios para
 el avatar personalizable.
 
-## 🧑‍🎨 Avatar personalizable (beta)
+## 🧑‍🎨 Avatar personalizable
 
-Constructor de avatar con aspecto 3D (SVG con degradados): tono de piel,
-peinado, color de cabello, ojos, fondo y accesorios que se desbloquean por
-nivel. Es una **función experimental activable/desactivable** desde
-Preferencias; al desactivarla se usa el avatar emoji de siempre.
+Tres modos elegibles desde el perfil: **emoji**, **foto** (subes una imagen que
+se recorta en círculo) o **avatar 3D** (SVG editable: piel, peinado, color de
+cabello y ojos). Sobre cualquiera de los tres se aplican el **marco**, el
+**fondo**, los **accesorios** (varios a la vez) y el **efecto** equipados desde
+la tienda, con vista previa en vivo. Los efectos incluyen destellos, aura,
+estrellas, llamas y lluvia de confeti (que se dispara al responder bien).
 
 ## 📖 Guía de estudio progresiva
 

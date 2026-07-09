@@ -1,8 +1,8 @@
 /* Service worker de ActuarIQ: la app funciona offline una vez visitada.
-   - HTML y leaderboard.json: red primero (datos frescos), caché como respaldo.
+   - HTML, leaderboard.json y tasks.json: red primero (datos frescos), caché de respaldo.
    - Resto de archivos del mismo origen: caché primero. */
-const CACHE = 'actuariq-v2';
-const ASSETS = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png', './leaderboard.json'];
+const CACHE = 'actuariq-v3';
+const ASSETS = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png', './leaderboard.json', './tasks.json'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)).then(() => self.skipWaiting()));
@@ -19,7 +19,7 @@ self.addEventListener('activate', e => {
 self.addEventListener('fetch', e => {
   const url = new URL(e.request.url);
   if (url.origin !== location.origin || e.request.method !== 'GET') return;
-  const fresh = e.request.mode === 'navigate' || url.pathname.endsWith('leaderboard.json');
+  const fresh = e.request.mode === 'navigate' || url.pathname.endsWith('leaderboard.json') || url.pathname.endsWith('tasks.json');
   if (fresh) {
     e.respondWith(
       fetch(e.request)
