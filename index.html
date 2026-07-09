@@ -431,6 +431,21 @@ header.top{
 .mcard:nth-child(8){animation-delay:.21s}.mcard:nth-child(9){animation-delay:.24s}.mcard:nth-child(10){animation-delay:.27s}
 .mcard:nth-child(11){animation-delay:.3s}.mcard:nth-child(12){animation-delay:.33s}
 @media (prefers-reduced-motion: reduce){*{animation-duration:.01ms !important; transition-duration:.01ms !important}}
+/* ============ Perfil ============ */
+.fld{display:block; font-size:.8rem; font-weight:700; color:var(--ink2); margin:12px 0}
+.fld input:not([type=checkbox]), .fld select{margin-top:4px; width:100%}
+.fld.row{display:flex; align-items:center; justify-content:space-between; gap:12px; font-size:.88rem; padding:6px 0; border-bottom:1px dashed var(--line)}
+.fld.row input[type=checkbox]{width:20px; height:20px; accent-color:var(--accent); flex:none}
+.avatar-pick{display:flex; flex-wrap:wrap; gap:6px; justify-content:center; margin:10px 0}
+.avatar-pick .av{width:42px; height:42px; font-size:21px; border-radius:11px; border:2px solid var(--line); background:var(--surface); transition:transform .12s}
+.avatar-pick .av:hover{transform:scale(1.1)}
+.avatar-pick .av.on{border-color:var(--accent); background:color-mix(in srgb,var(--accent) 14%, var(--surface))}
+.profile-row{display:flex; align-items:center; gap:10px; padding:8px 12px; border:1px solid var(--line); border-radius:11px; margin-bottom:8px}
+.profile-row.active{border-color:var(--accent); background:color-mix(in srgb,var(--accent) 6%, var(--surface))}
+.profile-row .pr-av{font-size:22px}
+.profile-row .pr-name{flex:1; font-weight:700; font-size:.9rem; overflow:hidden; text-overflow:ellipsis}
+.btn.danger{background:var(--bad)}
+select.ainput{appearance:auto}
 /* ============ Responsive ============ */
 @media (max-width:720px){
   .app{padding:0 14px 70px}
@@ -473,6 +488,7 @@ header.top{
     <span><span class="lvlbar"><i id="lvlBar" style="width:0%"></i></span><small id="lvlXpTxt">0 XP</small></span>
   </div>
   <span class="chip streak" title="Racha de días de estudio"><span class="icon">🔥</span><b id="streakTxt">0</b></span>
+  <button class="iconbtn" id="btnProfile" title="Mi perfil y configuración">🎓</button>
   <button class="iconbtn" id="btnStats" title="Panel de estadísticas">📊</button>
   <button class="iconbtn" id="btnGuide" title="Guía de estudio (imprimir / PDF)">🖨️</button>
   <button class="iconbtn" id="btnSound" aria-pressed="true" title="Sonido">🔊</button>
@@ -488,6 +504,7 @@ header.top{
       <p>Avanza por 12 módulos resolviendo retos de Cálculo Actuarial. Necesitas <b>80%</b> para desbloquear el siguiente nivel. Gana XP, estrellas e insignias mientras dominas cada concepto.</p>
       <div class="actions">
         <button class="btn onhero" id="btnContinue">▶ Continuar donde me quedé</button>
+        <button class="btn onhero" id="btnExam">📝 Examen diario</button>
         <button class="btn ghost" id="btnFlash" style="background:rgba(255,255,255,.16); color:#fff; border-color:rgba(255,255,255,.35)">🃏 Flashcards de repaso</button>
         <button class="btn ghost" id="btnBlitz" style="background:rgba(255,255,255,.16); color:#fff; border-color:rgba(255,255,255,.35)">⚡ Reto contrarreloj</button>
       </div>
@@ -604,6 +621,15 @@ header.top{
     <div class="lesson" id="guideBody"></div>
   </section>
 
+  <!-- ================= VISTA: PERFIL ================= -->
+  <section id="view-profile" class="hidden">
+    <div class="session-top">
+      <button class="btn ghost small back" data-nav="home">← Volver</button>
+      <span class="qcount">👤 Mi perfil y configuración</span>
+    </div>
+    <div id="profileBody"></div>
+  </section>
+
 </main>
 
 <div id="modalHost"></div>
@@ -629,20 +655,37 @@ const fmtDur = sec => { sec=Math.round(sec); const h=Math.floor(sec/3600), m=Mat
   return h>0 ? h+' h '+m+' min' : (m>0 ? m+' min' : sec+' s'); };
 const clamp = (n,a,b) => Math.max(a,Math.min(b,n));
 
-/* ==================== Estado persistente ==================== */
-const KEY = 'actuariq_v1';
+/* ==================== Perfiles y estado persistente ==================== */
+const PKEY = 'actuariq_profiles_v1';
 const DEFAULT_STATE = () => ({
   xp:0, sound:true, theme:null,
   streak:0, lastDay:null, totalTime:0, bestBlitz:0,
+  examDay:null, examHistory:[],   // examen diario: {t, score, sec}
+  stepsOnOk:false, confetti:true,
   modules:{},           // id -> {best, stars, attempts, done}
   history:[],           // {t, mod, score, xp, sec}
   concepts:{},          // topic -> {ok, bad}
   badges:[]             // ids de insignias ganadas
 });
-let S;
-try { S = Object.assign(DEFAULT_STATE(), JSON.parse(localStorage.getItem(KEY) || '{}')); }
-catch(e){ S = DEFAULT_STATE(); }
-const save = () => { try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){} };
+let PROFILES;
+try { PROFILES = JSON.parse(localStorage.getItem(PKEY) || 'null'); } catch(e){ PROFILES = null; }
+if(!PROFILES || !Array.isArray(PROFILES.list) || !PROFILES.list.length){
+  const pid = 'p' + Date.now().toString(36);
+  PROFILES = { active:pid, onboarded:false, list:[{id:pid, name:'Estudiante', avatar:'🎓', created:Date.now()}] };
+  // migración desde la versión sin perfiles
+  const legacy = localStorage.getItem('actuariq_v1');
+  if(legacy){ try{ localStorage.setItem('actuariq_u_'+pid, legacy); localStorage.removeItem('actuariq_v1'); PROFILES.onboarded = true; }catch(e){} }
+  try{ localStorage.setItem(PKEY, JSON.stringify(PROFILES)); }catch(e){}
+}
+const saveProfiles = () => { try{ localStorage.setItem(PKEY, JSON.stringify(PROFILES)); }catch(e){} };
+const dataKey = () => 'actuariq_u_' + PROFILES.active;
+const activeProfile = () => PROFILES.list.find(p => p.id === PROFILES.active) || PROFILES.list[0];
+function loadState(){
+  try { return Object.assign(DEFAULT_STATE(), JSON.parse(localStorage.getItem(dataKey()) || '{}')); }
+  catch(e){ return DEFAULT_STATE(); }
+}
+let S = loadState();
+const save = () => { try{ localStorage.setItem(dataKey(), JSON.stringify(S)); }catch(e){} };
 
 /* Niveles: XP necesario crece cuadráticamente */
 const levelOf   = xp => Math.floor(Math.sqrt(xp/60)) + 1;
@@ -724,6 +767,7 @@ function toast(msg, ms=3200){
   setTimeout(()=>{ t.style.transition='opacity .4s'; t.style.opacity='0'; setTimeout(()=>t.remove(),400); }, ms);
 }
 function confetti(n=60){
+  if(S.confetti === false) return;
   const colors = ['#2a78d6','#1baf7a','#eda100','#4a3aa7','#e34948','#e87ba4','#eb6834'];
   for(let i=0;i<n;i++){
     const p = document.createElement('div');
@@ -788,7 +832,7 @@ const TIPS = [
 ];
 
 /* ==================== Navegación ==================== */
-const VIEWS = ['home','lesson','session','result','memo','escape','flash','blitz','stats','guide'];
+const VIEWS = ['home','lesson','session','result','memo','escape','flash','blitz','stats','guide','profile'];
 let sessionTimer = null, memoTimerInt = null, blitzInt = null;
 function showView(name){
   VIEWS.forEach(v => $('#view-'+v).classList.toggle('hidden', v!==name));
@@ -807,6 +851,7 @@ function renderHeader(){
   $('#lvlBar').style.width = Math.round(li.frac*100)+'%';
   $('#lvlXpTxt').textContent = S.xp+' XP · faltan '+li.toNext;
   $('#streakTxt').textContent = S.streak;
+  $('#btnProfile').textContent = activeProfile().avatar;
   $('#btnSound').textContent = S.sound ? '🔊' : '🔇';
   $('#btnSound').setAttribute('aria-pressed', S.sound);
 }
@@ -833,10 +878,16 @@ function renderHome(){
     tile('⏱️','Tiempo de estudio', fmtDur(S.totalTime), '', 'acumulado') +
     tile('⚡','XP total', S.xp, '', 'Nivel '+levelInfo().lvl);
   $('#modMeta').textContent = o.done+' / '+o.total+' completados · se desbloquea con ≥ 80%';
-  // saludo según avance
-  $('#heroTitle').textContent = o.done===0 ? '¡Bienvenido, futuro actuario! 👋'
-    : o.done===MODULES.length ? '🏅 ¡Dominaste todos los módulos!'
-    : '¡Sigue así! Vas '+o.done+' de '+o.total+' módulos 💪';
+  // saludo según avance, personalizado con el perfil
+  const pname = activeProfile().name.split(' ')[0];
+  $('#heroTitle').textContent = o.done===0 ? '¡Bienvenido, '+pname+'! 👋'
+    : o.done===MODULES.length ? '🏅 ¡Dominaste todos los módulos, '+pname+'!'
+    : '¡Sigue así, '+pname+'! Vas '+o.done+' de '+o.total+' módulos 💪';
+  // estado del examen diario
+  const doneToday = S.examDay === todayKey();
+  $('#btnExam').innerHTML = (doneToday && S.examHistory.length)
+    ? '📝 Examen de hoy: '+S.examHistory[0].score+'% ✓'
+    : '📝 Examen diario';
   // grid de módulos
   const colors = ['var(--c1)','var(--c2)','var(--c3)','var(--c4)','var(--c5)','var(--c6)','var(--c7)','var(--c8)','var(--c1)','var(--c2)','var(--c5)','var(--c8)'];
   $('#moduleGrid').innerHTML = MODULES.map((m,i)=>{
@@ -920,7 +971,19 @@ function settle(q, frac, detailHtml){
   trackConcept(q.topic, frac >= 0.75);
   const xp = Math.round(12*frac);
   SES.xp += xp;
-  SES.recap.push({ ok, frac, prompt: q.plain || q.prompt.replace(/<[^>]*>/g,''), note: ok ? '' : (q.correctText||'') });
+  SES.recap.push({ ok, frac, prompt: q.plain || q.prompt.replace(/<[^>]*>/g,''), note: (SES.exam || !ok) ? (q.correctText||'') : '' });
+  if(SES.exam){
+    // modo examen: no se revela la respuesta hasta el final
+    sfx('flip');
+    const card = $('#qHost .qcard');
+    const note = document.createElement('div');
+    note.className = 'fb';
+    note.style.background = 'var(--surface2)'; note.style.borderColor = 'var(--line)';
+    note.innerHTML = '<div class="fb-head" style="color:var(--ink2)">📩 Respuesta registrada ('+(SES.i+1)+' de '+SES.qs.length+')</div>';
+    card.appendChild(note);
+    setTimeout(() => { if(!SES) return; SES.i++; SES.i < SES.qs.length ? renderQ() : finishExam(); }, 600);
+    return;
+  }
   sfx(ok ? 'ok' : 'bad');
   showFeedback(q, ok, frac, xp, detailHtml);
 }
@@ -934,7 +997,7 @@ function showFeedback(q, ok, frac, xp, detailHtml){
   if(detailHtml) inner += detailHtml;
   if(!ok && q.explain) inner += '<div class="fb-exp" style="margin-top:6px">📌 '+q.explain+'</div>';
   if(q.steps && !ok) inner += '<div style="margin-top:10px;font-size:.85rem;font-weight:800">🧮 Solución paso a paso:</div><ol class="steps">'+q.steps.map(s=>'<li>'+s+'</li>').join('')+'</ol>';
-  if(q.steps && ok && q.showStepsOnOk) inner += '<div style="margin-top:10px;font-size:.85rem;font-weight:800">🧮 Procedimiento:</div><ol class="steps">'+q.steps.map(s=>'<li>'+s+'</li>').join('')+'</ol>';
+  if(q.steps && ok && (q.showStepsOnOk || S.stepsOnOk)) inner += '<div style="margin-top:10px;font-size:.85rem;font-weight:800">🧮 Procedimiento:</div><ol class="steps">'+q.steps.map(s=>'<li>'+s+'</li>').join('')+'</ol>';
   if(ok) inner += '<div class="fb-tip">💡 <b>Tip actuarial:</b> '+(q.tip||pick(TIPS))+'</div>';
   fb.innerHTML = inner;
   card.appendChild(fb);
@@ -1024,8 +1087,11 @@ RENDER.mc = (q, card) => {
     b.innerHTML = '<span class="key">'+KEYS[i]+'</span><span>'+op.t+'</span>';
     b.onclick = () => {
       wrap.querySelectorAll('.opt').forEach(o => o.disabled = true);
-      q.options.forEach((o2, j) => { if(o2.ok) wrap.children[j].classList.add('correct'); });
-      if(!op.ok) b.classList.add('wrong');
+      if(SES && SES.exam){ b.classList.add('sel'); }
+      else {
+        q.options.forEach((o2, j) => { if(o2.ok) wrap.children[j].classList.add('correct'); });
+        if(!op.ok) b.classList.add('wrong');
+      }
       settle(q, op.ok ? 1 : 0);
     };
     wrap.appendChild(b);
@@ -1041,8 +1107,11 @@ RENDER.tf = (q, card) => {
     b.onclick = () => {
       wrap.querySelectorAll('.opt').forEach(o => o.disabled = true);
       const ok = val === q.answer;
-      b.classList.add(ok ? 'correct' : 'wrong');
-      if(!ok) wrap.children[q.answer ? 0 : 1].classList.add('correct');
+      if(SES && SES.exam){ b.classList.add('sel'); }
+      else {
+        b.classList.add(ok ? 'correct' : 'wrong');
+        if(!ok) wrap.children[q.answer ? 0 : 1].classList.add('correct');
+      }
       settle(q, ok ? 1 : 0);
     };
     wrap.appendChild(b);
@@ -1062,7 +1131,7 @@ RENDER.fill = (q, card) => {
     if(!inp.value.trim()) return;
     const ok = q.accept.map(normTxt).includes(normTxt(inp.value));
     inp.disabled = true; btn.disabled = true;
-    inp.classList.add(ok ? 'ok' : 'err');
+    if(!(SES && SES.exam)) inp.classList.add(ok ? 'ok' : 'err');
     settle(q, ok ? 1 : 0);
   };
   btn.onclick = go;
@@ -1086,7 +1155,7 @@ RENDER.numeric = (q, card) => {
     const tol = q.tol != null ? q.tol : Math.max(0.01, Math.abs(q.answer)*0.005);
     const ok = Math.abs(val - q.answer) <= tol;
     inp.disabled = true; btn.disabled = true;
-    inp.classList.add(ok ? 'ok' : 'err');
+    if(!(SES && SES.exam)) inp.classList.add(ok ? 'ok' : 'err');
     settle(q, ok ? 1 : 0);
   };
   btn.onclick = go;
@@ -1154,18 +1223,21 @@ RENDER.match = (q, card) => {
   const btn = document.createElement('button'); btn.className = 'btn'; btn.textContent = 'Comprobar'; btn.disabled = true;
   act.appendChild(btn); card.appendChild(act);
   btn.onclick = () => {
+    const examMode = SES && SES.exam;
     let good = 0;
     q.pairs.forEach((p, i) => {
       const pos = linkOf[i];
       const isOk = pos !== undefined && rights[pos].orig === i;
       if(isOk) good++;
-      lBtns[i].style.borderColor = isOk ? 'var(--good)' : 'var(--bad)';
-      if(pos !== undefined) rBtns[pos].style.borderColor = isOk ? 'var(--good)' : 'var(--bad)';
+      if(!examMode){
+        lBtns[i].style.borderColor = isOk ? 'var(--good)' : 'var(--bad)';
+        if(pos !== undefined) rBtns[pos].style.borderColor = isOk ? 'var(--good)' : 'var(--bad)';
+      }
       lBtns[i].disabled = true;
     });
     rBtns.forEach(b => b.disabled = true);
     act.remove();
-    const detail = good === n ? '' :
+    const detail = (examMode || good === n) ? '' :
       '<div class="fb-exp" style="margin-top:6px"><b>Parejas correctas:</b><br>' +
       q.pairs.map(p => '• '+esc(p.l)+' ↔ '+esc(p.r)).join('<br>') + '</div>';
     settle(q, good/n, detail);
@@ -1229,16 +1301,17 @@ RENDER.drag = (q, card) => {
   const btn = document.createElement('button'); btn.className = 'btn'; btn.textContent = 'Comprobar'; btn.disabled = true;
   act.appendChild(btn); card.appendChild(act);
   btn.onclick = () => {
+    const examMode = SES && SES.exam;
     let good = 0;
     q.items.forEach((it, zi) => {
       const chip = placed[zi];
       const isOk = chip && +chip.dataset.orig === zi;
       if(isOk) good++;
-      zgrid.children[zi].style.borderColor = isOk ? 'var(--good)' : 'var(--bad)';
+      if(!examMode) zgrid.children[zi].style.borderColor = isOk ? 'var(--good)' : 'var(--bad)';
     });
     $$('.dragchip').forEach(c => { c.draggable = false; c.style.pointerEvents = 'none'; });
     act.remove();
-    const detail = good === n ? '' :
+    const detail = (examMode || good === n) ? '' :
       '<div class="fb-exp" style="margin-top:6px"><b>Combinación correcta:</b><br>' +
       q.items.map(it => '• '+esc(it.label)+' → '+esc(it.def)).join('<br>') + '</div>';
     settle(q, good/n, detail);
@@ -1278,16 +1351,17 @@ RENDER.order = (q, card) => {
   const btn = document.createElement('button'); btn.className = 'btn'; btn.textContent = 'Comprobar'; btn.disabled = true;
   act.appendChild(btn); card.appendChild(act);
   btn.onclick = () => {
+    const examMode = SES && SES.exam;
     let good = 0;
     seq.forEach((pos, k) => {
       const isOk = disp[pos].orig === k;
       if(isOk) good++;
-      items[pos].style.borderColor = isOk ? 'var(--good)' : 'var(--bad)';
+      if(!examMode) items[pos].style.borderColor = isOk ? 'var(--good)' : 'var(--bad)';
       items[pos].disabled = true;
     });
     items.forEach(b => b.disabled = true);
     act.remove();
-    const detail = good === n ? '' :
+    const detail = (examMode || good === n) ? '' :
       '<div class="fb-exp" style="margin-top:6px"><b>Orden correcto:</b><br>' +
       q.stepsList.map((s, i) => (i+1)+'. '+esc(s)).join('<br>') + '</div>';
     settle(q, good/n, detail);
@@ -1338,7 +1412,7 @@ RENDER.formula = (q, card) => {
     const norm = normFormula(inp.value);
     const ok = q.accept.includes(norm);
     inp.disabled = true; btn.disabled = true;
-    inp.classList.add(ok ? 'ok' : 'err');
+    if(!(SES && SES.exam)) inp.classList.add(ok ? 'ok' : 'err');
     settle(q, ok ? 1 : 0);
   };
   btn.onclick = go;
@@ -2366,7 +2440,9 @@ const BADGES = [
   {id:'blitz10', ico:'⚡', name:'Velocista',          desc:'10+ aciertos en el contrarreloj',  test:()=>S.bestBlitz>=10},
   {id:'xp1000',  ico:'🌟', name:'Estrella en ascenso', desc:'Acumula 1,000 XP',                test:()=>S.xp>=1000},
   {id:'scholar', ico:'📚', name:'Estudioso',          desc:'60 minutos de estudio',            test:()=>S.totalTime>=3600},
-  {id:'tryhard', ico:'💪', name:'Persistente',        desc:'20 actividades realizadas',        test:()=>S.history.length>=20}
+  {id:'tryhard', ico:'💪', name:'Persistente',        desc:'20 actividades realizadas',        test:()=>S.history.length>=20},
+  {id:'exam1',   ico:'📝', name:'Primer examen',      desc:'Completa un examen diario',        test:()=>(S.examHistory||[]).length>=1},
+  {id:'exam90',  ico:'🏅', name:'Sobresaliente',      desc:'≥ 90% en un examen diario',        test:()=>(S.examHistory||[]).some(e=>e.score>=90)}
 ];
 function checkBadges(){
   BADGES.forEach(b => {
@@ -2380,6 +2456,8 @@ function checkBadges(){
 /* ==================== Panel de estadísticas ==================== */
 function renderStats(){
   const o = overallStats();
+  const exams = S.examHistory || [];
+  const exAvg = exams.length ? Math.round(exams.reduce((a,b)=>a+b.score,0)/exams.length) : 0;
   let html = '<div class="stats-strip">'
     + tile('✅','Módulos completados', o.done, '', 'de '+o.total)
     + tile('📈','Promedio general', Math.round(o.avg), '%', S.history.length+' actividades')
@@ -2387,6 +2465,7 @@ function renderStats(){
     + tile('⏱️','Tiempo estudiado', fmtDur(S.totalTime), '', 'acumulado')
     + tile('⚡','XP', S.xp, '', 'Nivel '+levelInfo().lvl)
     + tile('🔥','Racha', S.streak, S.streak===1?' día':' días', 'mejor blitz: '+S.bestBlitz+' aciertos')
+    + tile('📝','Exámenes diarios', exams.length, '', exams.length ? 'promedio '+exAvg+'%' : 'aún sin exámenes')
     + '</div>';
   html += '<div class="dash-grid">';
   // Progreso por módulo
@@ -2442,6 +2521,13 @@ function renderStats(){
           + '<td class="num">'+h.score+'%</td><td class="num">'+fmtDur(h.sec)+'</td></tr>').join('')
         + '</table>'
       : '<p style="color:var(--muted);font-size:.85rem">Tu historial aparecerá aquí.</p>')
+    + '</div>';
+  // Exámenes diarios
+  html += '<div class="panel"><h3>📝 Exámenes diarios</h3>'
+    + (exams.length ? '<table class="hist-table"><tr><th>Fecha</th><th>Calificación</th><th>Tiempo</th></tr>'
+        + exams.slice(0,10).map(e => '<tr><td>'+fmtDate(e.t)+'</td><td class="num"><b>'+e.score+'%</b></td><td class="num">'+fmtDur(e.sec)+'</td></tr>').join('')
+        + '</table><p class="q-help">Promedio: <b>'+exAvg+'%</b> · Un examen por día.</p>'
+      : '<p style="color:var(--muted);font-size:.85rem">Aún no presentas ningún examen diario. ¡Inténtalo desde la pantalla de inicio!</p>')
     + '</div>';
   html += '</div>';
   $('#statsBody').innerHTML = html;
@@ -2499,11 +2585,245 @@ $('#btnPrint').addEventListener('click', () => {
   window.print();
 });
 
+/* ==================== Examen diario ==================== */
+function buildExam(){
+  const usedTF = new Set(), usedF = new Set(), usedP = new Set();
+  return shuffle([
+    qConceptMC(), qConceptMCrev(), qTF_M1(usedTF), qFill_M1(usedF),
+    qFreq(), qSev(), qPrimaRiesgo(),
+    qCopagoIns(), qCoasIns(), qDedFull(pick(['cliente','aseg'])),
+    qPheno(usedP),
+    pick([qInfPrima, qDepAuto, qDevImport])()
+  ]);
+}
+function startExam(){
+  if(S.examDay === todayKey()){
+    const last = S.examHistory.length ? S.examHistory[0].score+'%' : '—';
+    toast('📝 Ya presentaste el examen de hoy ('+last+'). Vuelve mañana 😉');
+    return;
+  }
+  touchStreak();
+  SES = { id:'exam', exam:true, qs:buildExam(), i:0, pts:0, xp:0, t0:Date.now(), recap:[] };
+  showView('session'); renderQ();
+  toast('📝 Examen diario: '+SES.qs.length+' preguntas. Las respuestas se revelan al final. ¡Suerte!');
+}
+function finishExam(){
+  const n = SES.qs.length;
+  const score = Math.round(100*SES.pts/n);
+  const sec = (Date.now()-SES.t0)/1000;
+  const recap = SES.recap;
+  SES = null;
+  S.examDay = todayKey();
+  S.examHistory.unshift({t:Date.now(), score, sec:Math.round(sec)});
+  if(S.examHistory.length > 60) S.examHistory.length = 60;
+  S.totalTime += sec;
+  const xp = Math.round(score/2) + (score>=80 ? 25 : 0);
+  S.xp += xp;
+  save(); checkBadges(); renderHeader();
+  renderExamResult(score, xp, sec, recap);
+  if(score>=80){ sfx('win'); confetti(90); } else sfx('bad');
+}
+function renderExamResult(score, xp, sec, recap){
+  const R = 56, C = 2*Math.PI*R;
+  const passed = score >= 80;
+  const okCount = recap.filter(r=>r.ok).length;
+  const title = score>=90 ? '¡Sobresaliente! 🏅' : passed ? '¡Muy buen examen!' : score>=60 ? 'Buen intento' : 'A repasar y volver mañana';
+  let html = '<div class="result-card">'
+    + '<div class="big-ico">'+(score>=90?'🏅':passed?'🎉':'📚')+'</div>'
+    + '<h2>'+title+'</h2>'
+    + '<div class="r-sub">📝 Examen diario · '+new Date().toLocaleDateString('es-MX',{day:'numeric',month:'long'})+'</div>'
+    + '<div class="r-score-ring"><svg width="130" height="130">'
+    + '<circle cx="65" cy="65" r="'+R+'" fill="none" stroke="var(--surface3)" stroke-width="12"/>'
+    + '<circle cx="65" cy="65" r="'+R+'" fill="none" stroke="'+(passed?'var(--good)':'var(--bad)')+'" stroke-width="12" stroke-linecap="round" '
+    + 'stroke-dasharray="'+C+'" stroke-dashoffset="'+(C*(1-score/100))+'" style="transition:stroke-dashoffset 1s cubic-bezier(.22,1,.36,1)"/>'
+    + '</svg><span class="val">'+score+'%</span></div>'
+    + '<p style="font-weight:700">Tu calificación de hoy: '+score+'/100</p>'
+    + '<div class="r-meta"><span><b>'+okCount+'/'+recap.length+'</b>aciertos</span>'
+    + '<span><b>+'+xp+'</b>XP</span><span><b>'+fmtDur(sec)+'</b>tiempo</span></div>'
+    + '<p style="font-size:.85rem;color:var(--ink2)">Solo se permite un examen por día: el próximo estará disponible mañana. Abajo puedes revisar cada pregunta.</p>'
+    + '<div class="q-actions" style="justify-content:center">'
+    + '<button class="btn ghost" id="rHome">🏠 Inicio</button>'
+    + '<button class="btn" id="rStats">📊 Mis estadísticas</button>'
+    + '</div></div>';
+  html += '<div class="recap"><div class="section-h"><h2 style="font-size:1rem">📋 Revisión del examen</h2><span class="line"></span></div>'
+    + recap.map(r => '<div class="recap-item '+(r.ok?'ok':'bad')+'"><span class="ri-ico">'+(r.ok?'✔':'✘')+'</span>'
+      + '<span>'+esc(r.prompt).slice(0,180)+(r.note && !r.ok ? '<br><b style="font-size:.78rem">Respuesta correcta: '+r.note+'</b>' : '')+'</span></div>').join('')
+    + '</div>';
+  $('#view-result').innerHTML = html;
+  showView('result');
+  $('#rHome').onclick = ()=>{ sfx('click'); goHome(); };
+  $('#rStats').onclick = ()=>{ sfx('click'); renderStats(); showView('stats'); };
+}
+$('#btnExam').addEventListener('click', ()=>{ sfx('click'); startExam(); });
+
+/* ==================== Perfil y configuración ==================== */
+const AVATARS = ['🎓','🧑‍🎓','👩‍🎓','🦉','🦊','🐼','🚀','🌟','🛡️','📐','🧮','🐯'];
+function renderProfile(){
+  const p = activeProfile();
+  const toggleRow = (id, label, on) =>
+    '<label class="fld row"><span>'+label+'</span><input type="checkbox" id="'+id+'"'+(on?' checked':'')+'></label>';
+  let html = '<div class="dash-grid">';
+  // — Tarjeta de perfil —
+  html += '<div class="panel"><h3>👤 Mi perfil</h3>'
+    + '<div style="text-align:center;font-size:54px">'+p.avatar+'</div>'
+    + '<div class="avatar-pick">'+AVATARS.map(a=>'<button class="av'+(a===p.avatar?' on':'')+'" data-av="'+a+'">'+a+'</button>').join('')+'</div>'
+    + '<label class="fld">Nombre<input class="ainput" id="pfName" maxlength="24" value="'+esc(p.name)+'"></label>'
+    + '<button class="btn small" id="pfSave">💾 Guardar cambios</button>'
+    + '<p class="q-help">Perfil creado el '+new Date(p.created).toLocaleDateString('es-MX')+' · Nivel '+levelInfo().lvl
+    + ' · '+S.xp+' XP · '+S.badges.length+'/'+BADGES.length+' insignias</p></div>';
+  // — Perfiles del dispositivo —
+  html += '<div class="panel"><h3>👥 Perfiles en este dispositivo</h3>'
+    + PROFILES.list.map(pr =>
+      '<div class="profile-row'+(pr.id===PROFILES.active?' active':'')+'">'
+      + '<span class="pr-av">'+pr.avatar+'</span><span class="pr-name">'+esc(pr.name)+'</span>'
+      + (pr.id===PROFILES.active ? '<span class="tag dom">✔ Activo</span>'
+        : '<button class="btn ghost small" data-use="'+pr.id+'">Usar</button>')
+      + (PROFILES.list.length>1 ? '<button class="iconbtn" style="width:32px;height:32px;font-size:14px" title="Eliminar este perfil" data-del="'+pr.id+'">🗑️</button>' : '')
+      + '</div>').join('')
+    + '<div class="answer-row"><input class="ainput" id="newProfName" placeholder="Nombre del nuevo perfil…" maxlength="24">'
+    + '<button class="btn small" id="pfNew">＋ Crear</button></div>'
+    + '<p class="q-help">Cada perfil guarda su propio progreso en este navegador. Para llevarlo a otro dispositivo usa Exportar / Importar.</p></div>';
+  // — Preferencias —
+  html += '<div class="panel"><h3>⚙️ Preferencias</h3>'
+    + '<label class="fld">🎨 Tema<select class="ainput" id="prefTheme">'
+    + '<option value="">🖥️ Según el sistema</option><option value="light">☀️ Claro</option><option value="dark">🌙 Oscuro</option>'
+    + '</select></label>'
+    + toggleRow('prefSound','🔊 Sonidos', S.sound)
+    + toggleRow('prefConfetti','🎉 Confeti al aprobar', S.confetti !== false)
+    + toggleRow('prefSteps','🧮 Mostrar el procedimiento también al acertar', !!S.stepsOnOk)
+    + '</div>';
+  // — Datos —
+  html += '<div class="panel"><h3>💾 Mis datos</h3>'
+    + '<p style="font-size:.85rem;color:var(--ink2)">Tu progreso vive solo en este navegador. Exporta un respaldo <b>JSON</b> para guardarlo o moverlo a otro dispositivo, e impórtalo cuando lo necesites.</p>'
+    + '<div class="q-actions" style="justify-content:flex-start;flex-wrap:wrap">'
+    + '<button class="btn" id="btnExport">⬇️ Exportar JSON</button>'
+    + '<button class="btn ghost" id="btnImport">⬆️ Importar JSON</button>'
+    + '<input type="file" id="importFile" accept=".json,application/json" class="hidden">'
+    + '</div>'
+    + '<hr style="border:none;border-top:1px solid var(--line);margin:16px 0">'
+    + '<button class="btn danger small" id="btnReset">🗑️ Reiniciar el progreso de este perfil</button></div>';
+  html += '</div>';
+  $('#profileBody').innerHTML = html;
+  $('#prefTheme').value = S.theme || '';
+  // — Eventos —
+  $$('#profileBody .avatar-pick .av').forEach(b => b.addEventListener('click', () => {
+    p.avatar = b.dataset.av; saveProfiles(); renderHeader(); renderProfile(); sfx('flip');
+  }));
+  $('#pfSave').addEventListener('click', () => {
+    const nm = $('#pfName').value.trim();
+    if(nm) p.name = nm;
+    saveProfiles(); renderHeader(); renderProfile(); toast('💾 Perfil actualizado'); sfx('ok');
+  });
+  $$('#profileBody [data-use]').forEach(b => b.addEventListener('click', () => switchProfile(b.dataset.use)));
+  $$('#profileBody [data-del]').forEach(b => b.addEventListener('click', () => deleteProfile(b.dataset.del)));
+  $('#pfNew').addEventListener('click', () => {
+    const nm = $('#newProfName').value.trim();
+    if(!nm){ toast('Escribe un nombre para el nuevo perfil'); return; }
+    createProfile(nm);
+  });
+  $('#prefTheme').addEventListener('change', e => { S.theme = e.target.value || null; save(); applyTheme(); sfx('click'); });
+  $('#prefSound').addEventListener('change', e => { S.sound = e.target.checked; save(); renderHeader(); if(S.sound) sfx('ok'); });
+  $('#prefConfetti').addEventListener('change', e => { S.confetti = e.target.checked; save(); if(S.confetti) confetti(25); });
+  $('#prefSteps').addEventListener('change', e => { S.stepsOnOk = e.target.checked; save(); sfx('click'); });
+  $('#btnExport').addEventListener('click', exportData);
+  $('#btnImport').addEventListener('click', () => $('#importFile').click());
+  $('#importFile').addEventListener('change', e => { if(e.target.files[0]) importData(e.target.files[0]); e.target.value=''; });
+  $('#btnReset').addEventListener('click', () => {
+    if(!confirm('Esto borrará TODO el progreso del perfil "'+p.name+'" (XP, módulos, exámenes, insignias). ¿Continuar?')) return;
+    if(!confirm('Última confirmación: el borrado no se puede deshacer. ¿Reiniciar?')) return;
+    S = DEFAULT_STATE(); save(); applyTheme(); renderHeader(); renderProfile(); toast('🗑️ Progreso reiniciado'); sfx('bad');
+  });
+}
+function switchProfile(id){
+  PROFILES.active = id; saveProfiles();
+  S = loadState(); applyTheme(); renderHeader(); renderProfile();
+  toast('👤 Perfil activo: '+esc(activeProfile().name)); sfx('unlock');
+}
+function createProfile(name){
+  const id = 'p' + Date.now().toString(36) + ri(10,99);
+  PROFILES.list.push({id, name, avatar: pick(AVATARS), created: Date.now()});
+  PROFILES.active = id; saveProfiles();
+  S = loadState(); save(); applyTheme(); renderHeader(); renderProfile();
+  toast('👤 Perfil "'+esc(name)+'" creado y activo'); sfx('unlock');
+}
+function deleteProfile(id){
+  const pr = PROFILES.list.find(x => x.id === id);
+  if(!pr || PROFILES.list.length < 2) return;
+  if(!confirm('¿Eliminar el perfil "'+pr.name+'" y todo su progreso? No se puede deshacer.')) return;
+  try{ localStorage.removeItem('actuariq_u_'+id); }catch(e){}
+  PROFILES.list = PROFILES.list.filter(x => x.id !== id);
+  if(PROFILES.active === id){ PROFILES.active = PROFILES.list[0].id; S = loadState(); applyTheme(); }
+  saveProfiles(); renderHeader(); renderProfile(); toast('🗑️ Perfil eliminado'); sfx('bad');
+}
+function exportData(){
+  const p = activeProfile();
+  const payload = { app:'actuariq', version:1, exported:new Date().toISOString(),
+    profile:{ name:p.name, avatar:p.avatar, created:p.created }, data:S };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'actuariq-'+p.name.toLowerCase().replace(/[^a-z0-9ñáéíóú]+/gi,'-')+'-'+todayKey()+'.json';
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(a.href), 3000);
+  toast('⬇️ Respaldo exportado como archivo JSON'); sfx('ok');
+}
+function importData(file){
+  const rd = new FileReader();
+  rd.onload = () => {
+    try{
+      const payload = JSON.parse(rd.result);
+      const data = (payload && payload.app === 'actuariq' && payload.data) ? payload.data
+        : (payload && typeof payload.xp === 'number' ? payload : null);
+      if(!data) throw new Error('formato');
+      if(!confirm('Esto reemplazará TODO el progreso del perfil actual ("'+activeProfile().name+'") con el del archivo. ¿Continuar?')) return;
+      S = Object.assign(DEFAULT_STATE(), data);
+      if(payload.profile){
+        const p = activeProfile();
+        if(payload.profile.name) p.name = payload.profile.name;
+        if(payload.profile.avatar) p.avatar = payload.profile.avatar;
+        saveProfiles();
+      }
+      save(); applyTheme(); renderHeader(); renderProfile();
+      toast('⬆️ Datos importados correctamente'); sfx('unlock');
+    }catch(e){ toast('❌ El archivo no es un respaldo válido de ActuarIQ'); sfx('bad'); }
+  };
+  rd.readAsText(file);
+}
+$('#btnProfile').addEventListener('click', ()=>{ sfx('click'); renderProfile(); showView('profile'); });
+
+/* ==================== Bienvenida (primer uso) ==================== */
+function showOnboarding(){
+  let chosen = activeProfile().avatar;
+  const o = openModal('<div style="text-align:center"><div style="font-size:46px">🛡️</div>'
+    + '<h2>¡Bienvenido a ActuarIQ!</h2>'
+    + '<p style="color:var(--ink2);font-size:.9rem">Crea tu perfil para guardar tu progreso, XP e insignias en este navegador.</p>'
+    + '<div class="avatar-pick" id="obAv">'+AVATARS.slice(0,8).map(a=>'<button class="av'+(a===chosen?' on':'')+'" data-av="'+a+'">'+a+'</button>').join('')+'</div>'
+    + '<input class="ainput" id="obName" placeholder="Tu nombre…" maxlength="24" style="text-align:center;margin:8px 0;width:100%">'
+    + '<div class="q-actions" style="justify-content:center"><button class="btn" id="obGo" style="font-size:1rem">🚀 ¡Comenzar!</button></div></div>');
+  o.querySelectorAll('#obAv .av').forEach(b => b.addEventListener('click', () => {
+    chosen = b.dataset.av;
+    o.querySelectorAll('#obAv .av').forEach(x => x.classList.toggle('on', x === b));
+    sfx('flip');
+  }));
+  const go = () => {
+    const p = activeProfile();
+    const nm = o.querySelector('#obName').value.trim();
+    if(nm) p.name = nm;
+    p.avatar = chosen;
+    PROFILES.onboarded = true; saveProfiles();
+    closeModal(); renderHeader(); renderHome();
+    toast('👤 ¡Perfil listo, '+esc(p.name)+'! Mucho éxito 🍀'); sfx('unlock');
+  };
+  o.querySelector('#obGo').addEventListener('click', go);
+  o.querySelector('#obName').addEventListener('keydown', e => { if(e.key==='Enter') go(); });
+}
+
 /* ==================== Arranque ==================== */
 applyTheme();
 renderHeader();
 renderHome();
 showView('home');
+if(!PROFILES.onboarded) showOnboarding();
 
 </script>
 </body>

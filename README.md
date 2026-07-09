@@ -37,8 +37,10 @@ ejercicios numéricos **cambian en cada intento**.
 
 - **XP y niveles** con barra de experiencia en el encabezado.
 - **Estrellas por módulo**: ★ 80 %, ★★ 90 %, ★★★ 100 %.
-- **12 insignias** (Perfeccionista, Escapista, Memoria de elefante, rachas…).
+- **14 insignias** (Perfeccionista, Escapista, Memoria de elefante, rachas…).
 - **Racha diaria** 🔥 de días de estudio.
+- **Examen diario** 📝: 12 preguntas mixtas, un solo intento por día, con
+  calificación, revisión completa al final e historial de resultados.
 - **Reto contrarreloj** ⚡: 60 segundos de preguntas rápidas.
 - **Flashcards** 🃏 con las 25 tarjetas del glosario.
 - **Retroalimentación inmediata**: si fallas, verás la respuesta correcta, la
@@ -49,7 +51,18 @@ ejercicios numéricos **cambian en cada intento**.
 
 Estadísticas completas: módulos completados, promedio, precisión, tiempo
 estudiado, progreso por módulo y por tema, conceptos dominados / por reforzar,
-insignias, mejores resultados y últimas actividades.
+insignias, mejores resultados, últimas actividades e historial de exámenes
+diarios.
+
+## 👤 Perfiles y datos
+
+- **Perfiles personales**: cada estudiante crea su perfil (nombre + avatar);
+  un mismo navegador puede alojar varios perfiles con progreso independiente.
+- **Configuración** en el perfil: tema (sistema/claro/oscuro), sonidos,
+  confeti y "mostrar procedimiento también al acertar".
+- **Exportar / Importar JSON**: respaldo completo del progreso para moverlo
+  entre dispositivos o guardarlo.
+- **Reiniciar progreso** del perfil con doble confirmación.
 
 ## 🖨️ Guía de estudio (PDF)
 
