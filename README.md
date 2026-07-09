@@ -137,9 +137,18 @@ el avatar personalizable.
 Tres modos elegibles desde el perfil: **emoji**, **foto** (subes una imagen que
 se recorta en círculo) o **avatar 3D** (SVG editable: piel, peinado, color de
 cabello y ojos). Sobre cualquiera de los tres se aplican el **marco**, el
-**fondo**, los **accesorios** (varios a la vez) y el **efecto** equipados desde
-la tienda, con vista previa en vivo. Los efectos incluyen destellos, aura,
-estrellas, llamas y lluvia de confeti (que se dispara al responder bien).
+**fondo**, los **accesorios** (varios a la vez), el **título** y el **efecto**
+equipados desde la tienda, con vista previa en vivo. Los efectos incluyen
+destellos, aura, estrellas, llamas y lluvia de confeti (que se dispara al
+responder bien).
+
+El **vestidor** es de **dos columnas**: el avatar queda fijo (*sticky*) a un
+lado mientras equipas del otro, así los cambios se ven al instante sin bajar y
+subir. Es **colapsable** (para no ocupar espacio) y **responsive** (en móvil se
+apila y el avatar se mantiene visible arriba). Cada accesorio tiene su propia
+calibración (posición, escala y rotación) según su forma: la corona, la gorra
+y el sombrero de copa no comparten posición; el cigarro va en la boca, la
+espada apunta hacia arriba y los lentes quedan centrados en los ojos.
 
 ## 📖 Guía de estudio progresiva
 

@@ -569,13 +569,38 @@ details.coll-sec[open] > summary::before{transform:rotate(90deg)}
 .fld input:not([type=checkbox]), .fld select{margin-top:4px; width:100%}
 .fld.row{display:flex; align-items:center; justify-content:space-between; gap:12px; font-size:.88rem; padding:6px 0; border-bottom:1px dashed var(--line)}
 .fld.row input[type=checkbox]{width:20px; height:20px; accent-color:var(--accent); flex:none}
-.av-dress{margin-top:12px; border-top:1px solid var(--line); padding-top:8px}
-.av-dress > summary{cursor:pointer; font-size:.95rem; list-style:none; display:flex; align-items:center; gap:8px; padding:2px 0}
-.av-dress > summary::-webkit-details-marker{display:none}
-.av-dress > summary::before{content:'▸'; color:var(--muted); transition:transform .15s}
-.av-dress[open] > summary::before{transform:rotate(90deg)}
+/* ---- Vestidor (avatar + equipar en dos columnas, colapsable y responsive) ---- */
+.panel-dresser{grid-column:1/-1}
+.dresser-wrap{margin:8px 0 2px; border:1px solid var(--line); border-radius:14px; padding:0 14px 14px; background:var(--surface2)}
+.dresser-wrap > summary{cursor:pointer; font-weight:800; font-size:1rem; padding:13px 2px; list-style:none; display:flex; align-items:center; gap:8px}
+.dresser-wrap > summary::-webkit-details-marker{display:none}
+.dresser-wrap > summary::before{content:'▾'; color:var(--muted); transition:transform .15s}
+.dresser-wrap:not([open]) > summary::before{transform:rotate(-90deg)}
+.dw-hint{font-weight:500; color:var(--muted); font-size:.78rem}
+.dresser{display:grid; grid-template-columns:minmax(150px,210px) 1fr; gap:20px; align-items:start}
+.dresser-preview{position:sticky; top:74px; text-align:center; display:flex; flex-direction:column; align-items:center; gap:8px}
+.dresser-preview .dp-av{line-height:0}
+.dresser-preview .dp-id b{font-size:1.02rem}
+.dresser-preview .dp-id small{color:var(--ink2)}
+.dresser-preview .dp-tags{justify-content:center; margin:0}
+.dresser-dress{min-width:0}
+.dsec{border:1px solid var(--line); border-radius:12px; background:var(--surface); margin-bottom:10px; padding:0 12px}
+.dsec > summary{cursor:pointer; font-weight:700; font-size:.9rem; padding:11px 2px; list-style:none; display:flex; align-items:center; gap:8px}
+.dsec > summary::-webkit-details-marker{display:none}
+.dsec > summary::before{content:'▾'; color:var(--muted); font-size:.78rem; transition:transform .15s}
+.dsec:not([open]) > summary::before{transform:rotate(-90deg)}
+.dsec > summary small{font-weight:400; color:var(--muted); font-size:.76rem}
+.dsec .dsec-body{padding-bottom:12px}
 .eq-slot-label{font-size:.72rem; font-weight:800; color:var(--muted); text-transform:uppercase; letter-spacing:.04em; margin:2px 0 4px}
-.av-modes{display:flex; gap:6px; margin:8px 0}
+@media(max-width:720px){
+  .dresser{grid-template-columns:1fr; gap:8px}
+  .dresser-preview{display:contents}
+  .dp-av{position:sticky; top:56px; z-index:6; width:max-content; margin:4px auto; background:var(--surface2); border-radius:50%; padding:5px; box-shadow:0 4px 14px rgba(0,0,0,.18)}
+  .dp-id{text-align:center; margin-top:4px}
+  .dp-tags{margin-top:2px}
+  .av-modes{max-width:340px; margin:8px auto}
+}
+.av-modes{display:flex; gap:6px; margin:8px 0; width:100%}
 .av-mode{flex:1; padding:8px 6px; border:2px solid var(--line); border-radius:11px; background:var(--surface); font-weight:700; font-size:.82rem; cursor:pointer; transition:border-color .15s, background .15s}
 .av-mode.on{border-color:var(--accent); background:color-mix(in srgb,var(--accent) 12%, var(--surface))}
 .builder .builder-row{display:flex; align-items:center; gap:10px; padding:6px 0}
@@ -982,7 +1007,6 @@ const DEFAULT_STATE = () => ({
   equip:{frame:null, bg:null, acc:null, title:null}, // recompensas equipadas actualmente
   accentColor:null,     // color principal personalizado (hex) o null = por defecto
   soundVolume:0.7,      // volumen de los efectos de sonido (0-1)
-  lbGroup:'',           // grupo/salón para el leaderboard
   lbRank:null,          // última posición conocida en el leaderboard (para detectar "subiste de rango")
   lateNight:false, earlyBird:false,   // estudió de madrugada / muy temprano (logros secretos)
   activeSubject:'ca3',  // materia actualmente desplegada
@@ -4820,54 +4844,59 @@ function svgTophat(s, w){ w = Math.round(s*(w||0.6)); return '<svg width="'+w+'"
    son excluyentes entre sí (se interponen). */
 const ACC_SLOT_NAMES = {head:'🎩 Cabeza', eyes:'👓 Ojos', mouth:'👄 Boca', neck:'🧣 Cuello', hand:'✋ Mano', sticker:'🏷️ Sticker'};
 const ACC_SLOT_CONFLICT = {hand:'sticker', sticker:'hand'};
+/* Calibración individual: cada accesorio tiene su propia posición (x,y = centro
+   en % del avatar), escala/ancho y rotación, ajustadas a mano según su forma y
+   zona de anclaje. Mapa del rostro (viewBox 0–100): cabello/tope y≈8–20 ·
+   ojos y≈48 (x 42 y 58) · nariz y≈53 · boca y≈60 (x 50) · mentón y≈72 ·
+   cuello y≈73 · cuello/pecho y≈80 · hombros y≈90 · mano (a un costado) x≈74 y≈80. */
 const ACCESSORIES = [
-  // — Ojos —
-  {id:'acc-glasses', type:'acc', slot:'eyes', rarity:'common', name:'Lentes Cartier', ico:'🕶️', xp:400,  svg:svgGlasses, w:0.52, x:50, y:47, desc:'Lentes cuadrados elegantes, estilo Cartier.'},
-  {id:'acc-shades',  type:'acc', slot:'eyes', rarity:'common', name:'Lentes de sol', ico:'😎', xp:300, emoji:'🕶️', scale:0.5, x:50, y:46, desc:'Modo galán activado.'},
-  {id:'acc-headphones', type:'acc', slot:'eyes', rarity:'rare', name:'Audífonos', ico:'🎧', xp:900, emoji:'🎧', scale:0.5, x:50, y:30, desc:'Música para concentrarte.'},
-  {id:'acc-vr',      type:'acc', slot:'eyes', rarity:'rare', name:'Visor VR', ico:'🥽', xp:1500, emoji:'🥽', scale:0.5, x:50, y:44, desc:'Estudiar en el metaverso.'},
-  {id:'acc-monocle', type:'acc', slot:'eyes', rarity:'epic', name:'Monóculo', ico:'🧐', xp:2600, svg:svgMonocle, w:0.5, x:56, y:47, desc:'Elegancia de otra época.'},
-  {id:'acc-eyepatch', type:'acc', slot:'eyes', rarity:'legendary', secret:true, name:'Parche pirata', ico:'🏴‍☠️', test:()=>(S.bestSudden||0)>=20, cond:'???', hint:'Sobrevive mucho en Muerte súbita', svg:svgEyepatch, w:0.6, x:50, y:46, desc:'Arrr, actuario de los siete mares.'},
-  // — Cabeza —
-  {id:'acc-cap',     type:'acc', slot:'head', rarity:'common', name:'Gorra de desvelado', ico:'🧢', xp:700, emoji:'🧢', scale:0.5, x:50, y:9, desc:'Para las desveladas.'},
-  {id:'acc-sunhat',  type:'acc', slot:'head', rarity:'common', name:'Sombrero de sol', ico:'👒', xp:600, emoji:'👒', scale:0.54, x:50, y:9, desc:'Listo para vacaciones.'},
-  {id:'acc-helmet',  type:'acc', slot:'head', rarity:'rare', name:'Casco', ico:'🪖', xp:1200, emoji:'🪖', scale:0.5, x:50, y:8, desc:'A la guerra contra los parciales.'},
-  {id:'acc-cowboy',  type:'acc', slot:'head', rarity:'rare', name:'Sombrero vaquero', ico:'🤠', xp:1600, svg:svgCowboy, w:0.74, x:50, y:16, desc:'Yeehaw, actuario.'},
-  {id:'acc-tophat',  type:'acc', slot:'head', rarity:'epic', name:'Sombrero de copa', ico:'🎩', xp:2200, svg:svgTophat, w:0.6, x:50, y:6, desc:'De alta sociedad.'},
-  {id:'acc-crown',   type:'acc', slot:'head', rarity:'epic', name:'Corona', ico:'👑', xp:2000, emoji:'👑', scale:0.42, x:50, y:8, desc:'De la realeza actuarial.'},
-  {id:'acc-cap-grad', type:'acc', slot:'head', rarity:'epic', name:'Birrete', ico:'🎓', xp:2500, emoji:'🎓', scale:0.5, x:50, y:8, desc:'Listo para graduarte.'},
-  {id:'acc-brain',   type:'acc', slot:'head', rarity:'legendary', secret:true, name:'Cerebro expuesto', ico:'🧠', test:()=>(S.totalAnswered||0)>=200, cond:'???', hint:'Responde muchísimas preguntas', emoji:'🧠', scale:0.44, x:50, y:6, desc:'Demasiada sabiduría acumulada.'},
-  // — Boca —
-  {id:'acc-mustache', type:'acc', slot:'mouth', rarity:'rare', name:'Bigote falso', ico:'👨', xp:1100, svg:svgMustache, w:0.4, x:50, y:57, desc:'Un disfraz muy serio.'},
-  {id:'acc-cig',     type:'acc', slot:'mouth', rarity:'rare', name:'Cigarro', ico:'🚬', xp:1300, emoji:'🚬', scale:0.3, x:60, y:61, desc:'El estrés del cuatrimestre.'},
-  {id:'acc-lollipop', type:'acc', slot:'mouth', rarity:'common', name:'Paleta', ico:'🍭', xp:700, emoji:'🍭', scale:0.34, x:61, y:60, desc:'Dulce recompensa.'},
-  {id:'acc-rose',    type:'acc', slot:'mouth', rarity:'epic', name:'Rosa en la boca', ico:'🌹', xp:2600, emoji:'🌹', scale:0.34, x:56, y:60, desc:'Puro romance… con las integrales.'},
-  {id:'acc-tear',    type:'acc', slot:'mouth', rarity:'common', name:'Lágrima de parcial', ico:'💧', xp:500,  emoji:'💧', scale:0.22, x:62, y:55, desc:'El parcial estuvo difícil.'},
-  // — Cuello —
-  {id:'acc-tie',     type:'acc', slot:'neck', rarity:'common', name:'Corbata', ico:'👔', xp:800, emoji:'👔', scale:0.42, x:50, y:78, desc:'Modo entrevista de trabajo.'},
-  {id:'acc-bow',     type:'acc', slot:'neck', rarity:'common', name:'Moño', ico:'🎀', xp:600, emoji:'🎀', scale:0.34, x:50, y:74, desc:'Un toque coqueto.'},
-  {id:'acc-scarf',   type:'acc', slot:'neck', rarity:'rare', name:'Bufanda', ico:'🧣', xp:1400, emoji:'🧣', scale:0.44, x:50, y:76, desc:'Para las mañanas frías de examen.'},
-  {id:'acc-medal',   type:'acc', slot:'neck', rarity:'epic', name:'Medalla', ico:'🎖️', test:()=>(S.examHistory||[]).some(e=>e.score>=90), cond:'Saca ≥90% en un examen diario', emoji:'🏅', scale:0.4, x:50, y:76, desc:'Al mérito actuarial.'},
-  // — Mano —
-  {id:'acc-calc',    type:'acc', slot:'hand', rarity:'common', name:'Calculadora flotante', ico:'🧮', xp:1000, emoji:'🧮', scale:0.34, x:80, y:80, desc:'Siempre a la mano.'},
-  {id:'acc-phone',   type:'acc', slot:'hand', rarity:'common', name:'Celular', ico:'📱', xp:500, emoji:'📱', scale:0.34, x:80, y:82, desc:'Distracción portátil.'},
-  {id:'acc-book',    type:'acc', slot:'hand', rarity:'common', name:'Libro de texto', ico:'📕', xp:600, emoji:'📕', scale:0.34, x:80, y:82, desc:'La biblia del actuario.'},
-  {id:'acc-coffee',  type:'acc', slot:'hand', rarity:'rare', name:'Café gigante', ico:'☕', xp:1400, emoji:'☕', scale:0.34, x:80, y:82, desc:'Combustible de estudiante.'},
-  {id:'acc-magnifier', type:'acc', slot:'hand', rarity:'rare', name:'Lupa de auditor', ico:'🔍', xp:1300, emoji:'🔍', scale:0.36, x:80, y:82, desc:'Nada se te escapa.'},
-  {id:'acc-portafolio', type:'acc', slot:'hand', rarity:'rare', name:'Portafolio ejecutivo', ico:'💼', xp:1600, emoji:'💼', scale:0.36, x:80, y:82, desc:'Modo consultor de riesgos.'},
-  {id:'acc-mic',     type:'acc', slot:'hand', rarity:'rare', name:'Micrófono', ico:'🎤', xp:1500, emoji:'🎤', scale:0.34, x:80, y:82, desc:'Para exponer sin miedo.'},
-  {id:'acc-controller', type:'acc', slot:'hand', rarity:'rare', name:'Control de videojuego', ico:'🎮', xp:1700, emoji:'🎮', scale:0.34, x:80, y:82, desc:'Estudiar es un juego.'},
-  {id:'acc-beer',    type:'acc', slot:'hand', rarity:'rare', name:'Cerveza', ico:'🍺', xp:1800, emoji:'🍺', scale:0.36, x:80, y:82, desc:'Ya pasó el examen… ¿o no?'},
-  {id:'acc-guitar',  type:'acc', slot:'hand', rarity:'epic', name:'Guitarra', ico:'🎸', xp:2800, emoji:'🎸', scale:0.4, x:78, y:80, desc:'Rockstar de la estadística.'},
-  {id:'acc-money',   type:'acc', slot:'hand', rarity:'epic', name:'Bolsa de dinero', ico:'💰', xp:3200, emoji:'💰', scale:0.36, x:80, y:82, desc:'El sueldo de actuario.'},
-  {id:'acc-gun',     type:'acc', slot:'hand', rarity:'epic', secret:true, name:'Pistola', ico:'🔫', test:()=>(S.bestBlitzCombo||0)>=15, cond:'???', hint:'Encadena muchos aciertos en el contrarreloj', emoji:'🔫', scale:0.4, x:78, y:80, desc:'Modo pistolero de fórmulas.'},
-  {id:'acc-sword',   type:'acc', slot:'hand', rarity:'legendary', secret:true, name:'Espada', ico:'🗡️', test:()=>subjStats('ca3').done>=12, cond:'???', hint:'Domina toda una materia', emoji:'🗡️', scale:0.42, x:78, y:80, desc:'Cortas exámenes como mantequilla.'},
-  {id:'acc-bomb',    type:'acc', slot:'hand', rarity:'legendary', secret:true, name:'Bomba', ico:'💣', test:()=>{const h=S.examHistory||[]; return h.some(e=>e.score<40);}, cond:'???', hint:'A veces un examen sale realmente mal…', emoji:'💣', scale:0.36, x:80, y:82, desc:'Ese examen explotó.'},
-  // — Stickers —
-  {id:'acc-aprobe',  type:'acc', slot:'sticker', rarity:'rare', name:'Sticker “Aprobé”', ico:'✅', test:()=>(S.examHistory||[]).some(e=>e.score>=80), cond:'Aprueba un examen diario (≥80%)', sticker:'✅ Aprobé', stickerBg:'#0ca30c', rot:-11, x:22, y:86, desc:'La prueba de que sí se pudo.'},
-  {id:'acc-noc',     type:'acc', slot:'sticker', rarity:'common', name:'Sticker “No era la C”', ico:'🅲', xp:1500, sticker:'No era la C', stickerBg:'#e34948', rot:-11, x:24, y:86, desc:'Todos hemos estado ahí.'},
-  {id:'acc-100',     type:'acc', slot:'sticker', rarity:'epic', name:'Sticker “100”', ico:'💯', test:()=>Object.values(S.modules).some(m=>m.best>=100), cond:'Saca 100% en un módulo', sticker:'💯 Perfecto', stickerBg:'#eda100', rot:-11, x:24, y:86, desc:'Puntuación perfecta.'},
-  {id:'acc-flag',    type:'acc', slot:'sticker', rarity:'rare', name:'Bandera “Sobreviví”', ico:'🏁', test:()=>(S.examHistory||[]).length>=3, cond:'Presenta 3 exámenes diarios', sticker:'🏁 Sobreviví', stickerBg:'#4a3aa7', rot:-11, x:24, y:85, desc:'Un cuatrimestre más.'}
+  // — Ojos (centrados en la línea de los ojos, y≈48) —
+  {id:'acc-glasses', type:'acc', slot:'eyes', rarity:'common', name:'Lentes Cartier', ico:'🕶️', xp:400,  svg:svgGlasses, w:0.46, x:50, y:48, desc:'Lentes cuadrados elegantes, estilo Cartier.'},
+  {id:'acc-shades',  type:'acc', slot:'eyes', rarity:'common', name:'Lentes de sol', ico:'😎', xp:300, emoji:'🕶️', scale:0.44, x:50, y:48, desc:'Modo galán activado.'},
+  {id:'acc-headphones', type:'acc', slot:'eyes', rarity:'rare', name:'Audífonos', ico:'🎧', xp:900, emoji:'🎧', scale:0.62, x:50, y:41, desc:'Música para concentrarte.'},
+  {id:'acc-vr',      type:'acc', slot:'eyes', rarity:'rare', name:'Visor VR', ico:'🥽', xp:1500, emoji:'🥽', scale:0.48, x:50, y:47, desc:'Estudiar en el metaverso.'},
+  {id:'acc-monocle', type:'acc', slot:'eyes', rarity:'epic', name:'Monóculo', ico:'🧐', xp:2600, svg:svgMonocle, w:0.5, x:55, y:49, desc:'Elegancia de otra época.'},
+  {id:'acc-eyepatch', type:'acc', slot:'eyes', rarity:'legendary', secret:true, name:'Parche pirata', ico:'🏴‍☠️', test:()=>(S.bestSudden||0)>=20, cond:'???', hint:'Sobrevive mucho en Muerte súbita', svg:svgEyepatch, w:0.58, x:50, y:47, desc:'Arrr, actuario de los siete mares.'},
+  // — Cabeza (descansan sobre el pelo; cada sombrero con su altura) —
+  {id:'acc-cap',     type:'acc', slot:'head', rarity:'common', name:'Gorra de desvelado', ico:'🧢', xp:700, emoji:'🧢', scale:0.56, x:49, y:19, desc:'Para las desveladas.'},
+  {id:'acc-sunhat',  type:'acc', slot:'head', rarity:'common', name:'Sombrero de sol', ico:'👒', xp:600, emoji:'👒', scale:0.6, x:50, y:14, desc:'Listo para vacaciones.'},
+  {id:'acc-helmet',  type:'acc', slot:'head', rarity:'rare', name:'Casco', ico:'🪖', xp:1200, emoji:'🪖', scale:0.56, x:50, y:16, desc:'A la guerra contra los parciales.'},
+  {id:'acc-cowboy',  type:'acc', slot:'head', rarity:'rare', name:'Sombrero vaquero', ico:'🤠', xp:1600, svg:svgCowboy, w:0.78, x:50, y:15, desc:'Yeehaw, actuario.'},
+  {id:'acc-tophat',  type:'acc', slot:'head', rarity:'epic', name:'Sombrero de copa', ico:'🎩', xp:2200, svg:svgTophat, w:0.6, x:50, y:8, desc:'De alta sociedad.'},
+  {id:'acc-crown',   type:'acc', slot:'head', rarity:'epic', name:'Corona', ico:'👑', xp:2000, emoji:'👑', scale:0.44, x:50, y:11, desc:'De la realeza actuarial.'},
+  {id:'acc-cap-grad', type:'acc', slot:'head', rarity:'epic', name:'Birrete', ico:'🎓', xp:2500, emoji:'🎓', scale:0.56, x:50, y:12, desc:'Listo para graduarte.'},
+  {id:'acc-brain',   type:'acc', slot:'head', rarity:'legendary', secret:true, name:'Cerebro expuesto', ico:'🧠', test:()=>(S.totalAnswered||0)>=200, cond:'???', hint:'Responde muchísimas preguntas', emoji:'🧠', scale:0.5, x:50, y:12, desc:'Demasiada sabiduría acumulada.'},
+  // — Boca / bajo la nariz —
+  {id:'acc-mustache', type:'acc', slot:'mouth', rarity:'rare', name:'Bigote falso', ico:'👨', xp:1100, svg:svgMustache, w:0.42, x:50, y:56, desc:'Un disfraz muy serio.'},
+  {id:'acc-cig',     type:'acc', slot:'mouth', rarity:'rare', name:'Cigarro', ico:'🚬', xp:1300, emoji:'🚬', scale:0.32, x:63, y:61, rot:6, desc:'El estrés del cuatrimestre.'},
+  {id:'acc-lollipop', type:'acc', slot:'mouth', rarity:'common', name:'Paleta', ico:'🍭', xp:700, emoji:'🍭', scale:0.36, x:63, y:63, rot:18, desc:'Dulce recompensa.'},
+  {id:'acc-rose',    type:'acc', slot:'mouth', rarity:'epic', name:'Rosa en la boca', ico:'🌹', xp:2600, emoji:'🌹', scale:0.36, x:56, y:61, rot:72, desc:'Puro romance… con las integrales.'},
+  {id:'acc-tear',    type:'acc', slot:'mouth', rarity:'common', name:'Lágrima de parcial', ico:'💧', xp:500,  emoji:'💧', scale:0.2, x:59, y:55, desc:'El parcial estuvo difícil.'},
+  // — Cuello / pecho —
+  {id:'acc-tie',     type:'acc', slot:'neck', rarity:'common', name:'Corbata', ico:'👔', xp:800, emoji:'👔', scale:0.46, x:50, y:83, desc:'Modo entrevista de trabajo.'},
+  {id:'acc-bow',     type:'acc', slot:'neck', rarity:'common', name:'Moño', ico:'🎀', xp:600, emoji:'🎀', scale:0.34, x:50, y:79, desc:'Un toque coqueto.'},
+  {id:'acc-scarf',   type:'acc', slot:'neck', rarity:'rare', name:'Bufanda', ico:'🧣', xp:1400, emoji:'🧣', scale:0.5, x:50, y:80, desc:'Para las mañanas frías de examen.'},
+  {id:'acc-medal',   type:'acc', slot:'neck', rarity:'epic', name:'Medalla', ico:'🎖️', test:()=>(S.examHistory||[]).some(e=>e.score>=90), cond:'Saca ≥90% en un examen diario', emoji:'🏅', scale:0.42, x:50, y:82, desc:'Al mérito actuarial.'},
+  // — Mano / a un costado (cada objeto con su punto propio, no una alineación común) —
+  {id:'acc-calc',    type:'acc', slot:'hand', rarity:'common', name:'Calculadora flotante', ico:'🧮', xp:1000, emoji:'🧮', scale:0.36, x:78, y:84, desc:'Siempre a la mano.'},
+  {id:'acc-phone',   type:'acc', slot:'hand', rarity:'common', name:'Celular', ico:'📱', xp:500, emoji:'📱', scale:0.3, x:75, y:80, rot:-12, desc:'Distracción portátil.'},
+  {id:'acc-book',    type:'acc', slot:'hand', rarity:'common', name:'Libro de texto', ico:'📕', xp:600, emoji:'📕', scale:0.34, x:76, y:84, rot:-8, desc:'La biblia del actuario.'},
+  {id:'acc-coffee',  type:'acc', slot:'hand', rarity:'rare', name:'Café gigante', ico:'☕', xp:1400, emoji:'☕', scale:0.34, x:78, y:82, desc:'Combustible de estudiante.'},
+  {id:'acc-magnifier', type:'acc', slot:'hand', rarity:'rare', name:'Lupa de auditor', ico:'🔍', xp:1300, emoji:'🔍', scale:0.4, x:77, y:79, desc:'Nada se te escapa.'},
+  {id:'acc-portafolio', type:'acc', slot:'hand', rarity:'rare', name:'Portafolio ejecutivo', ico:'💼', xp:1600, emoji:'💼', scale:0.38, x:77, y:86, desc:'Modo consultor de riesgos.'},
+  {id:'acc-mic',     type:'acc', slot:'hand', rarity:'rare', name:'Micrófono', ico:'🎤', xp:1500, emoji:'🎤', scale:0.32, x:64, y:64, rot:-22, desc:'Para exponer sin miedo.'},
+  {id:'acc-controller', type:'acc', slot:'hand', rarity:'rare', name:'Control de videojuego', ico:'🎮', xp:1700, emoji:'🎮', scale:0.36, x:75, y:83, desc:'Estudiar es un juego.'},
+  {id:'acc-beer',    type:'acc', slot:'hand', rarity:'rare', name:'Cerveza', ico:'🍺', xp:1800, emoji:'🍺', scale:0.4, x:78, y:80, desc:'Ya pasó el examen… ¿o no?'},
+  {id:'acc-guitar',  type:'acc', slot:'hand', rarity:'epic', name:'Guitarra', ico:'🎸', xp:2800, emoji:'🎸', scale:0.5, x:70, y:78, rot:-8, desc:'Rockstar de la estadística.'},
+  {id:'acc-money',   type:'acc', slot:'hand', rarity:'epic', name:'Bolsa de dinero', ico:'💰', xp:3200, emoji:'💰', scale:0.38, x:77, y:84, desc:'El sueldo de actuario.'},
+  {id:'acc-gun',     type:'acc', slot:'hand', rarity:'epic', secret:true, name:'Pistola', ico:'🔫', test:()=>(S.bestBlitzCombo||0)>=15, cond:'???', hint:'Encadena muchos aciertos en el contrarreloj', emoji:'🔫', scale:0.44, x:74, y:74, desc:'Modo pistolero de fórmulas.'},
+  {id:'acc-sword',   type:'acc', slot:'hand', rarity:'legendary', secret:true, name:'Espada', ico:'🗡️', test:()=>subjStats('ca3').done>=12, cond:'???', hint:'Domina toda una materia', emoji:'🗡️', scale:0.5, x:78, y:66, rot:-42, desc:'Cortas exámenes como mantequilla.'},
+  {id:'acc-bomb',    type:'acc', slot:'hand', rarity:'legendary', secret:true, name:'Bomba', ico:'💣', test:()=>{const h=S.examHistory||[]; return h.some(e=>e.score<40);}, cond:'???', hint:'A veces un examen sale realmente mal…', emoji:'💣', scale:0.4, x:78, y:83, desc:'Ese examen explotó.'},
+  // — Stickers (etiqueta en una esquina; solo uno a la vez) —
+  {id:'acc-aprobe',  type:'acc', slot:'sticker', rarity:'rare', name:'Sticker “Aprobé”', ico:'✅', test:()=>(S.examHistory||[]).some(e=>e.score>=80), cond:'Aprueba un examen diario (≥80%)', sticker:'✅ Aprobé', stickerBg:'#0ca30c', rot:-10, x:27, y:85, desc:'La prueba de que sí se pudo.'},
+  {id:'acc-noc',     type:'acc', slot:'sticker', rarity:'common', name:'Sticker “No era la C”', ico:'🅲', xp:1500, sticker:'No era la C', stickerBg:'#e34948', rot:-10, x:28, y:85, desc:'Todos hemos estado ahí.'},
+  {id:'acc-100',     type:'acc', slot:'sticker', rarity:'epic', name:'Sticker “100”', ico:'💯', test:()=>Object.values(S.modules).some(m=>m.best>=100), cond:'Saca 100% en un módulo', sticker:'💯 Perfecto', stickerBg:'#eda100', rot:-10, x:27, y:85, desc:'Puntuación perfecta.'},
+  {id:'acc-flag',    type:'acc', slot:'sticker', rarity:'rare', name:'Bandera “Sobreviví”', ico:'🏁', test:()=>(S.examHistory||[]).length>=3, cond:'Presenta 3 exámenes diarios', sticker:'🏁 Sobreviví', stickerBg:'#4a3aa7', rot:-10, x:28, y:85, desc:'Un cuatrimestre más.'}
 ];
 const accSlot = id => { const a = ACCESSORIES.find(x=>x.id===id); return a ? a.slot : null; };
 /* ---- Efectos del MARCO: solo decoran el anillo/borde de la foto (sin emojis
@@ -5194,48 +5223,63 @@ function profileGeneralProgress(){
   const ws = SUBJECTS.map(x=>subjStats(x.id)).filter(x=>x.total>0);
   return ws.length ? Math.round(ws.reduce((a,x)=>a+x.progress,0)/ws.length*100) : 0;
 }
-/* Editor de avatar: modo (emoji / foto / 3D) + controles según el modo.
-   La vista previa de arriba (avatarStack) ya muestra marco, fondo, accesorios
-   y efecto equipados sobre el avatar elegido. */
-function avatarEditorHTML(p){
+/* Editor de avatar en formato "vestidor": dos columnas responsive.
+   Izquierda (sticky): vista previa en vivo del avatar + identidad + modo
+   (emoji/foto/3D) + controles del modo. Derecha (scroll): secciones para
+   equipar marco / fondo / accesorios / efectos. Así los cambios se ven al
+   instante sin bajar y subir. Todo el vestidor es colapsable/minimizable. */
+function avatarEditorBody(p){
   const mode = avatarMode(p);
-  const seg = (m,label) => '<button class="av-mode'+(mode===m?' on':'')+'" data-avmode="'+m+'">'+label+'</button>';
-  let body = '';
   if(mode === 'emoji'){
-    body = '<div class="avatar-pick">'+AVATARS.map(a => {
+    return '<div class="avatar-pick">'+AVATARS.map(a => {
         const un = avatarUnlocked(a);
         return '<button class="av'+(a===p.avatar?' on':'')+(un?'':' locked')+'" data-av="'+a+'"'
           + (un ? '' : ' title="Se desbloquea en el nivel '+avatarReqLevel(a)+'"')+'>'+(un?a:'🔒')+'</button>';
       }).join('')+'</div>';
   } else if(mode === 'photo'){
-    body = '<div class="q-actions" style="justify-content:flex-start;flex-wrap:wrap;align-items:center">'
+    return '<div class="q-actions" style="justify-content:center;flex-wrap:wrap;align-items:center">'
       + '<button class="btn ghost small" id="btnPhotoUp">📤 '+(p.photo?'Cambiar foto':'Subir foto')+'</button>'
       + (p.photo ? '<button class="btn ghost small" id="btnPhotoDel">🗑️ Quitar foto</button>' : '')
       + '<input type="file" id="photoFile" accept="image/*" class="hidden"></div>'
       + (p.photo ? '' : '<p class="q-help">Elige una imagen; se recorta en círculo. El marco y los accesorios se le aplican encima.</p>');
-  } else {
-    const c = Object.assign(defaultCustom(), p.custom||{});
-    body = '<div class="builder">'
-      + AV_KEYS.map(k => '<div class="builder-row"><span class="b-name">'+BUILDER_LABELS[k]+'</span>'
-          + '<button class="bnav" data-bk="'+k+'" data-bd="-1">‹</button>'
-          + '<span class="b-val" id="bv-'+k+'">'+builderLabel(k,c)+'</span>'
-          + '<button class="bnav" data-bk="'+k+'" data-bd="1">›</button></div>').join('')
-      + '</div><p class="q-help">Personaliza tu avatar 3D. Pronto habrá más piezas (cuerpo completo).</p>';
   }
-  // secciones para vestir el avatar (marco / fondo / accesorios / efecto), con
-  // vista previa en vivo arriba; se equipa aquí para verlo al instante.
-  const dress = '<details class="av-dress" open><summary><b>👕 Vestir mi avatar</b></summary>'
-    + '<p class="q-help" style="margin:6px 0">Equipa aquí lo que desbloqueaste en la 🛒 Tienda y velo al instante en tu avatar de arriba. Un accesorio por ranura.</p>'
-    + '<label class="fld">🖼️ Marco</label>'+equipGridHTML('frame')
-    + '<label class="fld">🌆 Fondo</label>'+equipGridHTML('bg')
-    + '<label class="fld">🎭 Accesorios</label>'+equipGridHTML('acc')
-    + '<label class="fld">✨ Efecto del marco <span style="font-weight:400;color:var(--muted);font-size:.8rem">(reemplaza al marco)</span></label>'+equipGridHTML('effect')
-    + '<label class="fld">🎉 Efecto al acertar</label>'+equipGridHTML('hitfx')
-    + '</details>';
-  return '<label class="fld">🧑‍🎨 Tu avatar</label>'
-    + '<div class="av-modes">'+seg('emoji','😀 Emoji')+seg('photo','📷 Foto')+seg('custom','🧑 Avatar 3D')+'</div>'
-    + '<div id="avEditorBody">'+body+'</div>'
-    + dress;
+  const c = Object.assign(defaultCustom(), p.custom||{});
+  return '<div class="builder">'
+    + AV_KEYS.map(k => '<div class="builder-row"><span class="b-name">'+BUILDER_LABELS[k]+'</span>'
+        + '<button class="bnav" data-bk="'+k+'" data-bd="-1">‹</button>'
+        + '<span class="b-val" id="bv-'+k+'">'+builderLabel(k,c)+'</span>'
+        + '<button class="bnav" data-bk="'+k+'" data-bd="1">›</button></div>').join('')
+    + '</div><p class="q-help">Personaliza tu avatar 3D. Pronto habrá más piezas (cuerpo completo).</p>';
+}
+function avatarEditorHTML(p, fb){
+  const mode = avatarMode(p);
+  const seg = (m,label) => '<button class="av-mode'+(mode===m?' on':'')+'" data-avmode="'+m+'">'+label+'</button>';
+  // — Columna izquierda: vista previa sticky —
+  const preview = '<div class="dresser-preview">'
+    + '<div class="dp-av">'+avatarStack(p, 132)+'</div>'
+    + '<div class="dp-id"><b>'+esc(p.name)+'</b>'+(fb ? ' <span title="'+esc(fb.name)+'">'+fb.ico+'</span>' : '')
+      + '<br><small>🏷️ '+esc(currentTitle())+'</small></div>'
+    + '<div class="tag-list dp-tags">'
+      + '<span class="tag neutral">'+subjectById(S.activeSubject).icon+' '+esc(subjectById(S.activeSubject).short)+'</span>'
+      + '<span class="tag neutral">🔥 '+S.streak+'</span>'
+      + '<span class="tag neutral">⚡ Nv '+levelInfo().lvl+'</span></div>'
+    + '<div class="av-modes">'+seg('emoji','😀 Emoji')+seg('photo','📷 Foto')+seg('custom','🧑 3D')+'</div>'
+    + '<div id="avEditorBody">'+avatarEditorBody(p)+'</div>'
+    + '</div>';
+  // — Columna derecha: secciones para equipar (colapsables) —
+  const dsec = (title, type, open, note) => '<details class="dsec'+(open?' ':'')+'"'+(open?' open':'')+'><summary>'+title
+    + (note?' <small>'+note+'</small>':'')+'</summary><div class="dsec-body">'+equipGridHTML(type)+'</div></details>';
+  const dress = '<div class="dresser-dress">'
+    + '<p class="q-help" style="margin:0 0 10px">Equipa lo que desbloqueaste en la 🛒 Tienda y velo al instante en tu avatar de la izquierda. Un accesorio por ranura.</p>'
+    + dsec('🖼️ Marco','frame',true)
+    + dsec('🌆 Fondo','bg',true)
+    + dsec('🎭 Accesorios','acc',true)
+    + dsec('🏷️ Título','title',false,'(aparece bajo tu nombre)')
+    + dsec('✨ Efecto del marco','effect',false,'(reemplaza al marco)')
+    + dsec('🎉 Efecto al acertar','hitfx',false)
+    + '</div>';
+  return '<details class="dresser-wrap" open><summary>🎨 Personalizar mi avatar<span class="dw-hint">— clic para minimizar</span></summary>'
+    + '<div class="dresser">'+preview+dress+'</div></details>';
 }
 function bindAvatarEditor(p){
   $$('#profileBody [data-avmode]').forEach(b => b.addEventListener('click', () => {
@@ -5277,21 +5321,11 @@ function renderProfile(){
     '<label class="fld row"><span>'+label+'</span><input type="checkbox" id="'+id+'"'+(on?' checked':'')+'></label>';
   ensureEquip();
   let html = '<div class="dash-grid">';
-  // — Tarjeta de perfil (con marco/foto/accesorios) —
+  // — Tarjeta de perfil / vestidor (avatar + equipar en dos columnas) —
   const fb = S.equip.badge ? BADGES.find(b=>b.id===S.equip.badge) : null;
-  html += '<div class="panel"><h3>👤 Mi perfil</h3>'
-    + '<div style="text-align:center">'+avatarStack(p, 104)+'</div>'
-    + '<div style="text-align:center;margin-top:8px"><b style="font-size:1.05rem">'+esc(p.name)+'</b>'
-    + (fb ? ' <span title="'+esc(fb.name)+'">'+fb.ico+'</span>' : '')
-    + '<div style="font-size:.82rem;color:var(--ink2)">🏷️ '+esc(currentTitle())+'</div></div>'
-    + '<div class="tag-list" style="justify-content:center;margin:12px 0">'
-    + '<span class="tag neutral">'+subjectById(S.activeSubject).icon+' '+esc(subjectById(S.activeSubject).short)+'</span>'
-    + '<span class="tag neutral">🔥 '+S.streak+(S.streak===1?' día':' días')+'</span>'
-    + '<span class="tag neutral">🏆 '+profileGeneralProgress()+'% general</span>'
-    + '<span class="tag neutral">⚡ Nivel '+levelInfo().lvl+'</span>'
-    + '</div>'
-    + avatarEditorHTML(p)
-    + '<label class="fld" style="margin-top:12px">Nombre completo<input class="ainput" id="pfName" maxlength="40" value="'+esc(p.name)+'"></label>'
+  html += '<div class="panel panel-dresser"><h3>👤 Mi perfil</h3>'
+    + avatarEditorHTML(p, fb)
+    + '<label class="fld" style="margin-top:14px">Nombre completo<input class="ainput" id="pfName" maxlength="40" value="'+esc(p.name)+'"></label>'
     + '<button class="btn small" id="pfSave" style="margin-top:8px">💾 Guardar datos</button>'
     + '<p class="q-help">Perfil creado el '+new Date(p.created).toLocaleDateString('es-MX')+' · '+S.xp+' XP · '+S.badges.length+'/'+BADGES.length+' insignias</p></div>';
   // — Apariencia y estudio —
