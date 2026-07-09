@@ -78,17 +78,25 @@ ejercicios numéricos **cambian en cada intento**.
 - Los modos de juego se pueden **activar/desactivar** desde el perfil.
 - **Retroalimentación inmediata**: si fallas, verás la respuesta correcta, la
   fórmula y la **solución paso a paso**; si aciertas, un tip actuarial.
-- **Tienda de recompensas** 🎁: marcos (bronce→diamante), fondos, accesorios
-  y títulos desbloqueables por XP, con modal de recompensa y confetti.
-- **Leaderboard compartido** 🏆 con medallas, filtro por grupo, búsqueda y
-  aviso de "subiste de rango". Se sincroniza solo con el archivo
-  `leaderboard.json` publicado junto a la página; el administrador (perfil
-  "Oliver" + contraseña) lo edita y publica subiendo el JSON exportado al
-  repositorio.
+- **Muchos modos de juego** 🎮 (vista dedicada): quiz clásico, reto diario,
+  modo parcial y examen final, contrarreloj, V/F rápido, carrera de XP,
+  supervivencia, repaso de errores, solo incorrectas, repaso mixto,
+  flashcards, completar fórmula, ordenar procedimiento, práctica infinita,
+  ruleta, Jeopardy, memorama, escape room, código secreto, bingo de
+  conceptos y "todos contra todos" local. Cada modo da XP, registra errores
+  y actualiza tus estadísticas.
+- **Tienda 🛒 y "Mi colección"** (vista separada de la configuración):
+  marcos, fondos, accesorios, títulos, efectos y temas; unos por XP y otros
+  por logros. Reglas de equipamiento: un marco/fondo/título/efecto/tema a la
+  vez y varios accesorios combinables.
+- **Leaderboard compartido** 🏆 con medallas para el top 3, búsqueda por
+  nombre o apodo, ordenar por XP/nivel/racha/promedio, y avatar/foto con el
+  marco y título equipados. Se sincroniza con `leaderboard.json`; el
+  administrador (perfil "Oliver" + contraseña) lo edita y publica.
 - **PWA instalable** 📱: agrégala a la pantalla de inicio del celular;
   funciona offline después de la primera visita (service worker + manifest).
-- **Sonidos opcionales** (WebAudio con fallback `<audio>`), control de
-  volumen, botones "Activar/Probar sonidos" y animaciones suaves.
+- **Sonidos** (WebAudio con fallback `<audio>`) que se activan/desactivan con
+  el botón del encabezado; el volumen depende del dispositivo.
 - **Color principal personalizable** (azul, verde, morado, rojo, naranja, rosa).
 
 ## 📊 Panel de progreso
@@ -102,11 +110,15 @@ diarios.
 
 - **Perfiles personales**: cada estudiante crea su perfil (nombre + avatar);
   un mismo navegador puede alojar varios perfiles con progreso independiente.
-- **Configuración** en el perfil: tema (sistema/claro/oscuro), objetivo diario
-  de XP, sonidos, confeti, "mostrar procedimiento también al acertar", guía
-  progresiva, texto grande, reducir animaciones y avatar beta.
-- **Exportar / Importar JSON**: respaldo completo del progreso para moverlo
-  entre dispositivos o guardarlo.
+- **Foto de perfil** propia (o avatar emoji por defecto), con **marco**
+  equipado visible en el dashboard, la configuración, el leaderboard, la
+  revisión de examen y la bienvenida.
+- **Configuración simplificada**: datos del perfil, foto/avatar, equipar
+  título/marco/fondo/accesorio/efecto/tema, materia activa, logo de la
+  página, tema claro/oscuro, color principal, objetivo diario de XP,
+  exportar/importar y reiniciar progreso.
+- **Exportar / Importar JSON**: respaldo completo del progreso (incluye la
+  foto) para moverlo entre dispositivos o guardarlo.
 - **Reiniciar progreso** del perfil con doble confirmación.
 
 ## ⬆️ Niveles y recompensas
