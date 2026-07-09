@@ -6,6 +6,9 @@
 <meta name="description" content="ActuarIQ — Plataforma interactiva para aprender Cálculo Actuarial: niveles, XP, insignias, ejercicios aleatorios, escape room y casos reales.">
 <title>ActuarIQ · Cálculo Actuarial Interactivo</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%9B%A1%EF%B8%8F%3C/text%3E%3C/svg%3E">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#2a78d6">
+<link rel="apple-touch-icon" href="icon-192.png">
 <style>
 /* ============ Tokens (paleta de referencia validada, light/dark) ============ */
 :root{
@@ -652,12 +655,18 @@ select.ainput{appearance:auto}
         </span>
       </button>
       <div class="flash-count" id="flashCount"></div>
+      <div class="flash-nav hidden" id="flashRate">
+        <button class="btn danger small" id="flashAgain">😵 Otra vez</button>
+        <button class="btn ghost small" id="flashHard">🙂 Difícil</button>
+        <button class="btn good small" id="flashEasy">😎 Fácil</button>
+      </div>
       <div class="flash-nav">
         <button class="btn ghost small" id="flashPrev">← Anterior</button>
         <button class="btn small" id="flashFlip">🔄 Voltear</button>
         <button class="btn ghost small" id="flashNext">Siguiente →</button>
         <button class="btn ghost small" id="flashShuffle">🔀 Barajar</button>
       </div>
+      <p class="q-help" style="text-align:center">🧠 Repetición espaciada: voltea la tarjeta y califícala. Las que falles volverán pronto; las fáciles descansarán varios días.</p>
     </div>
   </section>
 
@@ -776,6 +785,7 @@ const DEFAULT_STATE = () => ({
   gameModes:{exam:true, flash:true, blitz:true, sudden:true, review:true}, // modos de juego activos en el inicio
   unlockedRewards:[],   // ids de recompensas de la tienda ya desbloqueadas
   rewardLog:[],          // [{id, t}] historial de desbloqueos recientes
+  flashSRS:{},          // repetición espaciada: título -> {iv (días), due (ts), reps}
   equip:{frame:null, bg:null, acc:null, title:null}, // recompensas equipadas actualmente
   accentColor:null,     // color principal personalizado (hex) o null = por defecto
   soundVolume:0.7,      // volumen de los efectos de sonido (0-1)
@@ -2523,22 +2533,78 @@ function trySafe(){
   ]), 900);
 }
 
-/* ==================== Flashcards ==================== */
+/* ==================== Flashcards (repetición espaciada) ==================== */
+/* Cada tarjeta guarda intervalo (días) y fecha de vencimiento. El mazo se
+   ordena: vencidas primero, luego nuevas (priorizando los temas con más
+   errores según S.concepts), y al final las que aún no vencen. */
+const SRS_DAY = 86400000;
 let FL = null;
+function srsOf(t){ return (S.flashSRS||{})[t] || null; }
+function topicErrRate(k){ const c = S.concepts[k]; if(!c) return 0; const n = c.ok+c.bad; return n ? c.bad/n : 0; }
+function srsDueCounts(){
+  const now = Date.now();
+  let due = 0, fresh = 0;
+  GLOSSARY.forEach(g => { const r = srsOf(g.t); if(!r) fresh++; else if(r.due <= now) due++; });
+  return {due, fresh};
+}
 function startFlash(){
-  FL = { deck: shuffle(GLOSSARY), i:0 };
+  const now = Date.now();
+  const cat = g => { const r = srsOf(g.t); return !r ? 1 : (r.due <= now ? 0 : 2); };
+  const deck = shuffle(GLOSSARY).sort((a,b) => {
+    const ca = cat(a), cb = cat(b);
+    if(ca !== cb) return ca - cb;
+    if(ca === 0) return srsOf(a.t).due - srsOf(b.t).due;            // más vencida primero
+    if(ca === 1) return topicErrRate(b.k) - topicErrRate(a.k);      // temas más fallados primero
+    return srsOf(a.t).due - srsOf(b.t).due;
+  });
+  FL = { deck, i:0 };
   renderFlash(); showView('flash');
 }
 function renderFlash(){
   const g = FL.deck[FL.i];
   const cardEl = $('#flashCard');
   cardEl.classList.remove('flipped');
+  $('#flashRate').classList.add('hidden');
   $('#flashFront').textContent = g.t;
   $('#flashBack').textContent = g.d;
-  $('#flashCount').textContent = 'Tarjeta '+(FL.i+1)+' de '+FL.deck.length+' · toca la tarjeta para ver la definición';
+  const c = srsDueCounts();
+  const r = srsOf(g.t);
+  const state = !r ? '🆕 nueva' : (r.due <= Date.now() ? '🔴 por repasar' : '✅ al día');
+  $('#flashCount').textContent = 'Tarjeta '+(FL.i+1)+' de '+FL.deck.length+' ('+state+') · 🔴 '+c.due+' por repasar · 🆕 '+c.fresh+' nuevas';
 }
-$('#flashCard').addEventListener('click', () => { sfx('flip'); $('#flashCard').classList.toggle('flipped'); });
-$('#flashFlip').addEventListener('click', () => { sfx('flip'); $('#flashCard').classList.toggle('flipped'); });
+function flashFlip(){
+  sfx('flip');
+  const flipped = $('#flashCard').classList.toggle('flipped');
+  $('#flashRate').classList.toggle('hidden', !flipped);
+}
+function rateFlash(quality){
+  const g = FL.deck[FL.i];
+  if(!S.flashSRS) S.flashSRS = {};
+  const r = S.flashSRS[g.t] || {iv:0, reps:0};
+  if(quality === 'again'){
+    r.iv = 0; r.due = Date.now(); r.reps = 0;
+    // la tarjeta reaparece unas posiciones más adelante en esta misma sesión
+    const card = FL.deck.splice(FL.i, 1)[0];
+    FL.deck.splice(Math.min(FL.i+3, FL.deck.length), 0, card);
+    sfx('bad');
+  } else if(quality === 'hard'){
+    r.iv = 1; r.due = Date.now() + SRS_DAY; r.reps++;
+    FL.i = (FL.i+1) % FL.deck.length;
+    sfx('flip');
+  } else {
+    r.iv = Math.max(2, Math.round((r.iv||1)*2.2));
+    r.due = Date.now() + r.iv*SRS_DAY; r.reps++;
+    FL.i = (FL.i+1) % FL.deck.length;
+    sfx('ok');
+  }
+  S.flashSRS[g.t] = r; save();
+  renderFlash();
+}
+$('#flashCard').addEventListener('click', flashFlip);
+$('#flashFlip').addEventListener('click', flashFlip);
+$('#flashAgain').addEventListener('click', () => rateFlash('again'));
+$('#flashHard').addEventListener('click', () => rateFlash('hard'));
+$('#flashEasy').addEventListener('click', () => rateFlash('easy'));
 $('#flashPrev').addEventListener('click', () => { sfx('click'); FL.i = (FL.i-1+FL.deck.length)%FL.deck.length; renderFlash(); });
 $('#flashNext').addEventListener('click', () => { sfx('click'); FL.i = (FL.i+1)%FL.deck.length; renderFlash(); });
 $('#flashShuffle').addEventListener('click', () => { sfx('click'); FL.deck = shuffle(FL.deck); FL.i=0; renderFlash(); toast('🔀 Mazo barajado'); });
@@ -2769,6 +2835,66 @@ function lbSyncSelf(){
 }
 function lbRanked(b){ return [...b.students].sort((a,x)=>(x.xp||0)-(a.xp||0)); }
 function lbIsAdmin(){ return activeProfile().name.trim().toLowerCase() === 'oliver'; }
+/* Contraseña de administrador guardada como hash (SHA-256, con respaldo djb2
+   para contextos sin crypto.subtle). Nota: al ser una app 100% de navegador,
+   esto protege la interfaz, no cifra los datos locales. */
+const LB_ADMIN_SHA256 = '02bdeefb808dfe802825d3efc09f034a7035836f3b41d7dbd9f8df8c6fd0c245';
+const LB_ADMIN_DJB2 = 'ef9e20e0';
+function djb2hex(s){ let h=5381; for(let i=0;i<s.length;i++){ h=((h<<5)+h+s.charCodeAt(i))>>>0; } return h.toString(16); }
+async function lbCheckPass(pass){
+  try{
+    if(window.crypto && crypto.subtle){
+      const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(pass));
+      const hex = [...new Uint8Array(buf)].map(x=>x.toString(16).padStart(2,'0')).join('');
+      return hex === LB_ADMIN_SHA256;
+    }
+  }catch(e){}
+  return djb2hex(pass) === LB_ADMIN_DJB2;
+}
+/* — Tabla compartida: leaderboard.json publicado junto a la página —
+   Al abrir el leaderboard se descarga el archivo y se fusiona con la tabla
+   local (gana la fila con fecha de actualización más reciente; tu propia fila
+   nunca se pisa porque sale de tu progreso real). El admin publica subiendo
+   el JSON exportado al repositorio. */
+let lbFetchedAt = 0;
+function lbMergeStudents(inc, newerWins){
+  const b = lbLoad();
+  let changed = 0;
+  inc.forEach(x => {
+    if(!x || !x.name) return;
+    let ent = b.students.find(s => (x.pid && s.pid===x.pid) || (s.name||'').toLowerCase()===String(x.name).toLowerCase());
+    if(ent){
+      if(ent.pid === PROFILES.active) return;                       // mi fila viene de mi progreso
+      if(newerWins && (ent.updated||0) >= (x.updated||0)) return;   // conservar ediciones locales más nuevas
+      Object.assign(ent, x, {pid:ent.pid}); changed++;
+    } else {
+      b.students.push({pid: x.pid || ('m'+Date.now().toString(36)+Math.random().toString(36).slice(2,6)),
+        name:String(x.name).slice(0,24), avatar:x.avatar||'🎓', group:x.group||'',
+        xp:+x.xp||0, lvl:levelOf(+x.xp||0), mods:+x.mods||0, streak:+x.streak||0, updated:x.updated||Date.now()});
+      changed++;
+    }
+  });
+  if(changed) lbSave(b);
+  return changed;
+}
+async function lbFetchRemote(){
+  try{
+    const res = await fetch('leaderboard.json?t='+Date.now(), {cache:'no-store'});
+    if(!res.ok) return -1;
+    const payload = await res.json();
+    const inc = (payload && Array.isArray(payload.students)) ? payload.students : (Array.isArray(payload) ? payload : []);
+    if(!inc.length) return 0;
+    return lbMergeStudents(inc, true);
+  }catch(e){ return -1; }
+}
+function lbMaybeFetch(force){
+  if(!force && Date.now() - lbFetchedAt < 60000) return;
+  lbFetchedAt = Date.now();
+  lbFetchRemote().then(n => {
+    if(n > 0){ renderBoard(); toast('🌐 Leaderboard sincronizado: '+n+' fila'+(n===1?'':'s')+' actualizada'+(n===1?'':'s')); }
+    else if(force) toast(n === -1 ? '🌐 No se pudo descargar la tabla compartida' : '🌐 Ya estás al día');
+  });
+}
 function lbMotivation(pos, total){
   if(!pos) return '🎯 Aparece en la tabla completando actividades para ganar XP.';
   if(pos===1) return '👑 ¡Eres el número 1! Defiende tu corona con la racha diaria.';
@@ -2814,17 +2940,20 @@ function renderBoard(){
     + '</table>'
     + '<p class="lb-motiv">'+lbMotivation(myPos, ranked.length)+'</p>'
     + '<div class="q-actions" style="justify-content:flex-start;flex-wrap:wrap;margin-top:12px">'
+    + '<button class="btn ghost small" id="lbRefresh">🔄 Actualizar</button>'
     + '<button class="btn ghost small" id="lbExport">⬇️ Exportar JSON</button>'
     + '<button class="btn ghost small" id="lbImport">⬆️ Importar JSON</button>'
     + '<input type="file" id="lbImportFile" accept=".json,application/json" class="hidden">'
-    + '</div></div>';
+    + '</div>'
+    + '<p class="q-help">🌐 La tabla se sincroniza con el archivo <code>leaderboard.json</code> publicado junto a la página cada vez que abres esta pantalla (o al tocar Actualizar).</p>'
+    + '</div>';
   // — Panel de administrador (visible solo para el perfil "Oliver") —
   if(lbIsAdmin()){
     const editing = lbEditId ? b.students.find(s=>s.pid===lbEditId) : null;
     html += '<div class="panel" style="margin-top:16px"><h3>🛠️ Panel de administrador</h3>'
       + '<div class="q-actions" style="justify-content:flex-start;flex-wrap:wrap">'
       + '<button class="btn small'+(lbAdminOn?'':' ghost')+'" id="lbAdminToggle">'+(lbAdminOn?'🟢 Modo administrador: ON':'⚪ Modo administrador: OFF')+'</button>'
-      + '<input class="ainput" id="lbAdminPass" type="password" placeholder="Contraseña local (visual)" style="max-width:220px">'
+      + (lbAdminOn ? '' : '<input class="ainput" id="lbAdminPass" type="password" placeholder="Contraseña de administrador" style="max-width:220px">')
       + '</div>'
       + (lbAdminOn ?
         '<hr style="border:none;border-top:1px solid var(--line);margin:14px 0">'
@@ -2842,8 +2971,9 @@ function renderBoard(){
         + '<button class="btn ghost small" id="lbSort">↕️ Ordenar por XP</button>'
         + '<button class="btn danger small" id="lbReset">🗑️ Resetear leaderboard</button>'
         + '</div>'
-        + '<p class="q-help">El nivel se calcula solo a partir del XP. Usa ✏️ y 🗑️ en cada fila para editar o eliminar. La contraseña es únicamente decorativa (los datos viven en este navegador).</p>'
-        : '<p class="q-help">Activa el modo administrador para agregar, editar o eliminar estudiantes.</p>')
+        + '<p class="q-help">El nivel se calcula solo a partir del XP. Usa ✏️ y 🗑️ en cada fila para editar o eliminar.</p>'
+        + '<p class="q-help">🌐 <b>Para publicar la tabla a todo el grupo:</b> toca “⬇️ Exportar JSON” (descarga <code>leaderboard.json</code>) y súbelo al repositorio de GitHub reemplazando el archivo <code>leaderboard.json</code> (Add file → Upload files). Al desplegarse, todos verán la tabla actualizada al abrir la página.</p>'
+        : '<p class="q-help">Escribe la contraseña y toca el botón para activar el modo administrador.</p>')
       + '</div>';
   }
   $('#boardBody').innerHTML = html;
@@ -2851,13 +2981,14 @@ function renderBoard(){
   $('#lbSearch').addEventListener('input', e => { lbFilterQ = e.target.value; renderBoard(); });
   $('#lbGroupSel').addEventListener('change', e => { lbFilterGroup = e.target.value; renderBoard(); });
   $('#lbMyGroup').addEventListener('change', e => { S.lbGroup = e.target.value.trim(); save(); renderBoard(); });
+  $('#lbRefresh').addEventListener('click', () => { sfx('click'); lbMaybeFetch(true); });
   $('#lbExport').addEventListener('click', () => {
     const blob = new Blob([JSON.stringify({app:'actuariq-board', version:1, exported:new Date().toISOString(), students:lbRanked(lbLoad())}, null, 2)], {type:'application/json'});
     const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob); a.download = 'actuariq-leaderboard-'+todayKey()+'.json';
+    a.href = URL.createObjectURL(blob); a.download = 'leaderboard.json';
     document.body.appendChild(a); a.click(); a.remove();
     setTimeout(()=>URL.revokeObjectURL(a.href), 3000);
-    toast('⬇️ Leaderboard exportado'); sfx('ok');
+    toast('⬇️ Descargado leaderboard.json: súbelo al repositorio para publicarlo'); sfx('ok');
   });
   $('#lbImport').addEventListener('click', () => $('#lbImportFile').click());
   $('#lbImportFile').addEventListener('change', e => {
@@ -2870,16 +3001,9 @@ function renderBoard(){
         const inc = (payload && payload.app==='actuariq-board' && Array.isArray(payload.students)) ? payload.students
           : (Array.isArray(payload) ? payload : null);
         if(!inc) throw new Error('formato');
-        const b = lbLoad();
-        let added = 0, updated = 0;
-        inc.forEach(x => {
-          if(!x || !x.name) return;
-          let ent = b.students.find(s => (x.pid && s.pid===x.pid) || s.name.toLowerCase()===String(x.name).toLowerCase());
-          if(ent){ if(ent.pid !== PROFILES.active){ Object.assign(ent, x, {pid:ent.pid}); updated++; } }
-          else { b.students.push({pid: x.pid || ('m'+Date.now().toString(36)+Math.random().toString(36).slice(2,6)), name:String(x.name).slice(0,24), avatar:x.avatar||'🎓', group:x.group||'', xp:+x.xp||0, lvl:levelOf(+x.xp||0), mods:+x.mods||0, streak:+x.streak||0, updated:Date.now()}); added++; }
-        });
-        lbSave(b); renderBoard();
-        toast('⬆️ Importado: '+added+' nuevos, '+updated+' actualizados'); sfx('unlock');
+        const changed = lbMergeStudents(inc, false); // importación manual: pisa lo local
+        renderBoard();
+        toast('⬆️ Importado: '+changed+' fila'+(changed===1?'':'s')+' aplicada'+(changed===1?'':'s')); sfx('unlock');
       }catch(err){ toast('❌ El archivo no es un JSON de leaderboard válido'); sfx('bad'); }
     };
     rd.readAsText(file);
@@ -2896,7 +3020,24 @@ function renderBoard(){
     renderBoard(); toast('🗑️ Estudiante eliminado'); sfx('click');
   }));
   const at = $('#lbAdminToggle');
-  if(at) at.addEventListener('click', () => { lbAdminOn = !lbAdminOn; if(!lbAdminOn) lbEditId=null; sfx('click'); renderBoard(); });
+  if(at) at.addEventListener('click', async () => {
+    if(lbAdminOn){
+      lbAdminOn = false; lbEditId = null;
+      try{ sessionStorage.removeItem('actuariq_admin'); }catch(e){}
+      sfx('click'); renderBoard(); return;
+    }
+    // ya validado en esta pestaña: no volver a pedir la contraseña
+    let okSession = false;
+    try{ okSession = sessionStorage.getItem('actuariq_admin') === '1'; }catch(e){}
+    if(!okSession){
+      const pass = ($('#lbAdminPass') && $('#lbAdminPass').value) || '';
+      if(!pass){ toast('🔑 Escribe la contraseña de administrador'); sfx('bad'); return; }
+      const good = await lbCheckPass(pass);
+      if(!good){ toast('❌ Contraseña incorrecta'); sfx('bad'); return; }
+      try{ sessionStorage.setItem('actuariq_admin','1'); }catch(e){}
+    }
+    lbAdminOn = true; sfx('unlock'); toast('🛠️ Modo administrador activado'); renderBoard();
+  });
   const fs = $('#lbfSave');
   if(fs) fs.addEventListener('click', () => {
     const name = $('#lbfName').value.trim();
@@ -2927,7 +3068,7 @@ function renderBoard(){
     lbSave({students:[]}); lbEditId=null; renderBoard(); toast('🗑️ Leaderboard reiniciado'); sfx('bad');
   });
 }
-$('#btnBoard').addEventListener('click', () => { sfx('click'); renderBoard(); showView('board'); });
+$('#btnBoard').addEventListener('click', () => { sfx('click'); renderBoard(); showView('board'); lbMaybeFetch(); });
 
 /* ==================== Insignias ==================== */
 const BADGES = [
@@ -3766,6 +3907,11 @@ renderHeader();
 renderHome();
 showView('home');
 if(!PROFILES.onboarded) showOnboarding();
+
+/* PWA: la app queda instalable y funciona offline (requiere https o localhost) */
+if('serviceWorker' in navigator){
+  addEventListener('load', () => { navigator.serviceWorker.register('./sw.js').catch(()=>{}); });
+}
 
 </script>
 </body>

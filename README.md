@@ -47,14 +47,21 @@ ejercicios numéricos **cambian en cada intento**.
 - **Muerte súbita** 💀: preguntas sin límite de tiempo, un error y se acaba.
 - **Repaso mixto** 🎯: 10 preguntas variadas de los módulos desbloqueados,
   sin presión de tiempo (no afecta estrellas).
-- **Flashcards** 🃏 con las 25 tarjetas del glosario.
+- **Flashcards con repetición espaciada** 🃏: califica cada tarjeta
+  (Otra vez / Difícil / Fácil); las falladas vuelven pronto y las fáciles
+  descansan más días. El mazo prioriza los temas con más errores.
 - Los modos de juego se pueden **activar/desactivar** desde el perfil.
 - **Retroalimentación inmediata**: si fallas, verás la respuesta correcta, la
   fórmula y la **solución paso a paso**; si aciertas, un tip actuarial.
 - **Tienda de recompensas** 🎁: marcos (bronce→diamante), fondos, accesorios
   y títulos desbloqueables por XP, con modal de recompensa y confetti.
-- **Leaderboard** 🏆 con medallas, filtro por grupo, búsqueda, aviso de
-  "subiste de rango", exportación/importación JSON y panel de administrador.
+- **Leaderboard compartido** 🏆 con medallas, filtro por grupo, búsqueda y
+  aviso de "subiste de rango". Se sincroniza solo con el archivo
+  `leaderboard.json` publicado junto a la página; el administrador (perfil
+  "Oliver" + contraseña) lo edita y publica subiendo el JSON exportado al
+  repositorio.
+- **PWA instalable** 📱: agrégala a la pantalla de inicio del celular;
+  funciona offline después de la primera visita (service worker + manifest).
 - **Sonidos opcionales** (WebAudio con fallback `<audio>`), control de
   volumen, botones "Activar/Probar sonidos" y animaciones suaves.
 - **Color principal personalizable** (azul, verde, morado, rojo, naranja, rosa).
