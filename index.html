@@ -433,6 +433,29 @@ header.top{
 .lb-medal{font-size:1.05rem}
 .lb-av{font-size:20px; line-height:1}
 .lb-motiv{margin:10px 0 0; padding:10px 14px; border-radius:var(--radius-s); background:var(--surface2); font-size:.88rem; font-weight:700; color:var(--ink2)}
+/* ============ Tareas y calendario ============ */
+.task-badge{position:absolute; top:-5px; right:-5px; min-width:17px; height:17px; border-radius:99px; background:var(--bad); color:#fff; font-size:.62rem; font-weight:800; display:grid; place-items:center; padding:0 4px}
+.task-tabs{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px}
+.task-card{background:var(--surface); border:1px solid var(--line); border-left:4px solid var(--accent); border-radius:var(--radius-s); padding:14px 16px; margin-bottom:10px}
+.task-card.done{opacity:.72; border-left-color:var(--good)}
+.task-card.late{border-left-color:var(--bad)}
+.task-card.soon{border-left-color:var(--warn)}
+.task-head{display:flex; align-items:center; gap:10px; flex-wrap:wrap}
+.task-title{font-weight:800; flex:1; min-width:150px}
+.task-chips{display:flex; gap:6px; flex-wrap:wrap; margin:6px 0}
+.task-chips .tag{font-size:.68rem}
+.tag.prio-alta{background:var(--bad-soft); color:var(--bad-text)}
+.tag.prio-media{background:var(--warn-soft); color:#8a6400}
+.tag.prio-baja{background:var(--surface2); color:var(--ink2)}
+.task-desc{font-size:.88rem; color:var(--ink2); margin:6px 0}
+.task-meta{font-size:.74rem; color:var(--muted); margin-top:6px}
+.task-card details{margin-top:8px; font-size:.86rem}
+.task-card details summary{cursor:pointer; font-weight:700; color:var(--accent)}
+.due-chip{font-size:.74rem; font-weight:800; padding:3px 10px; border-radius:99px; background:var(--surface2); white-space:nowrap}
+.due-chip.soon{background:var(--warn-soft); color:#8a6400}
+.due-chip.late{background:var(--bad-soft); color:var(--bad-text)}
+.cal-exam{display:flex; align-items:center; gap:10px; padding:9px 12px; border:1px solid var(--line); border-radius:11px; margin-bottom:8px}
+.cal-exam .ce-date{font-weight:800; min-width:92px; font-variant-numeric:tabular-nums}
 /* ============ Revisión de respuestas ============ */
 .rv-item{background:var(--surface); border:1px solid var(--line); border-left:4px solid var(--line); border-radius:var(--radius-s); padding:14px 16px; margin-bottom:10px}
 .rv-item.ok{border-left-color:var(--good)}
@@ -547,12 +570,14 @@ select.ainput{appearance:auto}
     <span>ActuarIQ<small>Cálculo Actuarial Interactivo</small></span>
   </button>
   <span class="spacer"></span>
+  <button class="chip subject" id="btnSubject" title="Cambiar de materia"><span class="icon" id="subjIcon">🛡️</span><b id="subjShort">Cálculo III</b> <span style="opacity:.55">▾</span></button>
   <div class="lvlbox" id="lvlbox" title="Nivel y experiencia">
     <span class="lvlnum" id="lvlNum">1</span>
     <span><span class="lvlbar"><i id="lvlBar" style="width:0%"></i></span><small id="lvlXpTxt">0 XP</small></span>
   </div>
   <span class="chip streak" title="Racha de días de estudio"><span class="icon">🔥</span><b id="streakTxt">0</b></span>
   <button class="iconbtn" id="btnProfile" title="Mi perfil y configuración">🎓</button>
+  <button class="iconbtn" id="btnTasks" title="Tareas y calendario" style="position:relative">📋<span id="taskBadge" class="task-badge hidden"></span></button>
   <button class="iconbtn" id="btnBoard" title="Leaderboard del grupo">🏆</button>
   <button class="iconbtn" id="btnStats" title="Panel de estadísticas">📊</button>
   <button class="iconbtn" id="btnGuide" title="Guía de estudio (imprimir / PDF)">🖨️</button>
@@ -579,15 +604,17 @@ select.ainput{appearance:auto}
 
     <div class="stats-strip" id="homeStats"></div>
 
-    <div class="section-h"><h2>📘 Unidad 1 · Fundamentos del Cálculo Actuarial</h2><span class="line"></span><span class="meta" id="modMeta"></span></div>
+    <div class="section-h"><h2 id="subjSectionTitle">📘 Unidad 1 · Fundamentos del Cálculo Actuarial</h2><span class="line"></span><span class="meta" id="modMeta"></span></div>
     <div class="mgrid" id="moduleGrid"></div>
-    <div class="section-h" style="margin-top:30px"><h2>📗 Próximas unidades</h2><span class="line"></span></div>
-    <div class="mgrid">
-      <div class="mcard locked" style="--mc:var(--c2)">
-        <span class="lock" title="Disponible próximamente">🔒</span>
-        <div class="m-top"><span class="m-ico">📗</span><span><span class="m-num">Unidad 2</span><h3>Nuevos temas · Próximamente</h3></span></div>
-        <span class="m-desc">Se agregará con los siguientes temas del curso. Cada unidad tiene sus propios módulos y su propio examen diario: los temas no se mezclan entre unidades, salvo los que se comparten.</span>
-        <span class="m-type">En preparación</span>
+    <div id="futureUnits">
+      <div class="section-h" style="margin-top:30px"><h2>📗 Próximas unidades</h2><span class="line"></span></div>
+      <div class="mgrid">
+        <div class="mcard locked" style="--mc:var(--c2)">
+          <span class="lock" title="Disponible próximamente">🔒</span>
+          <div class="m-top"><span class="m-ico">📗</span><span><span class="m-num">Unidad 2</span><h3>Nuevos temas · Próximamente</h3></span></div>
+          <span class="m-desc">Se agregará con los siguientes temas del curso. Cada unidad tiene sus propios módulos y su propio examen diario: los temas no se mezclan entre unidades, salvo los que se comparten.</span>
+          <span class="m-type">En preparación</span>
+        </div>
       </div>
     </div>
   </section>
@@ -705,6 +732,21 @@ select.ainput{appearance:auto}
     <div id="boardBody"></div>
   </section>
 
+  <!-- ================= VISTA: TAREAS Y CALENDARIO ================= -->
+  <section id="view-tasks" class="hidden">
+    <div class="session-top">
+      <button class="btn ghost small back" data-nav="home">← Salir</button>
+      <span class="qcount">📋 Tareas y calendario</span>
+    </div>
+    <div class="task-tabs" id="taskTabs">
+      <button class="btn small" data-ttab="activas">📋 Activas</button>
+      <button class="btn ghost small" data-ttab="vencidas">⌛ Vencidas</button>
+      <button class="btn ghost small" data-ttab="archivo">🗂️ Archivo</button>
+      <button class="btn ghost small" data-ttab="calendario">📅 Calendario</button>
+    </div>
+    <div id="tasksBody"></div>
+  </section>
+
   <!-- ================= VISTA: ESTADÍSTICAS ================= -->
   <section id="view-stats" class="hidden">
     <div class="session-top">
@@ -769,28 +811,61 @@ const fmtDur = sec => { sec=Math.round(sec); const h=Math.floor(sec/3600), m=Mat
   return h>0 ? h+' h '+m+' min' : (m>0 ? m+' min' : sec+' s'); };
 const clamp = (n,a,b) => Math.max(a,Math.min(b,n));
 
+/* ==================== Materias del cuatrimestre ====================
+   Organización de datos multi-materia:
+   - SUBJECTS ................. catálogo de materias (subjects)
+   - MODULES_BY_SUBJECT ....... módulos y quizzes por materia (se define más
+                                abajo, junto al contenido; los quizzes viven en
+                                el build() de cada módulo)
+   - S.subjectData ............ estadísticas por materia (statsBySubject):
+                                avance, historial, conceptos, exámenes y SRS
+   - S nivel superior ......... la materia ACTIVA desplegada + lo global
+                                (globalStats): XP total, racha, insignias,
+                                recompensas, preferencias
+   - SEED_TASKS / SEED_CALENDAR tareas y calendario de exámenes (tasks,
+                                archivedTasks, examCalendar) — el admin los
+                                edita aquí en el HTML o desde su panel
+   Para agregar temas/módulos a una materia solo hay que llenar su entrada en
+   MODULES_BY_SUBJECT (y opcionalmente EXAM_BUILDERS_BY_SUBJECT). */
+const SUBJECTS = [
+  {id:'ca3',   icon:'🛡️', name:'Cálculo Actuarial III',              short:'Cálculo III'},
+  {id:'reg',   icon:'📉', name:'Modelos de Regresión',                short:'Regresión',        soon:true},
+  {id:'nopar', icon:'📊', name:'Análisis Estadístico No Paramétrico', short:'No Paramétrico',   soon:true},
+  {id:'stoch', icon:'🎲', name:'Procesos Estocásticos',               short:'Estocásticos',     soon:true},
+  {id:'fin',   icon:'💼', name:'Administración Financiera',           short:'Admin. Financiera', soon:true}
+];
+const subjectById = id => SUBJECTS.find(s=>s.id===id) || SUBJECTS[0];
+/* Claves del estado que pertenecen a la materia activa (se intercambian al
+   cambiar de materia; el resto del estado es global) */
+const SUBJ_KEYS = ['modules','history','concepts','examDay','examHistory','flashSRS','subjXP'];
+const defaultSubjectData = () => ({ modules:{}, history:[], concepts:{}, examDay:null, examHistory:[], flashSRS:{}, subjXP:0 });
+
 /* ==================== Perfiles y estado persistente ==================== */
 const PKEY = 'actuariq_profiles_v1';
 const DEFAULT_STATE = () => ({
   xp:0, sound:true, theme:null,
   streak:0, lastDay:null, totalTime:0, bestBlitz:0, bestBlitzCombo:0, bestSudden:0, totalAnswered:0,
-  examDay:null, examHistory:[],   // examen diario: {t, score, sec}
+  examDay:null, examHistory:[],   // examen diario de la materia activa: {t, score, sec, n, xp, failedTopics}
   stepsOnOk:false, confetti:true,
   bigText:false, reduceMotion:false, xpGoal:50, guideProgressive:true, avatarBeta:true,
   dayXP:null,                     // {d:'YYYY-MM-DD', xp, goalHit}
-  modules:{},           // id -> {best, stars, attempts, done}
-  history:[],           // {t, mod, score, xp, sec}
-  concepts:{},          // topic -> {ok, bad}
-  badges:[],            // ids de insignias ganadas
+  modules:{},           // materia activa: id -> {best, stars, attempts, done}
+  history:[],           // materia activa: {t, mod, score, xp, sec}
+  concepts:{},          // materia activa: topic -> {ok, bad}
+  badges:[],            // ids de insignias ganadas (globales)
   gameModes:{exam:true, flash:true, blitz:true, sudden:true, review:true}, // modos de juego activos en el inicio
-  unlockedRewards:[],   // ids de recompensas de la tienda ya desbloqueadas
+  unlockedRewards:[],   // ids de recompensas de la tienda ya desbloqueadas (globales)
   rewardLog:[],          // [{id, t}] historial de desbloqueos recientes
-  flashSRS:{},          // repetición espaciada: título -> {iv (días), due (ts), reps}
+  flashSRS:{},          // repetición espaciada de la materia activa
   equip:{frame:null, bg:null, acc:null, title:null}, // recompensas equipadas actualmente
   accentColor:null,     // color principal personalizado (hex) o null = por defecto
   soundVolume:0.7,      // volumen de los efectos de sonido (0-1)
   lbGroup:'',           // grupo/salón para el leaderboard
-  lbRank:null           // última posición conocida en el leaderboard (para detectar "subiste de rango")
+  lbRank:null,          // última posición conocida en el leaderboard (para detectar "subiste de rango")
+  activeSubject:'ca3',  // materia actualmente desplegada
+  subjectData:{},       // statsBySubject: materia -> {modules, history, concepts, examDay, examHistory, flashSRS, subjXP}
+  subjXP:0,             // XP ganado en la materia activa
+  taskDone:{}           // tareas marcadas como realizadas: taskId -> timestamp
 });
 let PROFILES;
 try { PROFILES = JSON.parse(localStorage.getItem(PKEY) || 'null'); } catch(e){ PROFILES = null; }
@@ -806,11 +881,41 @@ const saveProfiles = () => { try{ localStorage.setItem(PKEY, JSON.stringify(PROF
 const dataKey = () => 'actuariq_u_' + PROFILES.active;
 const activeProfile = () => PROFILES.list.find(p => p.id === PROFILES.active) || PROFILES.list[0];
 function loadState(){
-  try { return Object.assign(DEFAULT_STATE(), JSON.parse(localStorage.getItem(dataKey()) || '{}')); }
-  catch(e){ return DEFAULT_STATE(); }
+  let st;
+  try { st = Object.assign(DEFAULT_STATE(), JSON.parse(localStorage.getItem(dataKey()) || '{}')); }
+  catch(e){ st = DEFAULT_STATE(); }
+  // migración a multi-materia: el progreso previo pertenece a Cálculo Actuarial III
+  if(!st.subjectData) st.subjectData = {};
+  if(!SUBJECTS.some(x => x.id === st.activeSubject)) st.activeSubject = 'ca3';
+  if(st.subjXP === undefined || st.subjXP === null) st.subjXP = st.xp;
+  if(!st.taskDone) st.taskDone = {};
+  return st;
 }
 let S = loadState();
-const save = () => { try{ localStorage.setItem(dataKey(), JSON.stringify(S)); }catch(e){} };
+/* Al guardar se sincroniza la copia por materia, así S.subjectData siempre
+   refleja también la materia activa (útil para estadísticas generales). */
+const save = () => {
+  const snap = {}; SUBJ_KEYS.forEach(k => snap[k] = S[k]);
+  S.subjectData[S.activeSubject] = snap;
+  try{ localStorage.setItem(dataKey(), JSON.stringify(S)); }catch(e){}
+};
+/* Datos de una materia (la activa se lee del nivel superior) */
+function subjSnapshot(id){
+  if(id === S.activeSubject){ const snap = {}; SUBJ_KEYS.forEach(k => snap[k] = S[k]); return Object.assign(defaultSubjectData(), snap); }
+  return Object.assign(defaultSubjectData(), S.subjectData[id] || {});
+}
+function switchSubject(id){
+  if(!SUBJECTS.some(x => x.id === id) || id === S.activeSubject) return;
+  save();                                        // guarda (y respalda) la materia actual
+  const d = Object.assign(defaultSubjectData(), S.subjectData[id] || {});
+  SUBJ_KEYS.forEach(k => { S[k] = d[k]; });
+  S.activeSubject = id;
+  save();
+  MODULES = MODULES_BY_SUBJECT[id] || [];
+  SES = null;
+  renderHeader(); goHome();
+  toast('📚 Materia activa: '+subjectById(id).icon+' '+subjectById(id).name);
+}
 
 /* Niveles: XP necesario crece cuadráticamente */
 const levelOf   = xp => Math.floor(Math.sqrt(xp/60)) + 1;
@@ -823,6 +928,7 @@ function addXP(n){
   const t = todayKey();
   if(!S.dayXP || S.dayXP.d !== t) S.dayXP = {d:t, xp:0, goalHit:false};
   S.dayXP.xp += n;
+  S.subjXP = (S.subjXP||0) + n;   // acumulado de la materia activa
   const before = levelOf(S.xp);
   S.xp += n;
   const after = levelOf(S.xp);
@@ -1032,7 +1138,34 @@ function renderHeader(){
   $('#btnProfile').innerHTML = avatarHTML(activeProfile(), 26);
   $('#btnSound').textContent = S.sound ? '🔊' : '🔇';
   $('#btnSound').setAttribute('aria-pressed', S.sound);
+  const subj = subjectById(S.activeSubject);
+  $('#subjIcon').textContent = subj.icon;
+  $('#subjShort').textContent = subj.short;
 }
+/* — Selector de materia — */
+function openSubjectPicker(){
+  const cards = SUBJECTS.map(s => {
+    const d = subjSnapshot(s.id);
+    const mods = MODULES_BY_SUBJECT[s.id] || [];
+    const done = Object.values(d.modules).filter(m=>m.done).length;
+    const active = s.id === S.activeSubject;
+    return '<button class="profile-row'+(active?' active':'')+'" style="width:100%;text-align:left" data-subj="'+s.id+'">'
+      + '<span class="pr-av">'+s.icon+'</span>'
+      + '<span class="pr-name">'+esc(s.name)
+      + '<br><small style="color:var(--muted);font-weight:600">'
+      + (mods.length ? done+'/'+mods.length+' módulos · '+(d.subjXP||0)+' XP' : 'Contenido en preparación · tareas y calendario disponibles')
+      + '</small></span>'
+      + (active ? '<span class="tag dom">✔ Activa</span>' : '')
+      + '</button>';
+  }).join('');
+  const o = openModal('<h2 style="margin-top:0">📚 Mis materias · 6.º cuatrimestre</h2>'
+    + '<p style="color:var(--ink2);font-size:.88rem">Cada materia guarda su propio avance, exámenes y estadísticas. El XP, nivel, racha y recompensas son globales.</p>'
+    + cards
+    + '<div class="q-actions" style="justify-content:center"><button class="btn ghost" id="subjClose">Cerrar</button></div>');
+  o.querySelectorAll('[data-subj]').forEach(b => b.addEventListener('click', () => { sfx('click'); closeModal(); switchSubject(b.dataset.subj); }));
+  o.querySelector('#subjClose').addEventListener('click', () => { sfx('click'); closeModal(); });
+}
+$('#btnSubject').addEventListener('click', () => { sfx('click'); openSubjectPicker(); });
 
 /* ==================== Pantalla de inicio ==================== */
 function overallStats(){
@@ -1044,25 +1177,42 @@ function overallStats(){
   const acc = (ok+bad) ? ok/(ok+bad) : 0;
   const scores = S.history.map(h=>h.score);
   const avg = scores.length ? scores.reduce((a,b)=>a+b,0)/scores.length : 0;
-  return { done, total:n, progress: sumBest/(100*n), acc, avg, answered: ok+bad };
+  return { done, total:n, progress: n ? sumBest/(100*n) : 0, acc, avg, answered: ok+bad };
+}
+/* Estadísticas de cualquier materia (para el panel general y el calendario) */
+function subjStats(id){
+  const d = subjSnapshot(id);
+  const mods = MODULES_BY_SUBJECT[id] || [];
+  let done = 0, sumBest = 0;
+  mods.forEach(m => { const st = d.modules[m.id] || {best:0,done:false}; if(st.done) done++; sumBest += st.best||0; });
+  const scores = d.history.map(h=>h.score);
+  const avg = scores.length ? Math.round(scores.reduce((a,b)=>a+b,0)/scores.length) : 0;
+  return { done, total: mods.length, progress: mods.length ? sumBest/(100*mods.length) : 0,
+    avg, attempts: d.history.length, xp: d.subjXP||0, exams: d.examHistory||[], concepts: d.concepts||{} };
 }
 function renderHome(){
   renderHeader();
+  const subj = subjectById(S.activeSubject);
+  const hasContent = MODULES.length > 0;
   const o = overallStats();
   const dayXp = (S.dayXP && S.dayXP.d === todayKey()) ? S.dayXP.xp : 0;
   const goal = S.xpGoal || 50;
+  const pend = pendingTasksCount();
   $('#homeStats').innerHTML =
-    tile('🏆','Progreso total', Math.round(o.progress*100), '%', o.done+' de '+o.total+' módulos') +
-    tile('🎯','Precisión global', Math.round(o.acc*100), '%', o.answered+' respuestas') +
+    tile('🏆','Avance en '+subj.short, Math.round(o.progress*100), '%', hasContent ? o.done+' de '+o.total+' módulos' : 'contenido en preparación') +
+    tile('🎯','Precisión', Math.round(o.acc*100), '%', o.answered+' respuestas en esta materia') +
     tile('📈','Promedio', Math.round(o.avg), '%', S.history.length+' actividades') +
-    tile('⏱️','Tiempo de estudio', fmtDur(S.totalTime), '', 'acumulado') +
     tile('⚡','XP total', S.xp, '', 'Nivel '+levelInfo().lvl+' · '+currentTitle()) +
     tile('📅','Objetivo de hoy', dayXp+'<span class="unit">/'+goal+' XP</span>', '', dayXp>=goal ? '¡Cumplido! ✅' : 'ajústalo en tu perfil') +
-    tile('🔥','Racha diaria', S.streak, S.streak===1?' día':' días', S.lastDay===todayKey() ? '¡Ya estudiaste hoy! ✅' : '⚠️ Estudia hoy para mantenerla');
-  $('#modMeta').textContent = o.done+' / '+o.total+' completados · se desbloquea con ≥ 80%';
+    tile('🔥','Racha diaria', S.streak, S.streak===1?' día':' días', S.lastDay===todayKey() ? '¡Ya estudiaste hoy! ✅' : '⚠️ Estudia hoy para mantenerla') +
+    tile('📋','Tareas pendientes', pend, '', pend ? 'revísalas en 📋 Tareas' : 'todo al día 🎉');
+  $('#subjSectionTitle').textContent = subj.icon+' '+subj.name;
+  $('#modMeta').textContent = hasContent ? o.done+' / '+o.total+' completados · se desbloquea con ≥ 80%' : 'en preparación';
+  $('#futureUnits').classList.toggle('hidden', S.activeSubject !== 'ca3');
   // saludo según avance, personalizado con el perfil
-  const pname = activeProfile().name.split(' ')[0];
-  $('#heroTitle').textContent = o.done===0 ? '¡Bienvenido, '+pname+'! 👋'
+  const pname = (activeProfile().nick || activeProfile().name).split(' ')[0];
+  $('#heroTitle').textContent = !hasContent ? '📚 '+subj.name
+    : o.done===0 ? '¡Bienvenido, '+pname+'! 👋'
     : o.done===MODULES.length ? '🏅 ¡Dominaste todos los módulos, '+pname+'!'
     : '¡Sigue así, '+pname+'! Vas '+o.done+' de '+o.total+' módulos 💪';
   // estado del examen diario
@@ -1070,14 +1220,23 @@ function renderHome(){
   $('#btnExam').innerHTML = (doneToday && S.examHistory.length)
     ? '📝 Examen de hoy: '+S.examHistory[0].score+'% ✓'
     : '📝 Examen diario';
-  // modos de juego activos/inactivos (configurables en el perfil)
+  // modos de juego activos/inactivos (configurables en el perfil); sin contenido no hay juegos
   const gm = S.gameModes || {};
-  $('#btnExam').classList.toggle('hidden', gm.exam === false);
-  $('#btnFlash').classList.toggle('hidden', gm.flash === false);
-  $('#btnBlitz').classList.toggle('hidden', gm.blitz === false);
-  $('#btnSudden').classList.toggle('hidden', gm.sudden === false);
-  $('#btnReview').classList.toggle('hidden', gm.review === false);
-  // grid de módulos
+  $('#btnContinue').classList.toggle('hidden', !hasContent);
+  $('#btnExam').classList.toggle('hidden', !hasContent || gm.exam === false);
+  $('#btnFlash').classList.toggle('hidden', !hasContent || gm.flash === false);
+  $('#btnBlitz').classList.toggle('hidden', !hasContent || gm.blitz === false);
+  $('#btnSudden').classList.toggle('hidden', !hasContent || gm.sudden === false);
+  $('#btnReview').classList.toggle('hidden', !hasContent || gm.review === false);
+  // grid de módulos (o tarjeta de "en preparación" si la materia aún no tiene contenido)
+  if(!hasContent){
+    $('#moduleGrid').innerHTML = '<div class="mcard locked" style="--mc:var(--c5)">'
+      + '<span class="lock">🚧</span>'
+      + '<div class="m-top"><span class="m-ico">'+subj.icon+'</span><span><span class="m-num">Próximamente</span><h3>'+esc(subj.name)+'</h3></span></div>'
+      + '<span class="m-desc">Los módulos y quizzes de esta materia se agregarán pronto. Mientras tanto ya puedes consultar sus tareas 📋 y su calendario de exámenes 📅.</span>'
+      + '<span class="m-type">En preparación</span></div>';
+    return;
+  }
   const colors = ['var(--c1)','var(--c2)','var(--c3)','var(--c4)','var(--c5)','var(--c6)','var(--c7)','var(--c8)','var(--c1)','var(--c2)','var(--c5)','var(--c8)'];
   $('#moduleGrid').innerHTML = MODULES.map((m,i)=>{
     const st = modState(m.id);
@@ -1085,7 +1244,7 @@ function renderHome(){
     const stars = '★'.repeat(st.stars) + '<span class="off">'+'★'.repeat(3-st.stars)+'</span>';
     const corner = locked ? '<span class="lock" title="Se desbloquea con 80% en el módulo anterior">🔒</span>'
       : (st.done ? '<span class="done-badge" title="Completado">✓</span>' : '');
-    return '<button class="mcard'+(locked?' locked':'')+'" style="--mc:'+colors[i]+'" data-mod="'+m.id+'" '+(locked?'disabled':'')+'>'
+    return '<button class="mcard'+(locked?' locked':'')+'" style="--mc:'+colors[i%colors.length]+'" data-mod="'+m.id+'" '+(locked?'disabled':'')+'>'
       + corner
       + '<div class="m-top"><span class="m-ico">'+m.icon+'</span><span><span class="m-num">Módulo '+(i+1)+'</span><h3>'+m.name+'</h3></span></div>'
       + '<span class="m-desc">'+m.desc+'</span>'
@@ -1105,6 +1264,7 @@ function tile(icon,label,value,unit,sub){
 function isUnlocked(id){ return id===0 || modState(id-1).best >= 80; }
 $('#btnContinue').addEventListener('click', ()=>{
   sfx('click');
+  if(!MODULES.length){ toast('🚧 Esta materia aún no tiene módulos.'); return; }
   const next = MODULES.find(m => isUnlocked(m.id) && !modState(m.id).done) || MODULES[0];
   openModule(next.id);
 });
@@ -2335,7 +2495,7 @@ function caseGMM(){
 function buildM12(){ return Math.random() < 0.5 ? caseAutos() : caseGMM(); }
 
 /* ==================== Registro de módulos ==================== */
-const MODULES = [
+const MODULES_CA3 = [
   {id:0,  icon:'🛡️', name:'Conceptos básicos de seguros', desc:'Riesgo, prima, póliza, deducible, coaseguro, copago y las partes del contrato.', kind:'Quiz mixto', build:buildM1},
   {id:1,  icon:'📊', name:'Cálculos básicos', desc:'Frecuencia, severidad, prima de riesgo, costo esperado y siniestralidad.', kind:'Ejercicios ilimitados', build:buildM2},
   {id:2,  icon:'💊', name:'Copago', desc:'Escenarios médicos generados al azar: ¿cuánto paga cada quien?', kind:'Ejercicios ilimitados', build:buildM3},
@@ -2349,6 +2509,12 @@ const MODULES = [
   {id:10, icon:'🔐', name:'Escape Room actuarial', desc:'Resuelve 4 acertijos, gana las llaves y abre la caja fuerte con los códigos.', kind:'Escape room', special:'escape'},
   {id:11, icon:'📋', name:'Casos reales', desc:'Analiza una cartera completa: cálculo e interpretación de resultados.', kind:'Caso integrador', build:buildM12}
 ];
+/* modulesBySubject: para dar contenido a una materia nueva basta con llenar su
+   arreglo aquí siguiendo el formato de MODULES_CA3 (id, icon, name, desc, kind,
+   build → función que regresa las preguntas del quiz). */
+const MODULES_BY_SUBJECT = { ca3: MODULES_CA3, reg: [], nopar: [], stoch: [], fin: [] };
+/* MODULES siempre apunta a los módulos de la materia activa */
+let MODULES = MODULES_BY_SUBJECT[S.activeSubject] || [];
 /* ==================== Modal ==================== */
 function openModal(html){
   const o = document.createElement('div'); o.className = 'overlay';
@@ -2828,7 +2994,7 @@ function lbSyncSelf(){
   if(!ent){ ent = {pid:PROFILES.active}; b.students.push(ent); }
   ent.name = p.name; ent.avatar = p.avatar; ent.group = S.lbGroup || '';
   ent.xp = S.xp; ent.lvl = levelInfo().lvl;
-  ent.mods = Object.values(S.modules).filter(m=>m.done).length;
+  ent.mods = SUBJECTS.reduce((a,x) => a + subjStats(x.id).done, 0); // módulos completados en todas las materias
   ent.streak = S.streak; ent.updated = Date.now();
   lbSave(b);
   return b;
@@ -3297,10 +3463,9 @@ $('#btnPrint').addEventListener('click', () => {
 });
 
 /* ==================== Examen diario ==================== */
-/* Los exámenes son POR UNIDAD: cada unidad tiene su propio generador y sus
-   temas no se mezclan con los de otras unidades (salvo temas compartidos).
-   Cuando exista la Unidad 2, registrar aquí su builder: {2: buildExamU2}.  */
-const EXAM_BUILDERS = { 1: buildExam };
+/* Los exámenes son POR MATERIA: cada materia registra su generador aquí.
+   Los temas no se mezclan entre materias. */
+const EXAM_BUILDERS_BY_SUBJECT = { ca3: buildExam };
 function buildExam(){
   const usedTF = new Set(), usedF = new Set(), usedP = new Set();
   return shuffle([
@@ -3312,15 +3477,17 @@ function buildExam(){
   ]);
 }
 function startExam(){
+  const builder = EXAM_BUILDERS_BY_SUBJECT[S.activeSubject];
+  if(!builder){ toast('📝 El examen de '+subjectById(S.activeSubject).name+' estará disponible cuando la materia tenga contenido.'); return; }
   if(S.examDay === todayKey()){
     const last = S.examHistory.length ? S.examHistory[0].score+'%' : '—';
     toast('📝 Ya presentaste el examen de hoy ('+last+'). Vuelve mañana 😉');
     return;
   }
   touchStreak();
-  SES = { id:'exam', exam:true, qs:buildExam(), i:0, pts:0, xp:0, t0:Date.now(), recap:[] };
+  SES = { id:'exam', exam:true, qs:builder(), i:0, pts:0, xp:0, t0:Date.now(), recap:[] };
   showView('session'); renderQ();
-  toast('📝 Examen diario · Unidad 1: '+SES.qs.length+' preguntas. Las respuestas se revelan al final. ¡Suerte!');
+  toast('📝 Examen diario · '+subjectById(S.activeSubject).name+': '+SES.qs.length+' preguntas. Las respuestas se revelan al final. ¡Suerte!');
 }
 function finishExam(){
   const n = SES.qs.length;
@@ -3396,7 +3563,7 @@ function renderExamResult(score, xp, sec, recap, newRewards){
   let html = '<div class="result-card">'
     + '<div class="big-ico">'+(score>=90?'🏅':passed?'🎉':'📚')+'</div>'
     + '<h2>'+title+'</h2>'
-    + '<div class="r-sub">📝 Examen diario · Unidad 1 · '+new Date().toLocaleDateString('es-MX',{day:'numeric',month:'long'})+'</div>'
+    + '<div class="r-sub">📝 Examen diario · '+esc(subjectById(S.activeSubject).name)+' · '+new Date().toLocaleDateString('es-MX',{day:'numeric',month:'long'})+'</div>'
     + '<div class="r-score-ring"><svg width="130" height="130">'
     + '<circle cx="65" cy="65" r="'+R+'" fill="none" stroke="var(--surface3)" stroke-width="12"/>'
     + '<circle cx="65" cy="65" r="'+R+'" fill="none" stroke="'+(passed?'var(--good)':'var(--bad)')+'" stroke-width="12" stroke-linecap="round" '
@@ -3813,19 +3980,22 @@ function renderProfile(){
   $('#btnReset').addEventListener('click', () => {
     if(!confirm('Esto borrará TODO el progreso del perfil "'+p.name+'" (XP, módulos, exámenes, insignias). ¿Continuar?')) return;
     if(!confirm('Última confirmación: el borrado no se puede deshacer. ¿Reiniciar?')) return;
-    S = DEFAULT_STATE(); save(); applyTheme(); renderHeader(); renderProfile(); toast('🗑️ Progreso reiniciado'); sfx('bad');
+    S = DEFAULT_STATE(); MODULES = MODULES_BY_SUBJECT[S.activeSubject] || [];
+    save(); applyTheme(); renderHeader(); renderProfile(); toast('🗑️ Progreso reiniciado'); sfx('bad');
   });
 }
 function switchProfile(id){
   PROFILES.active = id; saveProfiles();
-  S = loadState(); applyTheme(); renderHeader(); renderProfile();
+  S = loadState(); MODULES = MODULES_BY_SUBJECT[S.activeSubject] || [];
+  applyTheme(); renderHeader(); renderProfile();
   toast('👤 Perfil activo: '+esc(activeProfile().name)); sfx('unlock');
 }
 function createProfile(name){
   const id = 'p' + Date.now().toString(36) + ri(10,99);
   PROFILES.list.push({id, name, avatar: pick(AVATARS), created: Date.now()});
   PROFILES.active = id; saveProfiles();
-  S = loadState(); save(); applyTheme(); renderHeader(); renderProfile();
+  S = loadState(); MODULES = MODULES_BY_SUBJECT[S.activeSubject] || [];
+  save(); applyTheme(); renderHeader(); renderProfile();
   toast('👤 Perfil "'+esc(name)+'" creado y activo'); sfx('unlock');
 }
 function deleteProfile(id){
@@ -3834,7 +4004,7 @@ function deleteProfile(id){
   if(!confirm('¿Eliminar el perfil "'+pr.name+'" y todo su progreso? No se puede deshacer.')) return;
   try{ localStorage.removeItem('actuariq_u_'+id); }catch(e){}
   PROFILES.list = PROFILES.list.filter(x => x.id !== id);
-  if(PROFILES.active === id){ PROFILES.active = PROFILES.list[0].id; S = loadState(); applyTheme(); }
+  if(PROFILES.active === id){ PROFILES.active = PROFILES.list[0].id; S = loadState(); MODULES = MODULES_BY_SUBJECT[S.activeSubject] || []; applyTheme(); }
   saveProfiles(); renderHeader(); renderProfile(); toast('🗑️ Perfil eliminado'); sfx('bad');
 }
 function exportData(){
@@ -3859,6 +4029,12 @@ function importData(file){
       if(!data) throw new Error('formato');
       if(!confirm('Esto reemplazará TODO el progreso del perfil actual ("'+activeProfile().name+'") con el del archivo. ¿Continuar?')) return;
       S = Object.assign(DEFAULT_STATE(), data);
+      // migración multi-materia también para respaldos antiguos
+      if(!S.subjectData) S.subjectData = {};
+      if(!SUBJECTS.some(x => x.id === S.activeSubject)) S.activeSubject = 'ca3';
+      if(S.subjXP === undefined || S.subjXP === null) S.subjXP = S.xp;
+      if(!S.taskDone) S.taskDone = {};
+      MODULES = MODULES_BY_SUBJECT[S.activeSubject] || [];
       if(payload.profile){
         const p = activeProfile();
         if(payload.profile.name) p.name = payload.profile.name;
