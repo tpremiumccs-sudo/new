@@ -441,11 +441,13 @@ header.top{
 .av-stack{position:relative; display:inline-flex; align-items:center; justify-content:center; border-radius:50%; overflow:visible; flex:none}
 .av-stack .av-bg{position:absolute; inset:0; border-radius:50%; overflow:hidden; z-index:0}
 .av-stack .av-bg span{position:absolute; inset:0; display:grid; place-items:center; opacity:.5}
+.av-stack .av-bg .av-scene{position:absolute; inset:0; width:100%; height:100%; display:block}
 .av-stack .av-base{position:relative; z-index:1; width:100%; height:100%; border-radius:50%; overflow:hidden; display:grid; place-items:center; background:transparent}
 .av-stack .av-base img{width:100%; height:100%; object-fit:cover}
 .av-stack .av-base .av-emoji{line-height:1}
 .av-stack .av-frame{position:absolute; inset:0; border-radius:50%; z-index:4; pointer-events:none}
 .av-stack .av-acc{position:absolute; z-index:5; pointer-events:none; line-height:1}
+.av-sticker{display:inline-block; color:#fff; font-weight:800; padding:2px 6px; border-radius:7px; box-shadow:0 1px 3px rgba(0,0,0,.3); white-space:nowrap}
 @keyframes av-spin{to{transform:rotate(360deg)}}
 /* ---- Efectos del MARCO: solo decoran el anillo/borde (sin emojis) ---- */
 .av-stack .av-ring{position:absolute; inset:-5px; border-radius:50%; z-index:3; pointer-events:none}
@@ -4729,17 +4731,29 @@ function currentTitle(){
 const REWARD_TYPE_LABEL = {frame:'🖼️ Marcos', bg:'🌆 Fondos', acc:'🎭 Accesorios', title:'🏷️ Títulos', effect:'✨ Efectos del marco', hitfx:'🎉 Efectos al acertar', theme:'🎨 Temas'};
 const REWARD_TYPES = ['frame','bg','acc','title','effect','hitfx','theme'];
 /* ---- Fondos aplicables al avatar ---- */
+/* Cada fondo dibuja una escena minimalista (SVG, viewBox 0 0 100 100) sobre el
+   gradiente, para que se vea la temática y no solo un color plano. */
 const BACKGROUNDS = [
-  {id:'bg-aula',      type:'bg', name:'Aula universitaria', ico:'🏫', xp:250,  grad:'linear-gradient(135deg,#6d7cff,#3a4bd0)', emoji:'🏫', desc:'Un salón de clases de fondo.'},
-  {id:'bg-oficina',   type:'bg', name:'Oficina actuarial',  ico:'🏢', xp:600,  grad:'linear-gradient(135deg,#3a8fd6,#1c5cab)', emoji:'🏢', desc:'Tu futura oficina.'},
-  {id:'bg-noche',     type:'bg', name:'Escritorio nocturno',ico:'🌃', xp:900,  grad:'linear-gradient(135deg,#20264a,#3b2b63)', emoji:'🖥️', desc:'Estudiando de madrugada.'},
-  {id:'bg-cafe',      type:'bg', name:'Cafetería de estudiantes', ico:'☕', xp:1300, grad:'linear-gradient(135deg,#b07a48,#7a4e28)', emoji:'☕', desc:'Con café y apuntes.'},
-  {id:'bg-aseguradora', type:'bg', name:'Aseguradora',      ico:'🏬', xp:1800, grad:'linear-gradient(135deg,#1baf7a,#0c6b46)', emoji:'🛡️', desc:'La central de la aseguradora.'},
-  {id:'bg-bolsa',     type:'bg', name:'Bolsa de valores',   ico:'📈', xp:2600, grad:'linear-gradient(135deg,#eda100,#c98500)', emoji:'📈', desc:'El piso de remates.'},
-  {id:'bg-pizarron',  type:'bg', name:'Pizarrón con fórmulas', ico:'🧮', xp:3400, grad:'linear-gradient(135deg,#14432f,#0a2c1f)', emoji:'🧮', desc:'Lleno de fórmulas.'},
-  {id:'bg-desvelo',   type:'bg', name:'Modo desvelo',       ico:'🌙', xp:4200, grad:'linear-gradient(135deg,#2b2140,#120b24)', emoji:'🌙', desc:'Para los trasnochadores.'},
-  {id:'bg-playa',     type:'bg', name:'Playa de vacaciones',ico:'🏖️', xp:5200, grad:'linear-gradient(135deg,#37c7e0,#f6d97a)', emoji:'🏖️', desc:'Después del examen final.'},
-  {id:'bg-universo',  type:'bg', name:'Universo matemático',ico:'🌌', xp:7000, grad:'radial-gradient(circle at 30% 25%,#3a2b6e,#0a0a1e 75%)', emoji:'✦', desc:'Entre estrellas y ecuaciones.'}
+  {id:'bg-aula', type:'bg', name:'Aula universitaria', ico:'🏫', xp:250, grad:'linear-gradient(135deg,#6d7cff,#3a4bd0)', desc:'Un salón de clases de fondo.',
+    scene:'<rect x="15" y="12" width="70" height="30" rx="2" fill="#1f4a37"/><rect x="15" y="12" width="70" height="30" rx="2" fill="none" stroke="#caa26a" stroke-width="2.5"/><path d="M23 22h28M23 28h18M23 34h23" stroke="#eafff2" stroke-width="1.8" opacity=".7" fill="none"/><g fill="#fff" opacity=".14"><rect x="16" y="80" width="20" height="14" rx="1.5"/><rect x="64" y="80" width="20" height="14" rx="1.5"/></g>'},
+  {id:'bg-oficina', type:'bg', name:'Oficina actuarial', ico:'🏢', xp:600, grad:'linear-gradient(135deg,#3a8fd6,#1c5cab)', desc:'Tu futura oficina.',
+    scene:'<g fill="#fff" opacity=".16"><rect x="6" y="42" width="16" height="54"/><rect x="26" y="26" width="18" height="70"/><rect x="48" y="48" width="15" height="48"/><rect x="67" y="34" width="18" height="62"/></g><g fill="#ffe9a8" opacity=".55"><rect x="10" y="48" width="3" height="4"/><rect x="16" y="48" width="3" height="4"/><rect x="31" y="32" width="3" height="4"/><rect x="37" y="32" width="3" height="4"/><rect x="71" y="40" width="3" height="4"/><rect x="77" y="40" width="3" height="4"/></g>'},
+  {id:'bg-noche', type:'bg', name:'Escritorio nocturno', ico:'🌃', xp:900, grad:'linear-gradient(135deg,#20264a,#3b2b63)', desc:'Estudiando de madrugada.',
+    scene:'<circle cx="76" cy="22" r="12" fill="#f2e9c0" opacity=".9"/><circle cx="81" cy="19" r="10" fill="#2a2557"/><g fill="#fff" opacity=".85"><circle cx="20" cy="20" r="1.5"/><circle cx="34" cy="13" r="1.1"/><circle cx="14" cy="36" r="1.2"/><circle cx="46" cy="26" r="1.3"/><circle cx="60" cy="16" r="1"/></g>'},
+  {id:'bg-cafe', type:'bg', name:'Cafetería de estudiantes', ico:'☕', xp:1300, grad:'linear-gradient(135deg,#b07a48,#7a4e28)', desc:'Con café y apuntes.',
+    scene:'<path d="M34 52h24v13a9 9 0 0 1-9 9h-6a9 9 0 0 1-9-9z" fill="#efe3d2" opacity=".92"/><path d="M58 56h4a5 5 0 0 1 0 10h-4" fill="none" stroke="#efe3d2" stroke-width="3" opacity=".92"/><path d="M40 44q4-5 0-10M48 44q4-5 0-10" stroke="#fff" stroke-width="2" fill="none" opacity=".5"/>'},
+  {id:'bg-aseguradora', type:'bg', name:'Aseguradora', ico:'🏬', xp:1800, grad:'linear-gradient(135deg,#1baf7a,#0c6b46)', desc:'La central de la aseguradora.',
+    scene:'<path d="M50 14 L74 22 V44 Q74 64 50 76 Q26 64 26 44 V22 Z" fill="#fff" opacity=".16"/><path d="M50 14 L74 22 V44 Q74 64 50 76 Q26 64 26 44 V22 Z" fill="none" stroke="#eafff5" stroke-width="2" opacity=".55"/><path d="M40 44l7 7 14-16" stroke="#eafff5" stroke-width="3.2" fill="none" opacity=".75"/>'},
+  {id:'bg-bolsa', type:'bg', name:'Bolsa de valores', ico:'📈', xp:2600, grad:'linear-gradient(135deg,#eda100,#c98500)', desc:'El piso de remates.',
+    scene:'<g fill="#fff" opacity=".16"><rect x="14" y="70" width="7" height="18"/><rect x="32" y="56" width="7" height="32"/><rect x="48" y="64" width="7" height="24"/><rect x="66" y="38" width="7" height="50"/></g><polyline points="17,68 35,54 51,62 69,36 86,22" fill="none" stroke="#fff7e0" stroke-width="3" opacity=".85"/><path d="M86 22l-9 0M86 22l0 9" stroke="#fff7e0" stroke-width="3" fill="none" opacity=".85"/>'},
+  {id:'bg-pizarron', type:'bg', name:'Pizarrón con fórmulas', ico:'🧮', xp:3400, grad:'linear-gradient(135deg,#14432f,#0a2c1f)', desc:'Lleno de fórmulas.',
+    scene:'<g fill="#dfeee6" opacity=".5" font-family="Georgia,serif"><text x="12" y="30" font-size="15">∑</text><text x="70" y="26" font-size="14">π</text><text x="16" y="60" font-size="12">√x</text><text x="64" y="64" font-size="13">x²</text><text x="38" y="40" font-size="11">f(x)</text><text x="74" y="82" font-size="12">λ</text></g>'},
+  {id:'bg-desvelo', type:'bg', name:'Modo desvelo', ico:'🌙', xp:4200, grad:'linear-gradient(135deg,#2b2140,#120b24)', desc:'Para los trasnochadores.',
+    scene:'<circle cx="72" cy="24" r="11" fill="#e9def5" opacity=".9"/><circle cx="77" cy="21" r="9" fill="#241a3a"/><g fill="#cdbdf0" opacity=".8" font-family="Georgia,serif" font-weight="700"><text x="16" y="34" font-size="10">z</text><text x="24" y="26" font-size="13">z</text><text x="33" y="18" font-size="16">Z</text></g><g fill="#fff" opacity=".7"><circle cx="18" cy="60" r="1.1"/><circle cx="52" cy="20" r="1"/></g>'},
+  {id:'bg-playa', type:'bg', name:'Playa de vacaciones', ico:'🏖️', xp:5200, grad:'linear-gradient(135deg,#37c7e0,#f6d97a)', desc:'Después del examen final.',
+    scene:'<circle cx="74" cy="24" r="12" fill="#ffe08a" opacity=".95"/><g stroke="#ffe08a" stroke-width="2.5" opacity=".7"><path d="M74 6v-4M74 46v4M92 24h4M52 24h-4M87 11l3-3M61 11l-3-3"/></g><path d="M0 72 q12 -6 25 0 t25 0 t25 0 t25 0 V100 H0Z" fill="#1f8fb5" opacity=".5"/>'},
+  {id:'bg-universo', type:'bg', name:'Universo matemático', ico:'🌌', xp:7000, grad:'radial-gradient(circle at 32% 26%,#3a2b6e,#0a0a1e 78%)', desc:'Entre estrellas y ecuaciones.',
+    scene:'<ellipse cx="50" cy="50" rx="42" ry="15" fill="none" stroke="#9a8bf5" stroke-width="1.6" opacity=".5" transform="rotate(-22 50 50)"/><circle cx="20" cy="41" r="4" fill="#c9b8ff" opacity=".7"/><g fill="#fff" opacity=".85"><circle cx="16" cy="20" r="1.3"/><circle cx="82" cy="28" r="1.5"/><circle cx="30" cy="78" r="1.1"/><circle cx="74" cy="72" r="1.3"/><circle cx="60" cy="14" r="1"/></g>'}
 ];
 /* ---- Marcos ---- */
 const FRAMES = [
@@ -4750,36 +4764,39 @@ const FRAMES = [
   {id:'frame-neon',    type:'frame', name:'Marco neón',    ico:'💠', xp:2000, color:'#2af5c8', glow:true, desc:'Un marco que brilla en la oscuridad.'},
   {id:'frame-rainbow', type:'frame', name:'Marco arcoíris',ico:'🌈', test:()=>S.streak>=7, cond:'Racha de 7 días', grad:'conic-gradient(from 0deg,#e34948,#eda100,#1baf7a,#2a78d6,#4a3aa7,#e34948)', desc:'Solo para constantes: racha de 7 días.'}
 ];
-/* ---- Accesorios (SVG/emoji superpuestos, no tapan la cara) ---- */
-function svgGlasses(s){ const w=Math.round(s*0.7); return '<svg width="'+w+'" viewBox="0 0 100 42" style="display:block">'
+/* ---- Accesorios (SVG/emoji superpuestos sobre el avatar) ----
+   Modelo de posición: x,y = centro (%) del accesorio dentro del avatar;
+   scale = tamaño del emoji como fracción del avatar; w = ancho del SVG. */
+function svgGlasses(s, w){ w = Math.round(s*(w||0.5)); return '<svg width="'+w+'" viewBox="0 0 100 42" style="display:block">'
   + '<rect x="6" y="8" width="34" height="26" rx="5" fill="rgba(150,190,255,.35)" stroke="#15181f" stroke-width="3.2"/>'
   + '<rect x="60" y="8" width="34" height="26" rx="5" fill="rgba(150,190,255,.35)" stroke="#15181f" stroke-width="3.2"/>'
   + '<path d="M40 18 Q50 13 60 18" fill="none" stroke="#15181f" stroke-width="3.2"/>'
   + '<path d="M6 15 L1 11 M94 15 L99 11" stroke="#15181f" stroke-width="3.2"/>'
   + '<rect x="6" y="6" width="34" height="4" rx="2" fill="#eda100"/><rect x="60" y="6" width="34" height="4" rx="2" fill="#eda100"/></svg>'; }
-function svgMustache(s){ const w=Math.round(s*0.5); return '<svg width="'+w+'" viewBox="0 0 100 34" style="display:block">'
+function svgMustache(s, w){ w = Math.round(s*(w||0.4)); return '<svg width="'+w+'" viewBox="0 0 100 34" style="display:block">'
   + '<path d="M50 6 C44 6 42 16 28 17 C16 18 12 9 6 12 C11 25 26 27 36 21 C42 18 47 19 50 19 C53 19 58 18 64 21 C74 27 89 25 94 12 C88 9 84 18 72 17 C58 16 56 6 50 6Z" fill="#3a2a1a"/></svg>'; }
-function svgCowboy(s){ const w=Math.round(s*0.85); return '<svg width="'+w+'" viewBox="0 0 100 46" style="display:block">'
+function svgCowboy(s, w){ w = Math.round(s*(w||0.72)); return '<svg width="'+w+'" viewBox="0 0 100 46" style="display:block">'
   + '<path d="M6 38 Q50 52 94 38 Q72 42 70 33 L66 16 Q50 6 34 16 L30 33 Q28 42 6 38Z" fill="#8a5a2b"/>'
   + '<path d="M30 30 Q50 37 70 30 L70 34 Q50 41 30 34Z" fill="#5e3c17"/></svg>'; }
-/* Cada accesorio ocupa una "ranura" (slot); solo puede equiparse uno por slot
-   para no saturar el avatar: cabeza, ojos, boca, mano (flotante) y sticker. */
+/* Cada accesorio ocupa una "ranura" (slot); solo uno por slot. Mano y sticker
+   son excluyentes entre sí (se interponen). */
 const ACC_SLOT_NAMES = {head:'🎩 Cabeza', eyes:'👓 Ojos', mouth:'👄 Boca', hand:'✋ Mano', sticker:'🏷️ Sticker'};
+const ACC_SLOT_CONFLICT = {hand:'sticker', sticker:'hand'};
 const ACCESSORIES = [
-  {id:'acc-glasses', type:'acc', slot:'eyes', name:'Lentes Cartier', ico:'🕶️', xp:400,  svg:svgGlasses, pos:s=>'left:50%;top:44%;transform:translate(-50%,-50%)', desc:'Lentes cuadrados elegantes, estilo Cartier.'},
-  {id:'acc-cap',     type:'acc', slot:'head', name:'Gorra de desvelado', ico:'🧢', xp:700, emoji:'🧢', scale:0.62, pos:s=>'left:50%;top:-16%;transform:translateX(-50%)', desc:'Para las desveladas.'},
-  {id:'acc-headphones', type:'acc', slot:'eyes', name:'Audífonos', ico:'🎧', xp:900, emoji:'🎧', scale:0.9, pos:s=>'left:50%;top:46%;transform:translate(-50%,-50%)', desc:'Música para concentrarte.'},
-  {id:'acc-mustache', type:'acc', slot:'mouth', name:'Bigote falso', ico:'👨', xp:1100, svg:svgMustache, pos:s=>'left:50%;top:63%;transform:translate(-50%,-50%)', desc:'Un disfraz muy serio.'},
-  {id:'acc-crown',   type:'acc', slot:'head', name:'Corona', ico:'👑', xp:2000, emoji:'👑', scale:0.5, pos:s=>'left:50%;top:-14%;transform:translateX(-50%)', desc:'De la realeza actuarial.'},
-  {id:'acc-cowboy',  type:'acc', slot:'head', name:'Sombrero vaquero', ico:'🤠', xp:1600, svg:svgCowboy, pos:s=>'left:50%;top:-20%;transform:translateX(-50%)', desc:'Yeehaw, actuario.'},
-  {id:'acc-coffee',  type:'acc', slot:'hand', name:'Café gigante', ico:'☕', xp:1400, emoji:'☕', scale:0.5, pos:s=>'right:-10%;bottom:-8%', desc:'Combustible de estudiante.'},
-  {id:'acc-calc',    type:'acc', slot:'hand', name:'Calculadora flotante', ico:'🧮', xp:1000, emoji:'🧮', scale:0.44, pos:s=>'right:-12%;top:-4%', desc:'Siempre a la mano.'},
-  {id:'acc-magnifier', type:'acc', slot:'hand', name:'Lupa de auditor', ico:'🔍', xp:1300, emoji:'🔍', scale:0.46, pos:s=>'right:-10%;bottom:-6%', desc:'Nada se te escapa.'},
-  {id:'acc-cap-grad', type:'acc', slot:'head', name:'Birrete', ico:'🎓', xp:2500, emoji:'🎓', scale:0.55, pos:s=>'left:50%;top:-16%;transform:translateX(-50%)', desc:'Listo para graduarte.'},
-  {id:'acc-aprobe',  type:'acc', slot:'sticker', name:'Sticker “Aprobé”', ico:'✅', test:()=>(S.examHistory||[]).some(e=>e.score>=80), cond:'Aprueba un examen diario (≥80%)', sticker:'✅ Aprobé', stickerBg:'#0ca30c', pos:s=>'left:-8%;bottom:2%', desc:'La prueba de que sí se pudo.'},
-  {id:'acc-noc',     type:'acc', slot:'sticker', name:'Sticker “No era la C”', ico:'🅲', xp:1500, sticker:'No era la C', stickerBg:'#e34948', pos:s=>'left:-10%;top:6%', desc:'Todos hemos estado ahí.'},
-  {id:'acc-tear',    type:'acc', slot:'mouth', name:'Lágrima de parcial', ico:'💧', xp:500,  emoji:'💧', scale:0.34, pos:s=>'left:58%;top:56%', desc:'El parcial estuvo difícil.'},
-  {id:'acc-flag',    type:'acc', slot:'sticker', name:'Bandera “Sobreviví”', ico:'🏁', test:()=>(S.examHistory||[]).length>=3, cond:'Presenta 3 exámenes diarios', sticker:'🏁 Sobreviví', stickerBg:'#4a3aa7', pos:s=>'right:-10%;top:2%', desc:'Un cuatrimestre más.'}
+  {id:'acc-glasses', type:'acc', slot:'eyes', name:'Lentes Cartier', ico:'🕶️', xp:400,  svg:svgGlasses, w:0.52, x:50, y:47, desc:'Lentes cuadrados elegantes, estilo Cartier.'},
+  {id:'acc-cap',     type:'acc', slot:'head', name:'Gorra de desvelado', ico:'🧢', xp:700, emoji:'🧢', scale:0.5, x:50, y:9, desc:'Para las desveladas.'},
+  {id:'acc-headphones', type:'acc', slot:'eyes', name:'Audífonos', ico:'🎧', xp:900, emoji:'🎧', scale:0.5, x:50, y:30, desc:'Música para concentrarte.'},
+  {id:'acc-mustache', type:'acc', slot:'mouth', name:'Bigote falso', ico:'👨', xp:1100, svg:svgMustache, w:0.4, x:50, y:57, desc:'Un disfraz muy serio.'},
+  {id:'acc-crown',   type:'acc', slot:'head', name:'Corona', ico:'👑', xp:2000, emoji:'👑', scale:0.42, x:50, y:8, desc:'De la realeza actuarial.'},
+  {id:'acc-cowboy',  type:'acc', slot:'head', name:'Sombrero vaquero', ico:'🤠', xp:1600, svg:svgCowboy, w:0.74, x:50, y:16, desc:'Yeehaw, actuario.'},
+  {id:'acc-coffee',  type:'acc', slot:'hand', name:'Café gigante', ico:'☕', xp:1400, emoji:'☕', scale:0.34, x:80, y:82, desc:'Combustible de estudiante.'},
+  {id:'acc-calc',    type:'acc', slot:'hand', name:'Calculadora flotante', ico:'🧮', xp:1000, emoji:'🧮', scale:0.34, x:80, y:80, desc:'Siempre a la mano.'},
+  {id:'acc-magnifier', type:'acc', slot:'hand', name:'Lupa de auditor', ico:'🔍', xp:1300, emoji:'🔍', scale:0.36, x:80, y:82, desc:'Nada se te escapa.'},
+  {id:'acc-cap-grad', type:'acc', slot:'head', name:'Birrete', ico:'🎓', xp:2500, emoji:'🎓', scale:0.5, x:50, y:8, desc:'Listo para graduarte.'},
+  {id:'acc-aprobe',  type:'acc', slot:'sticker', name:'Sticker “Aprobé”', ico:'✅', test:()=>(S.examHistory||[]).some(e=>e.score>=80), cond:'Aprueba un examen diario (≥80%)', sticker:'✅ Aprobé', stickerBg:'#0ca30c', rot:-11, x:22, y:86, desc:'La prueba de que sí se pudo.'},
+  {id:'acc-noc',     type:'acc', slot:'sticker', name:'Sticker “No era la C”', ico:'🅲', xp:1500, sticker:'No era la C', stickerBg:'#e34948', rot:-11, x:24, y:86, desc:'Todos hemos estado ahí.'},
+  {id:'acc-tear',    type:'acc', slot:'mouth', name:'Lágrima de parcial', ico:'💧', xp:500,  emoji:'💧', scale:0.22, x:62, y:55, desc:'El parcial estuvo difícil.'},
+  {id:'acc-flag',    type:'acc', slot:'sticker', name:'Bandera “Sobreviví”', ico:'🏁', test:()=>(S.examHistory||[]).length>=3, cond:'Presenta 3 exámenes diarios', sticker:'🏁 Sobreviví', stickerBg:'#4a3aa7', rot:-11, x:24, y:85, desc:'Un cuatrimestre más.'}
 ];
 const accSlot = id => { const a = ACCESSORIES.find(x=>x.id===id); return a ? a.slot : null; };
 /* ---- Efectos del MARCO: solo decoran el anillo/borde de la foto (sin emojis
@@ -4961,10 +4978,11 @@ function avatarBase(p, size){
 }
 function accHTML(a, size){
   let content;
-  if(a.svg) content = a.svg(size);
-  else if(a.sticker) content = '<span style="display:inline-block;background:'+(a.stickerBg||'#333')+';color:#fff;font-size:'+Math.max(7,Math.round(size*0.13))+'px;font-weight:800;padding:2px 6px;border-radius:7px;transform:rotate(-11deg);box-shadow:0 1px 3px rgba(0,0,0,.3);white-space:nowrap">'+esc(a.sticker)+'</span>';
+  if(a.svg) content = a.svg(size, a.w);
+  else if(a.sticker) content = '<span class="av-sticker" style="background:'+(a.stickerBg||'#333')+';font-size:'+Math.max(7,Math.round(size*0.12))+'px">'+esc(a.sticker)+'</span>';
   else content = '<span style="font-size:'+Math.round(size*(a.scale||0.4))+'px">'+a.emoji+'</span>';
-  return '<span class="av-acc" style="'+a.pos(size)+'">'+content+'</span>';
+  const rot = a.rot ? ' rotate('+a.rot+'deg)' : '';
+  return '<span class="av-acc" style="left:'+a.x+'%;top:'+a.y+'%;transform:translate(-50%,-50%)'+rot+'">'+content+'</span>';
 }
 /* p: perfil {avatar, photo}; equipOv: equip a usar (por defecto el del jugador activo) */
 /* Efectos de marco que dibujan un anillo giratorio (los demás usan box-shadow) */
@@ -4977,7 +4995,9 @@ function avatarStack(p, size, equipOv){
   const bg = eq.bg ? BACKGROUNDS.find(b=>b.id===eq.bg) : null;
   const accIds = Array.isArray(eq.acc) ? eq.acc : (eq.acc?[eq.acc]:[]);
   const cls = ['av-stack']; if(effect && effect.cls) cls.push('fx-'+effect.cls);
-  let inner = '<span class="av-bg" style="'+(bg?bgStyle(bg):'background:var(--surface2)')+'"></span>'
+  let inner = '<span class="av-bg" style="'+(bg?bgStyle(bg):'background:var(--surface2)')+'">'
+    + (bg && bg.scene ? '<svg class="av-scene" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid slice">'+bg.scene+'</svg>' : '')
+    + '</span>'
     + '<span class="av-base">'+avatarBase(p, size)+'</span>';
   if(effect && RING_FX[effect.cls]) inner += '<span class="av-ring"></span>';
   if(frame) inner += '<span class="av-frame" style="'+frameStyle(frame, size)+'"></span>';
@@ -4995,8 +5015,9 @@ function equipReward(r){
     const i = eq.acc.indexOf(r.id);
     if(i>=0){ eq.acc.splice(i,1); }
     else {
-      // solo un accesorio por ranura: quita el que ocupe el mismo slot
-      eq.acc = eq.acc.filter(id => accSlot(id) !== r.slot);
+      // uno por ranura; y mano/sticker son excluyentes (se interponen)
+      const conflict = ACC_SLOT_CONFLICT[r.slot];
+      eq.acc = eq.acc.filter(id => { const s = accSlot(id); return s !== r.slot && s !== conflict; });
       eq.acc.push(r.id);
     }
   } else {
