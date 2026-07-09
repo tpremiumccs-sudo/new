@@ -1,7 +1,7 @@
 /* Service worker de ActuarIQ: la app funciona offline una vez visitada.
    - HTML, leaderboard.json y tasks.json: red primero (datos frescos), caché de respaldo.
    - Resto de archivos del mismo origen: caché primero. */
-const CACHE = 'actuariq-v6';
+const CACHE = 'actuariq-v7';
 const ASSETS = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png', './leaderboard.json', './tasks.json'];
 
 self.addEventListener('install', e => {

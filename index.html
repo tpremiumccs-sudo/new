@@ -425,7 +425,9 @@ header.top{
 .pbar i{display:block; height:100%; background:var(--accent); border-radius:99px; transition:width .5s}
 .reward-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(118px,1fr)); gap:10px}
 .reward-card{background:var(--surface2); border:1px solid var(--line); border-radius:var(--radius-s); padding:12px 8px; text-align:center; display:flex; flex-direction:column; align-items:center; gap:6px}
-.reward-card.unlocked{border-color:var(--accent)}
+.reward-card{border-top:3px solid var(--rar,var(--line))}
+.reward-card.unlocked{border-color:var(--accent); border-top-color:var(--rar,var(--accent))}
+.rw-rar{position:absolute; top:6px; left:8px; font-size:.55rem; font-weight:800; text-transform:uppercase; letter-spacing:.04em}
 .rw-ico{font-size:28px}
 .rw-name{font-size:.78rem; font-weight:700; min-height:2.1em; line-height:1.2}
 .rw-lock{width:100%; display:flex; flex-direction:column; gap:4px; align-items:center}
@@ -982,7 +984,7 @@ const DEFAULT_STATE = () => ({
   soundVolume:0.7,      // volumen de los efectos de sonido (0-1)
   lbGroup:'',           // grupo/salón para el leaderboard
   lbRank:null,          // última posición conocida en el leaderboard (para detectar "subiste de rango")
-  lateNight:false,      // estudió de madrugada (título Desvelado Profesional)
+  lateNight:false, earlyBird:false,   // estudió de madrugada / muy temprano (logros secretos)
   activeSubject:'ca3',  // materia actualmente desplegada
   subjectData:{},       // statsBySubject: materia -> {modules, history, concepts, examDay, examHistory, flashSRS, subjXP}
   subjXP:0,             // XP ganado en la materia activa
@@ -1048,7 +1050,8 @@ function levelInfo(){
 function addXP(n){
   const t = todayKey();
   const hr = cdmxHour();
-  if(hr >= 0 && hr < 5) S.lateNight = true;   // para el título "Desvelado Profesional" (madrugada CDMX)
+  if(hr >= 0 && hr < 5) S.lateNight = true;   // madrugada CDMX (logros secretos)
+  if(hr >= 5 && hr < 8) S.earlyBird = true;   // muy temprano CDMX (logros secretos)
   if(!S.dayXP || S.dayXP.d !== t) S.dayXP = {d:t, xp:0, goalHit:false};
   S.dayXP.xp += n;
   S.subjXP = (S.subjXP||0) + n;   // acumulado de la materia activa
@@ -1231,7 +1234,7 @@ function confetti(n=60){
 function hitBurst(kind){
   if(S.confetti === false) return;
   if(kind === 'confetti'){ confetti(14); return; }
-  const set = kind === 'stars' ? ['⭐','🌟','✨'] : ['❤️','💖','💕','💗'];
+  const set = kind === 'stars' ? ['⭐','🌟','✨'] : kind === 'fire' ? ['🔥','✨','💥'] : ['❤️','💖','💕','💗'];
   for(let i=0;i<10;i++){
     const el = document.createElement('div'); el.className = 'hit-p'; el.textContent = pick(set);
     el.style.cssText = 'left:'+ri(38,62)+'vw; top:'+ri(38,58)+'vh; font-size:'+ri(14,26)+'px;'
@@ -4332,13 +4335,22 @@ const BADGES = [
   {id:'ans10',   ico:'✍️', name:'Primeras respuestas', desc:'Responde 10 preguntas',           test:()=>(S.totalAnswered||0)>=10},
   {id:'ans25',   ico:'📝', name:'Practicante',        desc:'Responde 25 preguntas',            test:()=>(S.totalAnswered||0)>=25},
   {id:'ans50',   ico:'🧾', name:'Curtido',            desc:'Responde 50 preguntas',            test:()=>(S.totalAnswered||0)>=50},
-  {id:'ans100',  ico:'🗂️', name:'Veterano',           desc:'Responde 100 preguntas',           test:()=>(S.totalAnswered||0)>=100}
+  {id:'ans100',  ico:'🗂️', name:'Veterano',           desc:'Responde 100 preguntas',           test:()=>(S.totalAnswered||0)>=100},
+  // — Logros secretos: no revelan qué hacer hasta desbloquearlos —
+  {id:'sec-owl',    ico:'🦉', secret:true, name:'Búho nocturno',   desc:'Estudiaste de madrugada (12 am – 5 am, CDMX).', test:()=>!!S.lateNight},
+  {id:'sec-early',  ico:'🐦', secret:true, name:'Madrugador',      desc:'Estudiaste muy temprano (5 – 8 am, CDMX).',     test:()=>!!S.earlyBird},
+  {id:'sec-perfect',ico:'💎', secret:true, name:'Examen impecable',desc:'Sacaste 100% en un examen diario.',            test:()=>(S.examHistory||[]).some(e=>e.score>=100)},
+  {id:'sec-combo20',ico:'⚡', secret:true, name:'Dedos de rayo',   desc:'20 aciertos seguidos en el contrarreloj.',     test:()=>(S.bestBlitzCombo||0)>=20},
+  {id:'sec-boom',   ico:'💥', secret:true, name:'Explotó el examen',desc:'Sacaste menos de 40% en un examen. Pasa.',    test:()=>(S.examHistory||[]).some(e=>e.score<40)},
+  {id:'sec-rich',   ico:'💰', secret:true, name:'Millonario de XP',desc:'Acumulaste 10,000 XP.',                        test:()=>S.xp>=10000},
+  {id:'sec-marathon',ico:'⏳', secret:true, name:'Maratonista',    desc:'3 horas de estudio acumuladas.',               test:()=>S.totalTime>=10800},
+  {id:'sec-collector',ico:'🧑‍🎨', secret:true, name:'Coleccionista',desc:'Desbloqueaste 20 recompensas de la tienda.',  test:()=>(S.unlockedRewards||[]).length>=20}
 ];
 function checkBadges(){
   BADGES.forEach(b => {
     if(!S.badges.includes(b.id) && b.test()){
       S.badges.push(b.id); save();
-      toast(b.ico+' ¡Nueva insignia: <b>'+b.name+'</b>!'); sfx('unlock');
+      toast(b.ico+(b.secret?' 🕵️ ¡Logro secreto: <b>':' ¡Nueva insignia: <b>')+b.name+'</b>!'); sfx('unlock');
     }
   });
 }
@@ -4478,10 +4490,19 @@ function renderStats(){
     + (prog.length ? '<h3 style="margin-top:16px">⏳ En progreso</h3><div class="tag-list">'+prog.map(d=>'<span class="tag neutral">'+d+'</span>').join('')+'</div>' : '')
     + '</div>';
   // Insignias
+  const secretTotal = BADGES.filter(b=>b.secret).length;
+  const secretGot = BADGES.filter(b=>b.secret && S.badges.includes(b.id)).length;
   html += '<div class="panel"><h3>🎖️ Insignias ('+S.badges.length+'/'+BADGES.length+')</h3><div class="badge-grid">'
-    + BADGES.map(b => '<div class="badge '+(S.badges.includes(b.id)?'earned':'locked-b')+'" title="'+esc(b.desc)+'">'
-      + '<div class="b-ico">'+b.ico+'</div><div class="b-name">'+b.name+'</div><div class="b-desc">'+b.desc+'</div></div>').join('')
-    + '</div></div>';
+    + BADGES.map(b => {
+        const got = S.badges.includes(b.id);
+        const hidden = b.secret && !got;               // secreto no revelado
+        const name = hidden ? '🕵️ Secreto' : b.name;
+        const desc = hidden ? 'Logro secreto: descúbrelo jugando.' : b.desc;
+        const ico  = hidden ? '❔' : b.ico;
+        return '<div class="badge '+(got?'earned':'locked-b')+(hidden?' secret':'')+'" title="'+esc(desc)+'">'
+          + '<div class="b-ico">'+ico+'</div><div class="b-name">'+esc(name)+'</div><div class="b-desc">'+esc(desc)+'</div></div>';
+      }).join('')
+    + '</div><p class="q-help">🕵️ Logros secretos: '+secretGot+'/'+secretTotal+' descubiertos.</p></div>';
   // Mejores resultados
   const best = [...S.history].sort((a,b)=>b.score-a.score).slice(0,5);
   html += '<div class="panel"><h3>🥇 Mejores resultados · '+esc(subjActive.short)+'</h3>'
@@ -4592,7 +4613,7 @@ function startExam(){
   if(!builder){ toast('📝 El examen de '+subjectById(S.activeSubject).name+' estará disponible cuando la materia tenga contenido.'); return; }
   if(S.examDay === todayKey()){
     const last = S.examHistory.length ? S.examHistory[0].score+'%' : '—';
-    toast('📝 Ya presentaste el examen de hoy ('+last+'). Vuelve mañana 😉');
+    toast('📝 Ya presentaste el examen de hoy ('+last+'). Hay 1 por día: se reinicia a medianoche (hora CDMX) 😉');
     return;
   }
   touchStreak();
@@ -4729,40 +4750,48 @@ function currentTitle(){
 
 /* ==================== Tienda de recompensas ==================== */
 const REWARD_TYPE_LABEL = {frame:'🖼️ Marcos', bg:'🌆 Fondos', acc:'🎭 Accesorios', title:'🏷️ Títulos', effect:'✨ Efectos del marco', hitfx:'🎉 Efectos al acertar', theme:'🎨 Temas'};
+/* Rareza de las recompensas: cambia el color del borde y la etiqueta. */
+const RARITY = {
+  common:    {name:'Común',      color:'#9aa0a8'},
+  rare:      {name:'Rara',       color:'#2a86e0'},
+  epic:      {name:'Épica',      color:'#a24dff'},
+  legendary: {name:'Legendaria', color:'#f0a500'}
+};
+const rarityOf = r => RARITY[r && r.rarity] || RARITY.common;
 const REWARD_TYPES = ['frame','bg','acc','title','effect','hitfx','theme'];
 /* ---- Fondos aplicables al avatar ---- */
 /* Cada fondo dibuja una escena minimalista (SVG, viewBox 0 0 100 100) sobre el
    gradiente, para que se vea la temática y no solo un color plano. */
 const BACKGROUNDS = [
-  {id:'bg-aula', type:'bg', name:'Aula universitaria', ico:'🏫', xp:250, grad:'linear-gradient(135deg,#6d7cff,#3a4bd0)', desc:'Un salón de clases de fondo.',
+  {id:'bg-aula', type:'bg', rarity:'common', name:'Aula universitaria', ico:'🏫', xp:250, grad:'linear-gradient(135deg,#6d7cff,#3a4bd0)', desc:'Un salón de clases de fondo.',
     scene:'<rect x="15" y="12" width="70" height="30" rx="2" fill="#1f4a37"/><rect x="15" y="12" width="70" height="30" rx="2" fill="none" stroke="#caa26a" stroke-width="2.5"/><path d="M23 22h28M23 28h18M23 34h23" stroke="#eafff2" stroke-width="1.8" opacity=".7" fill="none"/><g fill="#fff" opacity=".14"><rect x="16" y="80" width="20" height="14" rx="1.5"/><rect x="64" y="80" width="20" height="14" rx="1.5"/></g>'},
-  {id:'bg-oficina', type:'bg', name:'Oficina actuarial', ico:'🏢', xp:600, grad:'linear-gradient(135deg,#3a8fd6,#1c5cab)', desc:'Tu futura oficina.',
+  {id:'bg-oficina', type:'bg', rarity:'common', name:'Oficina actuarial', ico:'🏢', xp:600, grad:'linear-gradient(135deg,#3a8fd6,#1c5cab)', desc:'Tu futura oficina.',
     scene:'<g fill="#fff" opacity=".16"><rect x="6" y="42" width="16" height="54"/><rect x="26" y="26" width="18" height="70"/><rect x="48" y="48" width="15" height="48"/><rect x="67" y="34" width="18" height="62"/></g><g fill="#ffe9a8" opacity=".55"><rect x="10" y="48" width="3" height="4"/><rect x="16" y="48" width="3" height="4"/><rect x="31" y="32" width="3" height="4"/><rect x="37" y="32" width="3" height="4"/><rect x="71" y="40" width="3" height="4"/><rect x="77" y="40" width="3" height="4"/></g>'},
-  {id:'bg-noche', type:'bg', name:'Escritorio nocturno', ico:'🌃', xp:900, grad:'linear-gradient(135deg,#20264a,#3b2b63)', desc:'Estudiando de madrugada.',
+  {id:'bg-noche', type:'bg', rarity:'rare', name:'Escritorio nocturno', ico:'🌃', xp:900, grad:'linear-gradient(135deg,#20264a,#3b2b63)', desc:'Estudiando de madrugada.',
     scene:'<circle cx="76" cy="22" r="12" fill="#f2e9c0" opacity=".9"/><circle cx="81" cy="19" r="10" fill="#2a2557"/><g fill="#fff" opacity=".85"><circle cx="20" cy="20" r="1.5"/><circle cx="34" cy="13" r="1.1"/><circle cx="14" cy="36" r="1.2"/><circle cx="46" cy="26" r="1.3"/><circle cx="60" cy="16" r="1"/></g>'},
-  {id:'bg-cafe', type:'bg', name:'Cafetería de estudiantes', ico:'☕', xp:1300, grad:'linear-gradient(135deg,#b07a48,#7a4e28)', desc:'Con café y apuntes.',
+  {id:'bg-cafe', type:'bg', rarity:'rare', name:'Cafetería de estudiantes', ico:'☕', xp:1300, grad:'linear-gradient(135deg,#b07a48,#7a4e28)', desc:'Con café y apuntes.',
     scene:'<path d="M34 52h24v13a9 9 0 0 1-9 9h-6a9 9 0 0 1-9-9z" fill="#efe3d2" opacity=".92"/><path d="M58 56h4a5 5 0 0 1 0 10h-4" fill="none" stroke="#efe3d2" stroke-width="3" opacity=".92"/><path d="M40 44q4-5 0-10M48 44q4-5 0-10" stroke="#fff" stroke-width="2" fill="none" opacity=".5"/>'},
-  {id:'bg-aseguradora', type:'bg', name:'Aseguradora', ico:'🏬', xp:1800, grad:'linear-gradient(135deg,#1baf7a,#0c6b46)', desc:'La central de la aseguradora.',
+  {id:'bg-aseguradora', type:'bg', rarity:'rare', name:'Aseguradora', ico:'🏬', xp:1800, grad:'linear-gradient(135deg,#1baf7a,#0c6b46)', desc:'La central de la aseguradora.',
     scene:'<path d="M50 14 L74 22 V44 Q74 64 50 76 Q26 64 26 44 V22 Z" fill="#fff" opacity=".16"/><path d="M50 14 L74 22 V44 Q74 64 50 76 Q26 64 26 44 V22 Z" fill="none" stroke="#eafff5" stroke-width="2" opacity=".55"/><path d="M40 44l7 7 14-16" stroke="#eafff5" stroke-width="3.2" fill="none" opacity=".75"/>'},
-  {id:'bg-bolsa', type:'bg', name:'Bolsa de valores', ico:'📈', xp:2600, grad:'linear-gradient(135deg,#eda100,#c98500)', desc:'El piso de remates.',
+  {id:'bg-bolsa', type:'bg', rarity:'epic', name:'Bolsa de valores', ico:'📈', xp:2600, grad:'linear-gradient(135deg,#eda100,#c98500)', desc:'El piso de remates.',
     scene:'<g fill="#fff" opacity=".16"><rect x="14" y="70" width="7" height="18"/><rect x="32" y="56" width="7" height="32"/><rect x="48" y="64" width="7" height="24"/><rect x="66" y="38" width="7" height="50"/></g><polyline points="17,68 35,54 51,62 69,36 86,22" fill="none" stroke="#fff7e0" stroke-width="3" opacity=".85"/><path d="M86 22l-9 0M86 22l0 9" stroke="#fff7e0" stroke-width="3" fill="none" opacity=".85"/>'},
-  {id:'bg-pizarron', type:'bg', name:'Pizarrón con fórmulas', ico:'🧮', xp:3400, grad:'linear-gradient(135deg,#14432f,#0a2c1f)', desc:'Lleno de fórmulas.',
+  {id:'bg-pizarron', type:'bg', rarity:'epic', name:'Pizarrón con fórmulas', ico:'🧮', xp:3400, grad:'linear-gradient(135deg,#14432f,#0a2c1f)', desc:'Lleno de fórmulas.',
     scene:'<g fill="#dfeee6" opacity=".5" font-family="Georgia,serif"><text x="12" y="30" font-size="15">∑</text><text x="70" y="26" font-size="14">π</text><text x="16" y="60" font-size="12">√x</text><text x="64" y="64" font-size="13">x²</text><text x="38" y="40" font-size="11">f(x)</text><text x="74" y="82" font-size="12">λ</text></g>'},
-  {id:'bg-desvelo', type:'bg', name:'Modo desvelo', ico:'🌙', xp:4200, grad:'linear-gradient(135deg,#2b2140,#120b24)', desc:'Para los trasnochadores.',
+  {id:'bg-desvelo', type:'bg', rarity:'legendary', secret:true, name:'Modo desvelo', ico:'🌙', test:()=>!!S.lateNight, cond:'???', hint:'Estudia de madrugada', grad:'linear-gradient(135deg,#2b2140,#120b24)', desc:'Para los trasnochadores.',
     scene:'<circle cx="72" cy="24" r="11" fill="#e9def5" opacity=".9"/><circle cx="77" cy="21" r="9" fill="#241a3a"/><g fill="#cdbdf0" opacity=".8" font-family="Georgia,serif" font-weight="700"><text x="16" y="34" font-size="10">z</text><text x="24" y="26" font-size="13">z</text><text x="33" y="18" font-size="16">Z</text></g><g fill="#fff" opacity=".7"><circle cx="18" cy="60" r="1.1"/><circle cx="52" cy="20" r="1"/></g>'},
-  {id:'bg-playa', type:'bg', name:'Playa de vacaciones', ico:'🏖️', xp:5200, grad:'linear-gradient(135deg,#37c7e0,#f6d97a)', desc:'Después del examen final.',
+  {id:'bg-playa', type:'bg', rarity:'legendary', name:'Playa de vacaciones', ico:'🏖️', test:()=>subjStats('ca3').done>=12, cond:'Completa los 12 módulos de Cálculo III', grad:'linear-gradient(135deg,#37c7e0,#f6d97a)', desc:'Después del examen final.',
     scene:'<circle cx="74" cy="24" r="12" fill="#ffe08a" opacity=".95"/><g stroke="#ffe08a" stroke-width="2.5" opacity=".7"><path d="M74 6v-4M74 46v4M92 24h4M52 24h-4M87 11l3-3M61 11l-3-3"/></g><path d="M0 72 q12 -6 25 0 t25 0 t25 0 t25 0 V100 H0Z" fill="#1f8fb5" opacity=".5"/>'},
-  {id:'bg-universo', type:'bg', name:'Universo matemático', ico:'🌌', xp:7000, grad:'radial-gradient(circle at 32% 26%,#3a2b6e,#0a0a1e 78%)', desc:'Entre estrellas y ecuaciones.',
+  {id:'bg-universo', type:'bg', rarity:'legendary', name:'Universo matemático', ico:'🌌', xp:7000, grad:'radial-gradient(circle at 32% 26%,#3a2b6e,#0a0a1e 78%)', desc:'Entre estrellas y ecuaciones.',
     scene:'<ellipse cx="50" cy="50" rx="42" ry="15" fill="none" stroke="#9a8bf5" stroke-width="1.6" opacity=".5" transform="rotate(-22 50 50)"/><circle cx="20" cy="41" r="4" fill="#c9b8ff" opacity=".7"/><g fill="#fff" opacity=".85"><circle cx="16" cy="20" r="1.3"/><circle cx="82" cy="28" r="1.5"/><circle cx="30" cy="78" r="1.1"/><circle cx="74" cy="72" r="1.3"/><circle cx="60" cy="14" r="1"/></g>'}
 ];
 /* ---- Marcos ---- */
 const FRAMES = [
-  {id:'frame-bronze',  type:'frame', name:'Marco bronce',  ico:'🥉', xp:100,  color:'#cd7f32', desc:'Un marco de bronce.'},
-  {id:'frame-silver',  type:'frame', name:'Marco plata',   ico:'🥈', xp:1000, color:'#b7b7b7', desc:'Un marco plateado.'},
-  {id:'frame-gold',    type:'frame', name:'Marco oro',     ico:'🥇', xp:3000, color:'#eda100', desc:'Un marco dorado.'},
-  {id:'frame-diamond', type:'frame', name:'Marco diamante',ico:'💎', xp:5000, grad:'conic-gradient(from 0deg,#7ad7f0,#b7e9ff,#7ad7f0,#e6f7ff,#7ad7f0)', desc:'El marco más exclusivo.'},
-  {id:'frame-neon',    type:'frame', name:'Marco neón',    ico:'💠', xp:2000, color:'#2af5c8', glow:true, desc:'Un marco que brilla en la oscuridad.'},
-  {id:'frame-rainbow', type:'frame', name:'Marco arcoíris',ico:'🌈', test:()=>S.streak>=7, cond:'Racha de 7 días', grad:'conic-gradient(from 0deg,#e34948,#eda100,#1baf7a,#2a78d6,#4a3aa7,#e34948)', desc:'Solo para constantes: racha de 7 días.'}
+  {id:'frame-bronze',  type:'frame', rarity:'common', name:'Marco bronce',  ico:'🥉', xp:100,  color:'#cd7f32', desc:'Un marco de bronce.'},
+  {id:'frame-silver',  type:'frame', rarity:'rare', name:'Marco plata',   ico:'🥈', xp:1000, color:'#b7b7b7', desc:'Un marco plateado.'},
+  {id:'frame-neon',    type:'frame', rarity:'epic', name:'Marco neón',    ico:'💠', xp:2000, color:'#2af5c8', glow:true, desc:'Un marco que brilla en la oscuridad.'},
+  {id:'frame-gold',    type:'frame', rarity:'epic', name:'Marco oro',     ico:'🥇', xp:3000, color:'#eda100', desc:'Un marco dorado.'},
+  {id:'frame-diamond', type:'frame', rarity:'legendary', name:'Marco diamante',ico:'💎', test:()=>Object.values(S.modules).filter(m=>m.done).length>=12, cond:'Completa los 12 módulos de una materia', grad:'conic-gradient(from 0deg,#7ad7f0,#b7e9ff,#7ad7f0,#e6f7ff,#7ad7f0)', desc:'El marco más exclusivo, solo para quien domina una materia.'},
+  {id:'frame-rainbow', type:'frame', rarity:'legendary', name:'Marco arcoíris',ico:'🌈', test:()=>S.streak>=7, cond:'Racha de 7 días', grad:'conic-gradient(from 0deg,#e34948,#eda100,#1baf7a,#2a78d6,#4a3aa7,#e34948)', desc:'Solo para constantes: racha de 7 días.'}
 ];
 /* ---- Accesorios (SVG/emoji superpuestos sobre el avatar) ----
    Modelo de posición: x,y = centro (%) del accesorio dentro del avatar;
@@ -4778,74 +4807,121 @@ function svgMustache(s, w){ w = Math.round(s*(w||0.4)); return '<svg width="'+w+
 function svgCowboy(s, w){ w = Math.round(s*(w||0.72)); return '<svg width="'+w+'" viewBox="0 0 100 46" style="display:block">'
   + '<path d="M6 38 Q50 52 94 38 Q72 42 70 33 L66 16 Q50 6 34 16 L30 33 Q28 42 6 38Z" fill="#8a5a2b"/>'
   + '<path d="M30 30 Q50 37 70 30 L70 34 Q50 41 30 34Z" fill="#5e3c17"/></svg>'; }
+function svgMonocle(s, w){ w = Math.round(s*(w||0.46)); return '<svg width="'+w+'" viewBox="0 0 100 66" style="display:block">'
+  + '<circle cx="60" cy="24" r="17" fill="rgba(200,225,255,.28)" stroke="#1c1c1c" stroke-width="4"/>'
+  + '<path d="M60 41 q-3 14 -16 20" stroke="#1c1c1c" stroke-width="3" fill="none"/></svg>'; }
+function svgEyepatch(s, w){ w = Math.round(s*(w||0.62)); return '<svg width="'+w+'" viewBox="0 0 100 46" style="display:block">'
+  + '<path d="M2 10 L98 22" stroke="#0e0e0e" stroke-width="4.5"/>'
+  + '<ellipse cx="34" cy="22" rx="17" ry="14" fill="#131313"/><ellipse cx="34" cy="22" rx="17" ry="14" fill="none" stroke="#000" stroke-width="1"/></svg>'; }
+function svgTophat(s, w){ w = Math.round(s*(w||0.6)); return '<svg width="'+w+'" viewBox="0 0 100 70" style="display:block">'
+  + '<rect x="26" y="4" width="48" height="46" rx="4" fill="#1a1a1a"/><rect x="26" y="38" width="48" height="8" fill="#7a1f2b"/>'
+  + '<ellipse cx="50" cy="54" rx="46" ry="10" fill="#1a1a1a"/></svg>'; }
 /* Cada accesorio ocupa una "ranura" (slot); solo uno por slot. Mano y sticker
    son excluyentes entre sí (se interponen). */
-const ACC_SLOT_NAMES = {head:'🎩 Cabeza', eyes:'👓 Ojos', mouth:'👄 Boca', hand:'✋ Mano', sticker:'🏷️ Sticker'};
+const ACC_SLOT_NAMES = {head:'🎩 Cabeza', eyes:'👓 Ojos', mouth:'👄 Boca', neck:'🧣 Cuello', hand:'✋ Mano', sticker:'🏷️ Sticker'};
 const ACC_SLOT_CONFLICT = {hand:'sticker', sticker:'hand'};
 const ACCESSORIES = [
-  {id:'acc-glasses', type:'acc', slot:'eyes', name:'Lentes Cartier', ico:'🕶️', xp:400,  svg:svgGlasses, w:0.52, x:50, y:47, desc:'Lentes cuadrados elegantes, estilo Cartier.'},
-  {id:'acc-cap',     type:'acc', slot:'head', name:'Gorra de desvelado', ico:'🧢', xp:700, emoji:'🧢', scale:0.5, x:50, y:9, desc:'Para las desveladas.'},
-  {id:'acc-headphones', type:'acc', slot:'eyes', name:'Audífonos', ico:'🎧', xp:900, emoji:'🎧', scale:0.5, x:50, y:30, desc:'Música para concentrarte.'},
-  {id:'acc-mustache', type:'acc', slot:'mouth', name:'Bigote falso', ico:'👨', xp:1100, svg:svgMustache, w:0.4, x:50, y:57, desc:'Un disfraz muy serio.'},
-  {id:'acc-crown',   type:'acc', slot:'head', name:'Corona', ico:'👑', xp:2000, emoji:'👑', scale:0.42, x:50, y:8, desc:'De la realeza actuarial.'},
-  {id:'acc-cowboy',  type:'acc', slot:'head', name:'Sombrero vaquero', ico:'🤠', xp:1600, svg:svgCowboy, w:0.74, x:50, y:16, desc:'Yeehaw, actuario.'},
-  {id:'acc-coffee',  type:'acc', slot:'hand', name:'Café gigante', ico:'☕', xp:1400, emoji:'☕', scale:0.34, x:80, y:82, desc:'Combustible de estudiante.'},
-  {id:'acc-calc',    type:'acc', slot:'hand', name:'Calculadora flotante', ico:'🧮', xp:1000, emoji:'🧮', scale:0.34, x:80, y:80, desc:'Siempre a la mano.'},
-  {id:'acc-magnifier', type:'acc', slot:'hand', name:'Lupa de auditor', ico:'🔍', xp:1300, emoji:'🔍', scale:0.36, x:80, y:82, desc:'Nada se te escapa.'},
-  {id:'acc-cap-grad', type:'acc', slot:'head', name:'Birrete', ico:'🎓', xp:2500, emoji:'🎓', scale:0.5, x:50, y:8, desc:'Listo para graduarte.'},
-  {id:'acc-aprobe',  type:'acc', slot:'sticker', name:'Sticker “Aprobé”', ico:'✅', test:()=>(S.examHistory||[]).some(e=>e.score>=80), cond:'Aprueba un examen diario (≥80%)', sticker:'✅ Aprobé', stickerBg:'#0ca30c', rot:-11, x:22, y:86, desc:'La prueba de que sí se pudo.'},
-  {id:'acc-noc',     type:'acc', slot:'sticker', name:'Sticker “No era la C”', ico:'🅲', xp:1500, sticker:'No era la C', stickerBg:'#e34948', rot:-11, x:24, y:86, desc:'Todos hemos estado ahí.'},
-  {id:'acc-tear',    type:'acc', slot:'mouth', name:'Lágrima de parcial', ico:'💧', xp:500,  emoji:'💧', scale:0.22, x:62, y:55, desc:'El parcial estuvo difícil.'},
-  {id:'acc-flag',    type:'acc', slot:'sticker', name:'Bandera “Sobreviví”', ico:'🏁', test:()=>(S.examHistory||[]).length>=3, cond:'Presenta 3 exámenes diarios', sticker:'🏁 Sobreviví', stickerBg:'#4a3aa7', rot:-11, x:24, y:85, desc:'Un cuatrimestre más.'}
+  // — Ojos —
+  {id:'acc-glasses', type:'acc', slot:'eyes', rarity:'common', name:'Lentes Cartier', ico:'🕶️', xp:400,  svg:svgGlasses, w:0.52, x:50, y:47, desc:'Lentes cuadrados elegantes, estilo Cartier.'},
+  {id:'acc-shades',  type:'acc', slot:'eyes', rarity:'common', name:'Lentes de sol', ico:'😎', xp:300, emoji:'🕶️', scale:0.5, x:50, y:46, desc:'Modo galán activado.'},
+  {id:'acc-headphones', type:'acc', slot:'eyes', rarity:'rare', name:'Audífonos', ico:'🎧', xp:900, emoji:'🎧', scale:0.5, x:50, y:30, desc:'Música para concentrarte.'},
+  {id:'acc-vr',      type:'acc', slot:'eyes', rarity:'rare', name:'Visor VR', ico:'🥽', xp:1500, emoji:'🥽', scale:0.5, x:50, y:44, desc:'Estudiar en el metaverso.'},
+  {id:'acc-monocle', type:'acc', slot:'eyes', rarity:'epic', name:'Monóculo', ico:'🧐', xp:2600, svg:svgMonocle, w:0.5, x:56, y:47, desc:'Elegancia de otra época.'},
+  {id:'acc-eyepatch', type:'acc', slot:'eyes', rarity:'legendary', secret:true, name:'Parche pirata', ico:'🏴‍☠️', test:()=>(S.bestSudden||0)>=20, cond:'???', hint:'Sobrevive mucho en Muerte súbita', svg:svgEyepatch, w:0.6, x:50, y:46, desc:'Arrr, actuario de los siete mares.'},
+  // — Cabeza —
+  {id:'acc-cap',     type:'acc', slot:'head', rarity:'common', name:'Gorra de desvelado', ico:'🧢', xp:700, emoji:'🧢', scale:0.5, x:50, y:9, desc:'Para las desveladas.'},
+  {id:'acc-sunhat',  type:'acc', slot:'head', rarity:'common', name:'Sombrero de sol', ico:'👒', xp:600, emoji:'👒', scale:0.54, x:50, y:9, desc:'Listo para vacaciones.'},
+  {id:'acc-helmet',  type:'acc', slot:'head', rarity:'rare', name:'Casco', ico:'🪖', xp:1200, emoji:'🪖', scale:0.5, x:50, y:8, desc:'A la guerra contra los parciales.'},
+  {id:'acc-cowboy',  type:'acc', slot:'head', rarity:'rare', name:'Sombrero vaquero', ico:'🤠', xp:1600, svg:svgCowboy, w:0.74, x:50, y:16, desc:'Yeehaw, actuario.'},
+  {id:'acc-tophat',  type:'acc', slot:'head', rarity:'epic', name:'Sombrero de copa', ico:'🎩', xp:2200, svg:svgTophat, w:0.6, x:50, y:6, desc:'De alta sociedad.'},
+  {id:'acc-crown',   type:'acc', slot:'head', rarity:'epic', name:'Corona', ico:'👑', xp:2000, emoji:'👑', scale:0.42, x:50, y:8, desc:'De la realeza actuarial.'},
+  {id:'acc-cap-grad', type:'acc', slot:'head', rarity:'epic', name:'Birrete', ico:'🎓', xp:2500, emoji:'🎓', scale:0.5, x:50, y:8, desc:'Listo para graduarte.'},
+  {id:'acc-brain',   type:'acc', slot:'head', rarity:'legendary', secret:true, name:'Cerebro expuesto', ico:'🧠', test:()=>(S.totalAnswered||0)>=200, cond:'???', hint:'Responde muchísimas preguntas', emoji:'🧠', scale:0.44, x:50, y:6, desc:'Demasiada sabiduría acumulada.'},
+  // — Boca —
+  {id:'acc-mustache', type:'acc', slot:'mouth', rarity:'rare', name:'Bigote falso', ico:'👨', xp:1100, svg:svgMustache, w:0.4, x:50, y:57, desc:'Un disfraz muy serio.'},
+  {id:'acc-cig',     type:'acc', slot:'mouth', rarity:'rare', name:'Cigarro', ico:'🚬', xp:1300, emoji:'🚬', scale:0.3, x:60, y:61, desc:'El estrés del cuatrimestre.'},
+  {id:'acc-lollipop', type:'acc', slot:'mouth', rarity:'common', name:'Paleta', ico:'🍭', xp:700, emoji:'🍭', scale:0.34, x:61, y:60, desc:'Dulce recompensa.'},
+  {id:'acc-rose',    type:'acc', slot:'mouth', rarity:'epic', name:'Rosa en la boca', ico:'🌹', xp:2600, emoji:'🌹', scale:0.34, x:56, y:60, desc:'Puro romance… con las integrales.'},
+  {id:'acc-tear',    type:'acc', slot:'mouth', rarity:'common', name:'Lágrima de parcial', ico:'💧', xp:500,  emoji:'💧', scale:0.22, x:62, y:55, desc:'El parcial estuvo difícil.'},
+  // — Cuello —
+  {id:'acc-tie',     type:'acc', slot:'neck', rarity:'common', name:'Corbata', ico:'👔', xp:800, emoji:'👔', scale:0.42, x:50, y:78, desc:'Modo entrevista de trabajo.'},
+  {id:'acc-bow',     type:'acc', slot:'neck', rarity:'common', name:'Moño', ico:'🎀', xp:600, emoji:'🎀', scale:0.34, x:50, y:74, desc:'Un toque coqueto.'},
+  {id:'acc-scarf',   type:'acc', slot:'neck', rarity:'rare', name:'Bufanda', ico:'🧣', xp:1400, emoji:'🧣', scale:0.44, x:50, y:76, desc:'Para las mañanas frías de examen.'},
+  {id:'acc-medal',   type:'acc', slot:'neck', rarity:'epic', name:'Medalla', ico:'🎖️', test:()=>(S.examHistory||[]).some(e=>e.score>=90), cond:'Saca ≥90% en un examen diario', emoji:'🏅', scale:0.4, x:50, y:76, desc:'Al mérito actuarial.'},
+  // — Mano —
+  {id:'acc-calc',    type:'acc', slot:'hand', rarity:'common', name:'Calculadora flotante', ico:'🧮', xp:1000, emoji:'🧮', scale:0.34, x:80, y:80, desc:'Siempre a la mano.'},
+  {id:'acc-phone',   type:'acc', slot:'hand', rarity:'common', name:'Celular', ico:'📱', xp:500, emoji:'📱', scale:0.34, x:80, y:82, desc:'Distracción portátil.'},
+  {id:'acc-book',    type:'acc', slot:'hand', rarity:'common', name:'Libro de texto', ico:'📕', xp:600, emoji:'📕', scale:0.34, x:80, y:82, desc:'La biblia del actuario.'},
+  {id:'acc-coffee',  type:'acc', slot:'hand', rarity:'rare', name:'Café gigante', ico:'☕', xp:1400, emoji:'☕', scale:0.34, x:80, y:82, desc:'Combustible de estudiante.'},
+  {id:'acc-magnifier', type:'acc', slot:'hand', rarity:'rare', name:'Lupa de auditor', ico:'🔍', xp:1300, emoji:'🔍', scale:0.36, x:80, y:82, desc:'Nada se te escapa.'},
+  {id:'acc-portafolio', type:'acc', slot:'hand', rarity:'rare', name:'Portafolio ejecutivo', ico:'💼', xp:1600, emoji:'💼', scale:0.36, x:80, y:82, desc:'Modo consultor de riesgos.'},
+  {id:'acc-mic',     type:'acc', slot:'hand', rarity:'rare', name:'Micrófono', ico:'🎤', xp:1500, emoji:'🎤', scale:0.34, x:80, y:82, desc:'Para exponer sin miedo.'},
+  {id:'acc-controller', type:'acc', slot:'hand', rarity:'rare', name:'Control de videojuego', ico:'🎮', xp:1700, emoji:'🎮', scale:0.34, x:80, y:82, desc:'Estudiar es un juego.'},
+  {id:'acc-beer',    type:'acc', slot:'hand', rarity:'rare', name:'Cerveza', ico:'🍺', xp:1800, emoji:'🍺', scale:0.36, x:80, y:82, desc:'Ya pasó el examen… ¿o no?'},
+  {id:'acc-guitar',  type:'acc', slot:'hand', rarity:'epic', name:'Guitarra', ico:'🎸', xp:2800, emoji:'🎸', scale:0.4, x:78, y:80, desc:'Rockstar de la estadística.'},
+  {id:'acc-money',   type:'acc', slot:'hand', rarity:'epic', name:'Bolsa de dinero', ico:'💰', xp:3200, emoji:'💰', scale:0.36, x:80, y:82, desc:'El sueldo de actuario.'},
+  {id:'acc-gun',     type:'acc', slot:'hand', rarity:'epic', secret:true, name:'Pistola', ico:'🔫', test:()=>(S.bestBlitzCombo||0)>=15, cond:'???', hint:'Encadena muchos aciertos en el contrarreloj', emoji:'🔫', scale:0.4, x:78, y:80, desc:'Modo pistolero de fórmulas.'},
+  {id:'acc-sword',   type:'acc', slot:'hand', rarity:'legendary', secret:true, name:'Espada', ico:'🗡️', test:()=>subjStats('ca3').done>=12, cond:'???', hint:'Domina toda una materia', emoji:'🗡️', scale:0.42, x:78, y:80, desc:'Cortas exámenes como mantequilla.'},
+  {id:'acc-bomb',    type:'acc', slot:'hand', rarity:'legendary', secret:true, name:'Bomba', ico:'💣', test:()=>{const h=S.examHistory||[]; return h.some(e=>e.score<40);}, cond:'???', hint:'A veces un examen sale realmente mal…', emoji:'💣', scale:0.36, x:80, y:82, desc:'Ese examen explotó.'},
+  // — Stickers —
+  {id:'acc-aprobe',  type:'acc', slot:'sticker', rarity:'rare', name:'Sticker “Aprobé”', ico:'✅', test:()=>(S.examHistory||[]).some(e=>e.score>=80), cond:'Aprueba un examen diario (≥80%)', sticker:'✅ Aprobé', stickerBg:'#0ca30c', rot:-11, x:22, y:86, desc:'La prueba de que sí se pudo.'},
+  {id:'acc-noc',     type:'acc', slot:'sticker', rarity:'common', name:'Sticker “No era la C”', ico:'🅲', xp:1500, sticker:'No era la C', stickerBg:'#e34948', rot:-11, x:24, y:86, desc:'Todos hemos estado ahí.'},
+  {id:'acc-100',     type:'acc', slot:'sticker', rarity:'epic', name:'Sticker “100”', ico:'💯', test:()=>Object.values(S.modules).some(m=>m.best>=100), cond:'Saca 100% en un módulo', sticker:'💯 Perfecto', stickerBg:'#eda100', rot:-11, x:24, y:86, desc:'Puntuación perfecta.'},
+  {id:'acc-flag',    type:'acc', slot:'sticker', rarity:'rare', name:'Bandera “Sobreviví”', ico:'🏁', test:()=>(S.examHistory||[]).length>=3, cond:'Presenta 3 exámenes diarios', sticker:'🏁 Sobreviví', stickerBg:'#4a3aa7', rot:-11, x:24, y:85, desc:'Un cuatrimestre más.'}
 ];
 const accSlot = id => { const a = ACCESSORIES.find(x=>x.id===id); return a ? a.slot : null; };
 /* ---- Efectos del MARCO: solo decoran el anillo/borde de la foto (sin emojis
    en el centro). Equipar uno reemplaza al marco (son excluyentes). ---- */
 const EFFECTS = [
-  {id:'fx-sparkle', type:'effect', name:'Anillo de destellos', ico:'✨', xp:1200, cls:'sparkle', desc:'Un anillo dorado que gira alrededor de tu foto.'},
-  {id:'fx-glow',    type:'effect', name:'Aura brillante',      ico:'🌟', xp:2000, cls:'glow',    desc:'Tu marco late con un halo del color principal.'},
-  {id:'fx-neon',    type:'effect', name:'Anillo neón',         ico:'💠', xp:2800, cls:'neon',    desc:'Un aro neón que brilla en la oscuridad.'},
-  {id:'fx-flame',   type:'effect', name:'Anillo de fuego',     ico:'🔥', xp:3600, cls:'flame',   desc:'Un aro de llamas girando en tu marco.'},
-  {id:'fx-rainbow', type:'effect', name:'Anillo arcoíris',     ico:'🌈', test:()=>subjStats('ca3').done>=12, cond:'Completa los 12 módulos de Cálculo III', cls:'rainbow', desc:'Un aro multicolor girando en tu marco.'}
+  {id:'fx-sparkle', type:'effect', rarity:'rare', name:'Anillo de destellos', ico:'✨', xp:1200, cls:'sparkle', desc:'Un anillo dorado que gira alrededor de tu foto.'},
+  {id:'fx-glow',    type:'effect', rarity:'epic', name:'Aura brillante',      ico:'🌟', xp:2000, cls:'glow',    desc:'Tu marco late con un halo del color principal.'},
+  {id:'fx-neon',    type:'effect', rarity:'epic', name:'Anillo neón',         ico:'💠', xp:2800, cls:'neon',    desc:'Un aro neón que brilla en la oscuridad.'},
+  {id:'fx-flame',   type:'effect', rarity:'legendary', name:'Anillo de fuego',     ico:'🔥', xp:3600, cls:'flame',   desc:'Un aro de llamas girando en tu marco.'},
+  {id:'fx-rainbow', type:'effect', rarity:'legendary', name:'Anillo arcoíris',     ico:'🌈', test:()=>subjStats('ca3').done>=12, cond:'Completa los 12 módulos de Cálculo III', cls:'rainbow', desc:'Un aro multicolor girando en tu marco.'}
 ];
 /* ---- Efectos AL ACERTAR: partículas que brotan cuando respondes bien ---- */
 const HITFX = [
-  {id:'fx-confetti', type:'hitfx', name:'Lluvia de confeti', ico:'🎊', xp:1500, kind:'confetti', desc:'Suelta confeti cada vez que respondes bien.'},
-  {id:'hit-stars',   type:'hitfx', name:'Estrellas al acertar', ico:'⭐', xp:2600, kind:'stars', desc:'Brotan estrellas cuando respondes bien.'},
-  {id:'hit-hearts',  type:'hitfx', name:'Corazones al acertar', ico:'💗', xp:3400, kind:'hearts', desc:'Brotan corazones cuando respondes bien.'}
+  {id:'fx-confetti', type:'hitfx', rarity:'rare', name:'Lluvia de confeti', ico:'🎊', xp:1500, kind:'confetti', desc:'Suelta confeti cada vez que respondes bien.'},
+  {id:'hit-stars',   type:'hitfx', rarity:'epic', name:'Estrellas al acertar', ico:'⭐', xp:2600, kind:'stars', desc:'Brotan estrellas cuando respondes bien.'},
+  {id:'hit-hearts',  type:'hitfx', rarity:'epic', name:'Corazones al acertar', ico:'💗', xp:3400, kind:'hearts', desc:'Brotan corazones cuando respondes bien.'},
+  {id:'hit-fire',    type:'hitfx', rarity:'legendary', secret:true, name:'Chispas de fuego', ico:'🔥', test:()=>(S.bestBlitzCombo||0)>=12, cond:'???', hint:'Encadena aciertos en el contrarreloj', kind:'fire', desc:'Chispas de fuego al acertar.'}
 ];
 /* ---- Temas de interfaz (color principal preestablecido) ---- */
 const THEMES = [
-  {id:'th-ocean',  type:'theme', name:'Océano', ico:'🌊', xp:1500, accent:'#0e9bd6', desc:'Un azul profundo.'},
-  {id:'th-forest', type:'theme', name:'Bosque', ico:'🌲', xp:2800, accent:'#1e9e5a', desc:'Verde relajante.'},
-  {id:'th-sunset', type:'theme', name:'Atardecer', ico:'🌇', xp:4500, accent:'#e5714a', desc:'Cálido y motivador.'},
-  {id:'th-galaxy', type:'theme', name:'Galaxia', ico:'🌌', test:()=>S.xp>=8000, cond:'Alcanza 8,000 XP', accent:'#7a5cff', desc:'Para los más avanzados.'}
+  {id:'th-ocean',  type:'theme', rarity:'rare', name:'Océano', ico:'🌊', xp:1500, accent:'#0e9bd6', desc:'Un azul profundo.'},
+  {id:'th-forest', type:'theme', rarity:'epic', name:'Bosque', ico:'🌲', xp:2800, accent:'#1e9e5a', desc:'Verde relajante.'},
+  {id:'th-sunset', type:'theme', rarity:'legendary', name:'Atardecer', ico:'🌇', xp:4500, accent:'#e5714a', desc:'Cálido y motivador.'},
+  {id:'th-galaxy', type:'theme', rarity:'legendary', name:'Galaxia', ico:'🌌', test:()=>S.xp>=8000, cond:'Alcanza 8,000 XP', accent:'#7a5cff', desc:'Para los más avanzados.'}
 ];
 /* ---- Títulos ---- */
 const TITLES = [
-  {id:'title-analista',   type:'title', name:'Analista Junior',       ico:'🏷️', xp:500,  desc:'Título alterno que sustituye tu rango de nivel.'},
-  {id:'title-frecuencia', type:'title', name:'Maestro de Frecuencia', ico:'🏷️', xp:1200, desc:'Título alterno que sustituye tu rango de nivel.'},
-  {id:'title-severidad',  type:'title', name:'Experto en Severidad',  ico:'🏷️', xp:2000, desc:'Título alterno que sustituye tu rango de nivel.'},
-  {id:'title-prima',      type:'title', name:'Rey de la Prima',       ico:'🏷️', xp:4000, desc:'Título alterno que sustituye tu rango de nivel.'},
-  {id:'title-construccion', type:'title', name:'Actuario en Construcción', ico:'🚧', xp:300,  desc:'Para quien apenas empieza, pero con casco.'},
-  {id:'title-cafe',        type:'title', name:'Rey del Café',            ico:'☕', xp:800,  desc:'Ninguna madrugada de estudio te detiene.'},
-  {id:'title-excel',       type:'title', name:'Excel Warrior',           ico:'📗', xp:1600, desc:'Domador de celdas y tablas dinámicas.'},
-  {id:'title-humana',      type:'title', name:'Calculadora Humana',      ico:'🧮', xp:2500, desc:'¿Quién necesita calculadora?'},
-  {id:'title-riesgo',      type:'title', name:'Maestro del Riesgo',      ico:'🎲', xp:6000, desc:'El riesgo te respeta a ti.'},
-  {id:'title-sobrev',      type:'title', name:'Sobreviviente del Parcial', ico:'🏳️', desc:'Presentaste tu primer examen diario y viviste para contarlo.',
+  {id:'title-analista',   type:'title', rarity:'common', name:'Analista Junior',       ico:'🏷️', xp:500,  desc:'Título alterno que sustituye tu rango de nivel.'},
+  {id:'title-construccion', type:'title', rarity:'common', name:'Actuario en Construcción', ico:'🚧', xp:300,  desc:'Para quien apenas empieza, pero con casco.'},
+  {id:'title-cafe',        type:'title', rarity:'common', name:'Rey del Café',            ico:'☕', xp:800,  desc:'Ninguna madrugada de estudio te detiene.'},
+  {id:'title-frecuencia', type:'title', rarity:'rare', name:'Maestro de Frecuencia', ico:'🏷️', xp:1200, desc:'Título alterno que sustituye tu rango de nivel.'},
+  {id:'title-excel',       type:'title', rarity:'rare', name:'Excel Warrior',           ico:'📗', xp:1600, desc:'Domador de celdas y tablas dinámicas.'},
+  {id:'title-severidad',  type:'title', rarity:'epic', name:'Experto en Severidad',  ico:'🏷️', xp:2000, desc:'Título alterno que sustituye tu rango de nivel.'},
+  {id:'title-humana',      type:'title', rarity:'epic', name:'Calculadora Humana',      ico:'🧮', xp:2500, desc:'¿Quién necesita calculadora?'},
+  {id:'title-prima',      type:'title', rarity:'legendary', name:'Rey de la Prima',       ico:'🏷️', xp:4000, desc:'Título alterno que sustituye tu rango de nivel.'},
+  {id:'title-riesgo',      type:'title', rarity:'legendary', name:'Maestro del Riesgo',      ico:'🎲', xp:6000, desc:'El riesgo te respeta a ti.'},
+  {id:'title-sobrev',      type:'title', rarity:'rare', name:'Sobreviviente del Parcial', ico:'🏳️', desc:'Presentaste tu primer examen diario y viviste para contarlo.',
     test:()=>(S.examHistory||[]).length>=1, cond:'Presenta tu primer examen diario'},
-  {id:'title-estudio',     type:'title', name:'El que sí estudió',       ico:'🤓', desc:'Cinco días seguidos: tu profesor estaría orgulloso.',
+  {id:'title-estudio',     type:'title', rarity:'rare', name:'El que sí estudió',       ico:'🤓', desc:'Cinco días seguidos: tu profesor estaría orgulloso.',
     test:()=>S.streak>=5, cond:'Logra una racha de 5 días'},
-  {id:'title-cazador',     type:'title', name:'Cazador de Fórmulas',     ico:'🏹', desc:'100% en el módulo de fórmulas: puntería perfecta.',
+  {id:'title-cazador',     type:'title', rarity:'epic', name:'Cazador de Fórmulas',     ico:'🏹', desc:'100% en el módulo de fórmulas: puntería perfecta.',
     test:()=>{ const st = (subjSnapshot('ca3').modules||{})[9]; return !!(st && st.best>=100); }, cond:'Saca 100% en el módulo Completar fórmulas'},
-  {id:'title-noc',         type:'title', name:'No era opción C',         ico:'🅲', desc:'La sabiduría llega después de muchas preguntas.',
+  {id:'title-noc',         type:'title', rarity:'common', name:'No era opción C',         ico:'🅲', desc:'La sabiduría llega después de muchas preguntas.',
     test:()=>(S.totalAnswered||0)>=40, cond:'Responde 40 preguntas'},
-  {id:'title-siniestros',  type:'title', name:'Señor de los Siniestros', ico:'🌩️', desc:'Los 12 módulos de Cálculo Actuarial III doblegados.',
+  {id:'title-siniestros',  type:'title', rarity:'legendary', name:'Señor de los Siniestros', ico:'🌩️', desc:'Los 12 módulos de Cálculo Actuarial III doblegados.',
     test:()=>subjStats('ca3').done>=12, cond:'Completa los 12 módulos de Cálculo III'},
-  {id:'title-desvelado',   type:'title', name:'Desvelado Profesional',   ico:'🌙', desc:'Estudiar después de medianoche también cuenta. O más.',
-    test:()=>!!S.lateNight, cond:'Estudia de madrugada (12 am – 5 am)'},
-  {id:'title-domador',     type:'title', name:'Domador de Exámenes',     ico:'🎪', desc:'Tres exámenes con ≥90: los exámenes te temen.',
-    test:()=>(S.examHistory||[]).filter(e=>e.score>=90).length>=3, cond:'Logra ≥90% en 3 exámenes diarios'}
+  {id:'title-desvelado',   type:'title', rarity:'epic', secret:true, name:'Desvelado Profesional',   ico:'🌙', desc:'Estudiar después de medianoche también cuenta. O más.',
+    test:()=>!!S.lateNight, cond:'???', hint:'Estudia de madrugada'},
+  {id:'title-madrugador',  type:'title', rarity:'epic', secret:true, name:'Madrugador',   ico:'🐦', desc:'Al que madruga… le desbloquean títulos.',
+    test:()=>!!S.earlyBird, cond:'???', hint:'Estudia muy temprano'},
+  {id:'title-domador',     type:'title', rarity:'legendary', name:'Domador de Exámenes',     ico:'🎪', desc:'Tres exámenes con ≥90: los exámenes te temen.',
+    test:()=>(S.examHistory||[]).filter(e=>e.score>=90).length>=3, cond:'Logra ≥90% en 3 exámenes diarios'},
+  {id:'title-leyenda',     type:'title', rarity:'legendary', secret:true, name:'Leyenda de ActuarIQ',     ico:'🏆', desc:'Acumulaste una fortuna en XP.',
+    test:()=>S.xp>=10000, cond:'???', hint:'Acumula una enormidad de XP'}
 ];
 /* Catálogo completo de la tienda */
 const REWARDS = [].concat(FRAMES, BACKGROUNDS, ACCESSORIES, TITLES, EFFECTS, HITFX, THEMES);
@@ -5042,14 +5118,19 @@ function rewardCardHTML(r){
   const unlocked = isUnlockedReward(r.id);
   const equipped = isEquipped(r);
   const pctv = r.xp != null ? Math.min(100, Math.round(S.xp/r.xp*100)) : 0;
+  const rar = rarityOf(r);
+  const secretLocked = r.secret && !unlocked;              // secreto no revelado
   const tag = equipped ? '<span class="rw-tag eq">✔ Equipado</span>' : unlocked ? '<span class="rw-tag owned">Tienes</span>' : '<span class="rw-tag lock">🔒</span>';
-  return '<div class="reward-card'+(unlocked?' unlocked':'')+(equipped?' equipped':'')+'">'+tag
-    + '<div class="rw-ico">'+r.ico+'</div>'
-    + '<div class="rw-name">'+esc(r.name)+'</div>'
+  const name = secretLocked ? '❓ Logro secreto' : esc(r.name);
+  const ico  = secretLocked ? '❔' : r.ico;
+  return '<div class="reward-card'+(unlocked?' unlocked':'')+(equipped?' equipped':'')+'" style="--rar:'+rar.color+'">'+tag
+    + '<span class="rw-rar" style="color:'+rar.color+'">'+rar.name+'</span>'
+    + '<div class="rw-ico">'+ico+'</div>'
+    + '<div class="rw-name">'+name+'</div>'
     + (unlocked
         ? '<button class="btn small'+(equipped?'':' ghost')+'" data-eq="'+r.id+'">'+(equipped?(r.type==='acc'?'✔ Quitar':'✔ Equipado'):'Equipar')+'</button>'
         : (r.test
-            ? '<div class="rw-lock"><small>🎯 '+esc(r.cond||'Logro especial')+'</small></div>'
+            ? '<div class="rw-lock"><small>'+(r.secret ? '🕵️ '+esc(r.hint||'Descúbrelo jugando') : '🎯 '+esc(r.cond||'Logro especial'))+'</small></div>'
             : '<div class="rw-lock"><span class="pbar"><i style="width:'+pctv+'%"></i></span><small>'+S.xp.toLocaleString()+' / '+r.xp.toLocaleString()+' XP</small></div>'))
     + '</div>';
 }
