@@ -420,6 +420,9 @@ header.top{
 .pbar i{display:block; height:100%; background:var(--accent); border-radius:99px; transition:width .5s}
 .reward-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(118px,1fr)); gap:10px}
 .repaso-grid{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:6px 0}
+.mini-tbl{border-collapse:collapse; margin:8px 0; font-size:.82rem; width:100%; overflow-x:auto; display:block}
+.mini-tbl th,.mini-tbl td{border:1px solid var(--line); padding:3px 7px; text-align:center; white-space:nowrap}
+.mini-tbl th{background:var(--surface2); font-weight:800; color:var(--ink2)}
 .repaso-card{width:100%; padding:14px}
 @media(max-width:520px){ .repaso-grid{grid-template-columns:1fr} }
 .reward-card{position:relative; background:var(--surface2); border:1px solid var(--line); border-top:3px solid var(--rar,var(--line)); border-radius:var(--radius-s); padding:12px 8px; text-align:center; display:flex; flex-direction:column; align-items:center; gap:6px}
@@ -981,7 +984,7 @@ const clamp = (n,a,b) => Math.max(a,Math.min(b,n));
    MODULES_BY_SUBJECT (y opcionalmente EXAM_BUILDERS_BY_SUBJECT). */
 const SUBJECTS = [
   {id:'ca3',   icon:'🛡️', name:'Cálculo Actuarial III',              short:'Cálculo III',       wm:'🛡️📐'},
-  {id:'reg',   icon:'📉', name:'Modelos de Regresión',                short:'Regresión',        wm:'📉📈', soon:true},
+  {id:'modelos-regresion', icon:'📉', name:'Modelos de Regresión',        short:'Regresión',        wm:'📉📈'},
   {id:'nopar', icon:'📊', name:'Análisis Estadístico No Paramétrico', short:'No Paramétrico',   wm:'📊🎯', soon:true},
   {id:'stoch', icon:'🎲', name:'Procesos Estocásticos',               short:'Estocásticos',     wm:'🎲🔀'},
   {id:'fin',   icon:'💼', name:'Administración Financiera',           short:'Admin. Financiera', wm:'💼💰', soon:true}
@@ -3306,7 +3309,409 @@ Object.assign(TOPIC_NAMES, TOPIC_NAMES_STOCH);
 /* modulesBySubject: para dar contenido a una materia nueva basta con llenar su
    arreglo aquí siguiendo el formato de MODULES_CA3 (id, icon, name, desc, kind,
    build → función que regresa las preguntas del quiz). */
-const MODULES_BY_SUBJECT = { ca3: MODULES_CA3, reg: [], nopar: [], stoch: MODULES_STOCH, fin: [] };
+/* ==================== Modelos de Regresión (materia "modelos-regresion") ====================
+   Contenido fiel al cuaderno: regresión lineal simple (mínimos cuadrados,
+   ajuste/residuos, propiedades y distribución de estimadores, inferencia
+   sobre parámetros, respuesta media vs. predicción individual, ANOVA y R²).
+   Los demás tipos de regresión (múltiple, logística, polinomial, Ridge/Lasso)
+   solo se mencionan conceptualmente: NO se generan ejercicios de ellos. */
+
+/* Reutiliza peR (redondeo) del bloque de Procesos; alias de azar */
+const rgRi = ri, rgPick = pick, rgShuffle = shuffle;
+
+/* Valores críticos (df = n−2) usados en el cuaderno; se muestran en el enunciado
+   para no depender de la orientación de una tabla. */
+const T_025 = {4:2.776, 5:2.571, 6:2.447, 7:2.365, 8:2.306, 9:2.262, 10:2.228};
+const CHI_025 = {4:0.484, 5:0.831, 6:1.237, 7:1.690, 8:2.180, 9:2.700, 10:3.247}; // χ² con área izq. 0.025
+const CHI_975 = {4:11.143, 5:12.833, 6:14.449, 7:16.013, 8:17.535, 9:19.023, 10:20.483}; // área izq. 0.975
+
+/* Núcleo de cálculo de regresión lineal simple (una sola implementación) */
+function regCompute(X, Y){
+  const n = X.length;
+  const sumX = X.reduce((a,b)=>a+b,0), sumY = Y.reduce((a,b)=>a+b,0);
+  const sumXX = X.reduce((a,x)=>a+x*x,0), sumYY = Y.reduce((a,y)=>a+y*y,0);
+  const sumXY = X.reduce((a,x,i)=>a+x*Y[i],0);
+  const mX = sumX/n, mY = sumY/n;
+  const Sxx = sumXX - sumX*sumX/n;
+  const Sxy = sumXY - sumX*sumY/n;
+  const Syy = sumYY - sumY*sumY/n;      // = SCT
+  const b1 = Sxy/Sxx;
+  const b0 = mY - b1*mX;
+  const yhat = X.map(x => b0 + b1*x);
+  const resid = Y.map((y,i) => y - yhat[i]);
+  const SCT = Syy, SCR = b1*Sxy, SCE = SCT - SCR;
+  const sigma2 = SCE/(n-2), s = Math.sqrt(sigma2);
+  const R2 = SCR/SCT;
+  return {X,Y,n,sumX,sumY,sumXX,sumYY,sumXY,mX,mY,Sxx,Sxy,Syy,b0,b1,yhat,resid,SCT,SCR,SCE,sigma2,s,R2};
+}
+/* Genera un conjunto (X,Y) con relación lineal clara y sin casos degenerados */
+function regCase(){
+  for(let tries=0; tries<60; tries++){
+    const n = rgPick([6,7,8]);
+    const b1t = rgPick([1.5,2,2.5,3,-1.5,-2]);
+    const b0t = rgPick([5,10,15,20,30]);
+    const X = []; let cur = rgRi(3,12);
+    for(let i=0;i<n;i++){ cur += rgRi(1,4); X.push(cur); }        // X distintos y con dispersión ⇒ Sxx>0
+    const Y = X.map(x => Math.round(b0t + b1t*x + rgRi(-3,3)));
+    const c = regCompute(X,Y);
+    if(c.Sxx>0 && c.R2>=0.6 && c.R2<0.999 && Math.abs(c.b1)>0.3 && Y.every(y=>Math.abs(y)<100000)) return c;
+  }
+  return regCompute([2,4,6,8,10,12],[7,11,15,19,23,27]);         // respaldo determinista
+}
+/* Tabla de datos (X,Y) para el enunciado */
+function regDataTable(c){
+  return '<table class="mini-tbl"><tr><th>X</th>'+c.X.map(x=>'<td>'+x+'</td>').join('')+'</tr>'
+    + '<tr><th>Y</th>'+c.Y.map(y=>'<td>'+y+'</td>').join('')+'</tr></table>';
+}
+const CTX = ['gastos de promoción (X) y ventas (Y)','porcentaje de incremento (X) y ventas (Y)',
+  'publicidad (X) y siniestros (Y)','costos (X) y producción (Y)','antigüedad (X) y prima (Y)','horas de estudio (X) y calificación (Y)'];
+
+/* ---- Generadores numéricos (cada uno pide UN valor; steps con procedimiento) ---- */
+function qRegMedia(){
+  const c = regCase(); const which = rgPick(['X','Y']);
+  const sum = which==='X'?c.sumX:c.sumY, m = which==='X'?c.mX:c.mY;
+  return { type:'numeric', topic:'rg_minimos', tol:0.05,
+    prompt:'Con los datos de '+rgPick(CTX)+', calcula la media <b>'+(which==='X'?'X̄':'Ȳ')+'</b>:'+regDataTable(c),
+    answer:m, correctText:peR(m,4).toString(),
+    explain:(which==='X'?'X̄':'Ȳ')+' = (Σ'+which+') / n.',
+    steps:['n = '+c.n, 'Σ'+which+' = '+sum, (which==='X'?'X̄':'Ȳ')+' = '+sum+' / '+c.n+' = '+peR(m,4)] };
+}
+function qRegSuma(){
+  const c = regCase(); const which = rgPick(['sumXX','sumXY']);
+  const val = c[which], lab = which==='sumXX'?'ΣX²':'ΣXY';
+  return { type:'numeric', topic:'rg_minimos', tol:0.5,
+    prompt:'Con la tabla auxiliar, calcula <b>'+lab+'</b>:'+regDataTable(c),
+    answer:val, correctText:val.toString(),
+    explain:lab+' se obtiene sumando '+(which==='sumXX'?'cada X²':'cada producto X·Y')+'.',
+    steps:[(which==='sumXX'? c.X.map(x=>x+'²').join(' + ') : c.X.map((x,i)=>x+'·'+c.Y[i]).join(' + ')),
+      '= '+val] };
+}
+function qRegSxx(){
+  const c = regCase();
+  return { type:'numeric', topic:'rg_minimos', tol:0.5,
+    prompt:'Se sabe que ΣX²='+c.sumXX+', ΣX='+c.sumX+' y n='+c.n+'. Calcula <b>Sxx = Σ(Xᵢ−X̄)² = ΣX² − (ΣX)²/n</b>.',
+    answer:c.Sxx, correctText:peR(c.Sxx,4).toString(),
+    explain:'Sxx = ΣX² − (ΣX)²/n.',
+    steps:['(ΣX)²/n = '+c.sumX+'²/'+c.n+' = '+peR(c.sumX*c.sumX/c.n,3),
+      'Sxx = '+c.sumXX+' − '+peR(c.sumX*c.sumX/c.n,3)+' = '+peR(c.Sxx,4)] };
+}
+function qRegPendiente(){
+  const c = regCase();
+  return { type:'numeric', topic:'rg_minimos', tol:0.02,
+    prompt:'Con Sxy = '+peR(c.Sxy,3)+' y Sxx = '+peR(c.Sxx,3)+', calcula la pendiente <b>β̂₁</b>.',
+    answer:c.b1, correctText:peR(c.b1,4).toString(),
+    explain:'β̂₁ = Σ(Xᵢ−X̄)(Yᵢ−Ȳ) / Σ(Xᵢ−X̄)² = Sxy / Sxx.',
+    steps:['β̂₁ = Sxy / Sxx = '+peR(c.Sxy,3)+' / '+peR(c.Sxx,3)+' = '+peR(c.b1,4)] };
+}
+function qRegIntercepto(){
+  const c = regCase();
+  return { type:'numeric', topic:'rg_minimos', tol:0.05,
+    prompt:'Con β̂₁ = '+peR(c.b1,4)+', X̄ = '+peR(c.mX,3)+' y Ȳ = '+peR(c.mY,3)+', calcula el intercepto <b>β̂₀</b>.',
+    answer:c.b0, correctText:peR(c.b0,4).toString(),
+    explain:'β̂₀ = Ȳ − β̂₁·X̄.',
+    steps:['β̂₀ = Ȳ − β̂₁·X̄ = '+peR(c.mY,3)+' − '+peR(c.b1,4)+'·'+peR(c.mX,3),
+      '= '+peR(c.mY,3)+' − '+peR(c.b1*c.mX,3)+' = '+peR(c.b0,4)] };
+}
+function qRegPredict(){
+  const c = regCase(); const x0 = c.X[rgRi(0,c.n-1)];
+  const yh = c.b0 + c.b1*x0;
+  return { type:'numeric', topic:'rg_ajuste', tol:0.1,
+    prompt:'La recta ajustada es Ŷ = '+peR(c.b0,4)+' + '+peR(c.b1,4)+'·X. Predice <b>Ŷ</b> para X = '+x0+' (interpolación).',
+    answer:yh, correctText:peR(yh,4).toString(),
+    explain:'Se sustituye x₀ en la recta ajustada.',
+    steps:['Ŷ = '+peR(c.b0,4)+' + '+peR(c.b1,4)+'·'+x0,
+      '= '+peR(c.b0,4)+' + '+peR(c.b1*x0,3)+' = '+peR(yh,4)] };
+}
+function qRegResiduo(){
+  const c = regCase(); const i = rgRi(0,c.n-1);
+  const e = c.resid[i];
+  return { type:'numeric', topic:'rg_ajuste', tol:0.1,
+    prompt:'Para X = '+c.X[i]+' el valor observado es Y = '+c.Y[i]+' y el estimado es Ŷ = '+peR(c.yhat[i],4)+'. Calcula el <b>residuo eᵢ</b>.',
+    answer:e, correctText:peR(e,4).toString(),
+    explain:'eᵢ = Yᵢ − Ŷᵢ.',
+    steps:['eᵢ = Yᵢ − Ŷᵢ = '+c.Y[i]+' − '+peR(c.yhat[i],4)+' = '+peR(e,4)] };
+}
+function qRegSCT(){
+  const c = regCase();
+  return { type:'numeric', topic:'rg_anova', tol:0.5,
+    prompt:'Con ΣY² = '+c.sumYY+', ΣY = '+c.sumY+' y n = '+c.n+', calcula la suma de cuadrados total <b>SCT = ΣY² − (ΣY)²/n</b>.',
+    answer:c.SCT, correctText:peR(c.SCT,4).toString(),
+    explain:'SCT = Σ(Yᵢ−Ȳ)² = ΣY² − (ΣY)²/n.',
+    steps:['(ΣY)²/n = '+c.sumY+'²/'+c.n+' = '+peR(c.sumY*c.sumY/c.n,3),
+      'SCT = '+c.sumYY+' − '+peR(c.sumY*c.sumY/c.n,3)+' = '+peR(c.SCT,4)] };
+}
+function qRegSCR(){
+  const c = regCase();
+  return { type:'numeric', topic:'rg_anova', tol:0.5,
+    prompt:'Con β̂₁ = '+peR(c.b1,4)+' y Sxy = '+peR(c.Sxy,3)+', calcula la suma de cuadrados de la regresión <b>SCR = β̂₁·Sxy</b>.',
+    answer:c.SCR, correctText:peR(c.SCR,4).toString(),
+    explain:'SCR = β̂₁·Sxy = Sxy²/Sxx.',
+    steps:['SCR = β̂₁·Sxy = '+peR(c.b1,4)+'·'+peR(c.Sxy,3)+' = '+peR(c.SCR,4)] };
+}
+function qRegSCE(){
+  const c = regCase();
+  return { type:'numeric', topic:'rg_anova', tol:0.5,
+    prompt:'Con SCT = '+peR(c.SCT,3)+' y SCR = '+peR(c.SCR,3)+', calcula la suma de cuadrados del error <b>SCE</b> usando la identidad SCT = SCR + SCE.',
+    answer:c.SCE, correctText:peR(c.SCE,4).toString(),
+    explain:'SCE = SCT − SCR.',
+    steps:['SCE = SCT − SCR = '+peR(c.SCT,3)+' − '+peR(c.SCR,3)+' = '+peR(c.SCE,4)] };
+}
+function qRegR2(){
+  const c = regCase();
+  return { type:'numeric', topic:'rg_anova', tol:0.01,
+    prompt:'Con SCR = '+peR(c.SCR,3)+' y SCT = '+peR(c.SCT,3)+', calcula el coeficiente de determinación <b>R²</b>.',
+    answer:c.R2, correctText:peR(c.R2,4).toString(),
+    explain:'R² = SCR/SCT = 1 − SCE/SCT.',
+    steps:['R² = SCR / SCT = '+peR(c.SCR,3)+' / '+peR(c.SCT,3)+' = '+peR(c.R2,4)] };
+}
+function qRegSigma2(){
+  const c = regCase();
+  return { type:'numeric', topic:'rg_inferencia', tol:0.3,
+    prompt:'Con SCE = '+peR(c.SCE,3)+' y n = '+c.n+', estima la varianza del error <b>σ̂² = SCE/(n−2)</b>.',
+    answer:c.sigma2, correctText:peR(c.sigma2,4).toString(),
+    explain:'σ̂² = SCE/(n−2) (la SCE se divide entre los grados de libertad n−2).',
+    steps:['n − 2 = '+(c.n-2), 'σ̂² = SCE/(n−2) = '+peR(c.SCE,3)+'/'+(c.n-2)+' = '+peR(c.sigma2,4)] };
+}
+function qRegVarPendiente(){
+  const c = regCase();
+  const v = c.sigma2/c.Sxx;
+  return { type:'numeric', topic:'rg_propiedades', tol:0.01,
+    prompt:'Con σ̂² = '+peR(c.sigma2,3)+' y Sxx = '+peR(c.Sxx,3)+', calcula <b>Var(β̂₁) = σ²/Sxx</b>.',
+    answer:v, correctText:peR(v,5).toString(),
+    explain:'Var(β̂₁) = σ²/Sxx.',
+    steps:['Var(β̂₁) = σ²/Sxx = '+peR(c.sigma2,3)+'/'+peR(c.Sxx,3)+' = '+peR(v,5)] };
+}
+function qRegT(){
+  const c = regCase(); const se = c.s/Math.sqrt(c.Sxx);
+  const tstat = c.b1/se;
+  return { type:'numeric', topic:'rg_inferencia', tol:0.05,
+    prompt:'Prueba H₀: β₁=0. Con β̂₁ = '+peR(c.b1,4)+', s = '+peR(c.s,3)+' y Sxx = '+peR(c.Sxx,3)+', calcula el estadístico <b>t = β̂₁ / (s/√Sxx)</b>.',
+    answer:tstat, correctText:peR(tstat,4).toString(),
+    explain:'t = (β̂₁ − 0) / (s/√Sxx), con n−2 grados de libertad.',
+    steps:['Error estándar = s/√Sxx = '+peR(c.s,3)+'/√'+peR(c.Sxx,3)+' = '+peR(se,4),
+      't = β̂₁ / EE = '+peR(c.b1,4)+' / '+peR(se,4)+' = '+peR(tstat,4)] };
+}
+function qRegCISlope(){
+  const c = regCase(); const df = c.n-2; const tc = T_025[df]; const se = c.s/Math.sqrt(c.Sxx);
+  const lo = c.b1 - tc*se, hi = c.b1 + tc*se;
+  return { type:'numeric', topic:'rg_inferencia', tol:0.1,
+    prompt:'IC al 95% para β₁: β̂₁ ± t·(s/√Sxx). Con β̂₁ = '+peR(c.b1,4)+', s = '+peR(c.s,3)+', Sxx = '+peR(c.Sxx,3)+' y t₍0.025,'+df+'₎ = '+tc+', calcula el <b>límite superior</b> del intervalo.',
+    answer:hi, correctText:peR(hi,4).toString(),
+    explain:'Límite superior = β̂₁ + t·(s/√Sxx).',
+    steps:['s/√Sxx = '+peR(se,4),
+      't·EE = '+tc+'·'+peR(se,4)+' = '+peR(tc*se,4),
+      'Límite superior = '+peR(c.b1,4)+' + '+peR(tc*se,4)+' = '+peR(hi,4)] };
+}
+function qRegCIMean(){
+  const c = regCase(); const df = c.n-2; const tc = T_025[df]; const x0 = c.X[rgRi(0,c.n-1)];
+  const yh = c.b0 + c.b1*x0;
+  const half = tc*c.s*Math.sqrt(1/c.n + Math.pow(x0-c.mX,2)/c.Sxx);
+  const hi = yh + half;
+  return { type:'numeric', topic:'rg_prediccion', tol:0.2,
+    prompt:'IC 95% para la <b>respuesta media</b> E(Y|X='+x0+'): Ŷ₀ ± t·s·√(1/n + (x₀−X̄)²/Sxx). Con Ŷ₀ = '+peR(yh,3)+', s = '+peR(c.s,3)+', n = '+c.n+', X̄ = '+peR(c.mX,3)+', Sxx = '+peR(c.Sxx,3)+' y t = '+tc+', da el <b>límite superior</b>.',
+    answer:hi, correctText:peR(hi,4).toString(),
+    explain:'La respuesta media usa √(1/n + (x₀−X̄)²/Sxx).',
+    steps:['(x₀−X̄)² = ('+x0+'−'+peR(c.mX,3)+')² = '+peR(Math.pow(x0-c.mX,2),3),
+      'raíz = √(1/'+c.n+' + '+peR(Math.pow(x0-c.mX,2),3)+'/'+peR(c.Sxx,3)+') = '+peR(Math.sqrt(1/c.n + Math.pow(x0-c.mX,2)/c.Sxx),4),
+      'semi-amplitud = t·s·raíz = '+peR(half,4),
+      'Límite superior = Ŷ₀ + '+peR(half,4)+' = '+peR(hi,4)] };
+}
+function qRegPI(){
+  const c = regCase(); const df = c.n-2; const tc = T_025[df]; const x0 = c.X[rgRi(0,c.n-1)];
+  const yh = c.b0 + c.b1*x0;
+  const half = tc*c.s*Math.sqrt(1 + 1/c.n + Math.pow(x0-c.mX,2)/c.Sxx);
+  const hi = yh + half;
+  return { type:'numeric', topic:'rg_prediccion', tol:0.2,
+    prompt:'Intervalo de <b>predicción</b> 95% para una observación nueva en X='+x0+': Ŷ₀ ± t·s·√(1 + 1/n + (x₀−X̄)²/Sxx). Con Ŷ₀ = '+peR(yh,3)+', s = '+peR(c.s,3)+', n = '+c.n+', X̄ = '+peR(c.mX,3)+', Sxx = '+peR(c.Sxx,3)+' y t = '+tc+', da el <b>límite superior</b>.',
+    answer:hi, correctText:peR(hi,4).toString(),
+    explain:'El intervalo de predicción añade el término +1 dentro de la raíz (es más ancho que el de la media).',
+    steps:['raíz = √(1 + 1/'+c.n+' + (x₀−X̄)²/Sxx) = '+peR(Math.sqrt(1+1/c.n+Math.pow(x0-c.mX,2)/c.Sxx),4),
+      'semi-amplitud = t·s·raíz = '+peR(half,4),
+      'Límite superior = Ŷ₀ + '+peR(half,4)+' = '+peR(hi,4)] };
+}
+function qRegCISigma(){
+  const c = regCase(); const df = c.n-2;
+  const chiLo = CHI_975[df], chiHi = CHI_025[df]; // límite inferior usa χ²(0.975), superior usa χ²(0.025)
+  const lo = (df*c.sigma2)/chiLo, hi = (df*c.sigma2)/chiHi;
+  return { type:'numeric', topic:'rg_anova', tol:0.3,
+    prompt:'IC 95% para σ²: [ (n−2)σ̂² / χ²₍0.975₎ , (n−2)σ̂² / χ²₍0.025₎ ]. Con (n−2) = '+df+', σ̂² = '+peR(c.sigma2,3)+', χ²₍0.975,'+df+'₎ = '+chiLo+' y χ²₍0.025,'+df+'₎ = '+chiHi+', calcula el <b>límite inferior</b>.',
+    answer:lo, correctText:peR(lo,4).toString(),
+    explain:'El límite inferior divide (n−2)σ̂² entre el cuantil grande χ²₍0.975₎.',
+    steps:['(n−2)σ̂² = '+df+'·'+peR(c.sigma2,3)+' = '+peR(df*c.sigma2,3),
+      'Límite inferior = '+peR(df*c.sigma2,3)+' / '+chiLo+' = '+peR(lo,4)] };
+}
+
+/* ---- Módulos ---- */
+function buildRG1(){   // Introducción
+  return rgShuffle([
+    { type:'mc', topic:'rg_intro', prompt:'En un estudio de «gastos de publicidad vs. ventas», ¿cuál es la variable <b>respuesta</b> (Y)?',
+      options:[{t:'Las ventas', ok:true},{t:'Los gastos de publicidad', ok:false},{t:'El número de vendedores', ok:false},{t:'El mes', ok:false}],
+      explain:'La respuesta Y es la que se quiere explicar/predecir: las ventas.', correctText:'Las ventas' },
+    { type:'mc', topic:'rg_intro', prompt:'«Resumir los datos con medias y gráficas, sin generalizar» corresponde a estadística:',
+      options:[{t:'Descriptiva', ok:true},{t:'Inferencial', ok:false},{t:'Predictiva', ok:false},{t:'Bayesiana', ok:false}],
+      explain:'La estadística descriptiva resume; la inferencial generaliza a la población; la predictiva anticipa valores.', correctText:'Descriptiva' },
+    { type:'match', topic:'rg_intro', prompt:'Relaciona cada rama con su objetivo:',
+      pairs:[{l:'Descriptiva', r:'Resumir y describir los datos'},{l:'Inferencial', r:'Generalizar a la población'},{l:'Predictiva', r:'Anticipar valores futuros'}],
+      correctText:'Descriptiva=resumir, Inferencial=generalizar, Predictiva=predecir' },
+    { type:'mc', topic:'rg_intro', prompt:'¿Cuál de estos datos es <b>cualitativo</b>?',
+      options:[{t:'Tipo de póliza (auto, vida, gastos médicos)', ok:true},{t:'Monto del siniestro', ok:false},{t:'Edad del asegurado', ok:false},{t:'Número de reclamaciones', ok:false}],
+      explain:'Cualitativo = categorías (tipo de póliza). Los demás son cuantitativos.', correctText:'Tipo de póliza' },
+    { type:'tf', topic:'rg_intro', prompt:'La regresión lineal <b>múltiple</b> usa dos o más variables explicativas.',
+      answer:true, explain:'Simple: una X. Múltiple: varias X. (En este curso solo se desarrolla la simple.)', correctText:'Verdadero' },
+    { type:'mc', topic:'rg_intro', prompt:'Un modelo de regresión sirve para:',
+      options:[{t:'Explicar o predecir una variable respuesta a partir de otra(s)', ok:true},{t:'Ordenar datos alfabéticamente', ok:false},{t:'Calcular solo la moda', ok:false},{t:'Contar categorías', ok:false}],
+      explain:'La regresión modela la relación para explicar/predecir Y con X.', correctText:'Explicar o predecir Y con X' }
+  ]);
+}
+function buildRG2(){   // Proceso de construcción
+  return rgShuffle([
+    { type:'order', topic:'rg_proceso', prompt:'Ordena las etapas de construcción de un modelo (según el cuaderno):',
+      stepsList:['Recolección de datos','Exploración de datos','Revisión de calidad (perdidos, erróneos, atípicos)','Diagrama de dispersión','Ajuste del modelo','Revisión de supuestos y diagnóstico','Predicción'],
+      correctText:'Recolección → exploración → calidad → dispersión → ajuste → diagnóstico → predicción' },
+    { type:'mc', topic:'rg_proceso', prompt:'Un modelo que se ajusta muy bien a los datos usados pero falla con datos nuevos está:',
+      options:[{t:'Sobreajustado', ok:true},{t:'Insesgado', ok:false},{t:'Bien validado', ok:false},{t:'Subajustado por falta de datos', ok:false}],
+      explain:'Sobreajuste: ajusta el ruido de la muestra y no generaliza.', correctText:'Sobreajustado' },
+    { type:'tf', topic:'rg_proceso', prompt:'Un valor <b>atípico</b> es una observación que se aleja notablemente del resto.',
+      answer:true, explain:'Los atípicos pueden distorsionar el ajuste y deben revisarse.', correctText:'Verdadero' },
+    { type:'mc', topic:'rg_proceso', prompt:'Antes de ajustar la recta conviene ver el <b>diagrama de dispersión</b> para:',
+      options:[{t:'Comprobar si la relación parece lineal', ok:true},{t:'Ordenar los datos', ok:false},{t:'Calcular la moda', ok:false},{t:'Eliminar la variable Y', ok:false}],
+      explain:'El diagrama de dispersión muestra la forma de la relación (si es lineal, etc.).', correctText:'Ver si la relación parece lineal' },
+    { type:'mc', topic:'rg_proceso', prompt:'Detectas una edad de «999 años» en la base. Es un valor:',
+      options:[{t:'Erróneo', ok:true},{t:'Perdido', ok:false},{t:'Correcto', ok:false},{t:'Predicho', ok:false}],
+      explain:'Es un valor erróneo (imposible). Un perdido sería un dato ausente.', correctText:'Erróneo' }
+  ]);
+}
+function buildRG3(){   // Modelo lineal simple
+  return rgShuffle([
+    { type:'match', topic:'rg_modelo', prompt:'Relaciona cada símbolo con su significado en Yᵢ = β₀ + β₁Xᵢ + εᵢ:',
+      pairs:[{l:'β₀', r:'Ordenada al origen'},{l:'β₁', r:'Pendiente'},{l:'εᵢ', r:'Error aleatorio'},{l:'Ŷᵢ', r:'Valor estimado'}],
+      correctText:'β₀=intercepto, β₁=pendiente, εᵢ=error, Ŷ=estimado' },
+    { type:'mc', topic:'rg_modelo', prompt:'Si β̂₁ = 3, ¿cómo se interpreta?',
+      options:[{t:'Al aumentar X en 1 unidad, Y aumenta en promedio 3 unidades', ok:true},{t:'Y siempre vale 3', ok:false},{t:'X vale 3 cuando Y=0', ok:false},{t:'No hay relación lineal', ok:false}],
+      explain:'β₁ es el cambio promedio en Y por cada unidad de aumento en X.', correctText:'Y aumenta 3 en promedio por unidad de X' },
+    { type:'tf', topic:'rg_modelo', prompt:'β₁ = 0 indica ausencia de relación lineal entre X y Y en el modelo.',
+      answer:true, explain:'Pendiente cero ⇒ X no aporta información lineal sobre Y.', correctText:'Verdadero' },
+    { type:'mc', topic:'rg_modelo', prompt:'El <b>residuo</b> se define como:',
+      options:[{t:'eᵢ = Yᵢ − Ŷᵢ', ok:true},{t:'eᵢ = Ŷᵢ − Xᵢ', ok:false},{t:'eᵢ = β₀ + β₁', ok:false},{t:'eᵢ = Yᵢ + Ŷᵢ', ok:false}],
+      explain:'Residuo = observado − estimado.', correctText:'eᵢ = Yᵢ − Ŷᵢ' },
+    { type:'fill', topic:'rg_modelo', prompt:'El supuesto de varianza constante de los errores se llama ______.',
+      accept:['homocedasticidad','homocedasticidad'], correctText:'homocedasticidad' },
+    { type:'tf', topic:'rg_modelo', prompt:'Para la inferencia se supone εᵢ ~ N(0, σ²) (errores normales, media 0 y varianza constante).',
+      answer:true, explain:'Normalidad de los errores con E(εᵢ)=0 y Var(εᵢ)=σ².', correctText:'Verdadero' }
+  ]);
+}
+function buildRG4(){   // Mínimos cuadrados
+  return rgShuffle([ qRegMedia(), qRegMedia(), qRegSuma(), qRegSxx(), qRegSxx(), qRegPendiente(), qRegPendiente(), qRegIntercepto(), qRegIntercepto(),
+    { type:'order', topic:'rg_minimos', prompt:'Ordena la derivación de mínimos cuadrados:',
+      stepsList:['Escribir S(β₀,β₁)=Σ[Yᵢ−(β₀+β₁Xᵢ)]²','Derivar respecto de β₀ e igualar a 0','Derivar respecto de β₁ e igualar a 0','Obtener las ecuaciones normales','Despejar β̂₁ = Sxy/Sxx','Despejar β̂₀ = Ȳ − β̂₁X̄'],
+      correctText:'Función → ∂/∂β₀=0 → ∂/∂β₁=0 → ecuaciones normales → β̂₁ → β̂₀' },
+    { type:'fill', topic:'rg_minimos', prompt:'El método de mínimos cuadrados minimiza la suma de los ______ al cuadrado.',
+      accept:['residuos','errores','residuales'], correctText:'residuos' } ]);
+}
+function buildRG5(){   // Ajuste, predicción y residuos
+  return rgShuffle([ qRegPredict(), qRegPredict(), qRegResiduo(), qRegResiduo(),
+    { type:'tf', topic:'rg_ajuste', prompt:'Una propiedad de mínimos cuadrados es que Σeᵢ = 0 (los residuos suman cero).',
+      answer:true, explain:'Σeᵢ=0 y ē=0; además ΣeᵢXᵢ=0 y la recta pasa por (X̄,Ȳ).', correctText:'Verdadero' },
+    { type:'mc', topic:'rg_ajuste', prompt:'Predecir Y para un X <b>fuera</b> del rango observado se llama:',
+      options:[{t:'Extrapolación (riesgosa)', ok:true},{t:'Interpolación', ok:false},{t:'Residuo', ok:false},{t:'Homocedasticidad', ok:false}],
+      explain:'Extrapolar fuera del rango es riesgoso; interpolar es dentro del rango.', correctText:'Extrapolación' },
+    { type:'fill', topic:'rg_ajuste', prompt:'La recta de mínimos cuadrados siempre pasa por el punto (X̄, ____).',
+      accept:['Ȳ','Y barra','media de Y','ybarra'], correctText:'Ȳ' },
+    { type:'tf', topic:'rg_ajuste', prompt:'También se cumple ΣeᵢXᵢ = 0.', answer:true,
+      explain:'Es una de las ecuaciones normales de mínimos cuadrados.', correctText:'Verdadero' } ]);
+}
+function buildRG6(){   // Propiedades y distribución de estimadores
+  return rgShuffle([ qRegVarPendiente(), qRegVarPendiente(),
+    { type:'match', topic:'rg_propiedades', prompt:'Relaciona cada propiedad de un estimador con su definición:',
+      pairs:[{l:'Insesgado', r:'E(β̂ⱼ) = βⱼ'},{l:'Eficiente', r:'Menor varianza entre los insesgados'},{l:'Consistente', r:'Se acerca al parámetro al crecer n'},{l:'Suficiente', r:'Concentra la información de la muestra'}],
+      correctText:'Insesgado=E(β̂)=β, Eficiente=mín. varianza, Consistente=n→∞, Suficiente=información' },
+    { type:'mc', topic:'rg_propiedades', prompt:'La distribución de la pendiente bajo errores normales es:',
+      options:[{t:'β̂₁ ~ N(β₁, σ²/Sxx)', ok:true},{t:'β̂₁ ~ N(0, 1)', ok:false},{t:'β̂₁ ~ Poisson(σ²)', ok:false},{t:'β̂₁ ~ Uniforme', ok:false}],
+      explain:'β̂₁ ~ N(β₁, σ²/Sxx), con Sxx=Σ(Xᵢ−X̄)².', correctText:'β̂₁ ~ N(β₁, σ²/Sxx)' },
+    { type:'fill', topic:'rg_propiedades', prompt:'La varianza de la pendiente es Var(β̂₁) = σ²/____ .',
+      accept:['Sxx','sxx','S_xx'], correctText:'Sxx' },
+    { type:'tf', topic:'rg_propiedades', prompt:'Un estimador insesgado cumple E(β̂ⱼ) = βⱼ.',
+      answer:true, explain:'Insesgadez: su valor esperado es el parámetro verdadero.', correctText:'Verdadero' } ]);
+}
+function buildRG7(){   // σ² e inferencia
+  return rgShuffle([ qRegSigma2(), qRegSigma2(), qRegT(), qRegT(), qRegCISlope(), qRegCISlope(),
+    { type:'mc', topic:'rg_inferencia', prompt:'En la prueba H₀: β₁=0 vs H₁: β₁≠0, si se <b>rechaza</b> H₀:',
+      options:[{t:'Hay evidencia estadística de relación lineal', ok:true},{t:'Se demuestra causalidad', ok:false},{t:'No hay relación', ok:false},{t:'El R² es 0', ok:false}],
+      explain:'Rechazar H₀ indica relación lineal significativa, pero asociación ≠ causalidad.', correctText:'Evidencia de relación lineal' },
+    { type:'fill', topic:'rg_inferencia', prompt:'Los grados de libertad para la inferencia sobre la pendiente son n − ____ .',
+      accept:['2','dos'], correctText:'2' },
+    { type:'tf', topic:'rg_inferencia', prompt:'Encontrar una relación lineal significativa demuestra que X causa Y.',
+      answer:false, explain:'La asociación estadística no implica causalidad.', correctText:'Falso' } ]);
+}
+function buildRG8(){   // Respuesta media vs predicción
+  return rgShuffle([ qRegCIMean(), qRegCIMean(), qRegPI(), qRegPI(),
+    { type:'mc', topic:'rg_prediccion', prompt:'¿Cuál intervalo es normalmente <b>más ancho</b>?',
+      options:[{t:'El de predicción de una nueva observación', ok:true},{t:'El de la respuesta media', ok:false},{t:'Siempre son iguales', ok:false},{t:'Ninguno tiene amplitud', ok:false}],
+      explain:'El de predicción añade el término +1 dentro de la raíz ⇒ es más ancho.', correctText:'El de predicción individual' },
+    { type:'tf', topic:'rg_prediccion', prompt:'La amplitud de los intervalos aumenta al alejarse x₀ de X̄.',
+      answer:true, explain:'El término (x₀−X̄)²/Sxx crece al alejarse de la media.', correctText:'Verdadero' },
+    { type:'mc', topic:'rg_prediccion', prompt:'La diferencia entre el intervalo de predicción y el de la media es:',
+      options:[{t:'Un término adicional «+1» dentro de la raíz', ok:true},{t:'Cambiar t por z', ok:false},{t:'Usar n−1 en vez de n−2', ok:false},{t:'No hay diferencia', ok:false}],
+      explain:'Predicción: √(1 + 1/n + (x₀−X̄)²/Sxx); media: √(1/n + (x₀−X̄)²/Sxx).', correctText:'El «+1» dentro de la raíz' } ]);
+}
+function buildRG9(){   // ANOVA y R²
+  return rgShuffle([ qRegSCT(), qRegSCR(), qRegSCE(), qRegSCE(), qRegR2(), qRegR2(), qRegCISigma(),
+    { type:'fill', topic:'rg_anova', prompt:'La identidad de la variabilidad es SCT = SCR + ____ .',
+      accept:['SCE','sce'], correctText:'SCE' },
+    { type:'mc', topic:'rg_anova', prompt:'Un R² = 0.88 se interpreta como:',
+      options:[{t:'El modelo explica el 88% de la variabilidad de Y', ok:true},{t:'El 88% de las observaciones son correctas', ok:false},{t:'Existe causalidad del 88%', ok:false},{t:'El error es del 88%', ok:false}],
+      explain:'R² = proporción de variabilidad de Y explicada por el modelo. No es % de aciertos ni causalidad.', correctText:'Explica el 88% de la variabilidad de Y' },
+    { type:'tf', topic:'rg_anova', prompt:'Un R² alto por sí solo garantiza que el modelo es válido.',
+      answer:false, explain:'Un R² alto no garantiza validez ni causalidad; hay que revisar supuestos.', correctText:'Falso' } ]);
+}
+
+/* ---- Lecciones ---- */
+const LESSON_RG_MODELO = { title:'📊 Modelo de regresión lineal simple', html:
+  '<p>Modelo poblacional: <b>Yᵢ = β₀ + β₁Xᵢ + εᵢ</b>. Recta estimada: <b>Ŷᵢ = β̂₀ + β̂₁Xᵢ</b>.</p>'
+  +'<ul><li><b>β₀</b>: ordenada al origen (valor esperado de Y cuando X=0, si tiene sentido).</li>'
+  +'<li><b>β₁</b>: pendiente (cambio promedio de Y por unidad de X).</li>'
+  +'<li><b>εᵢ</b>: error aleatorio; <b>eᵢ = Yᵢ − Ŷᵢ</b>: residuo.</li></ul>'
+  +'<p>Supuestos: E(εᵢ)=0, Var(εᵢ)=σ² constante (homocedasticidad), Cov(εᵢ,εⱼ)=0 y, para inferencia, εᵢ ~ N(0,σ²).</p>' };
+const LESSON_RG_MINIMOS = { title:'📐 Mínimos cuadrados', html:
+  '<p>Se minimiza <b>S(β₀,β₁) = Σ[Yᵢ − (β₀+β₁Xᵢ)]²</b>. Derivando e igualando a cero se obtienen las ecuaciones normales y:</p>'
+  +'<p style="text-align:center"><b>β̂₁ = Σ(Xᵢ−X̄)(Yᵢ−Ȳ) / Σ(Xᵢ−X̄)² = Sxy / Sxx</b></p>'
+  +'<p style="text-align:center"><b>β̂₀ = Ȳ − β̂₁X̄</b></p>'
+  +'<p>Forma equivalente: β̂₁ = [nΣXY − (ΣX)(ΣY)] / [nΣX² − (ΣX)²]. Conviene armar una <b>tabla auxiliar</b> con ΣX, ΣY, ΣX², ΣXY.</p>' };
+const LESSON_RG_ANOVA = { title:'📈 Variabilidad, ANOVA y R²', html:
+  '<p>Descomposición de la variabilidad:</p>'
+  +'<ul><li>Total: <b>SCT = Σ(Yᵢ−Ȳ)²</b></li><li>Error: <b>SCE = Σ(Yᵢ−Ŷᵢ)²</b></li><li>Regresión: <b>SCR = Σ(Ŷᵢ−Ȳ)²</b></li></ul>'
+  +'<p style="text-align:center"><b>SCT = SCR + SCE</b> &nbsp;·&nbsp; <b>R² = SCR/SCT = 1 − SCE/SCT</b></p>'
+  +'<p>R² es la proporción de variabilidad de Y explicada por el modelo. Un R² alto no prueba causalidad ni garantiza, por sí solo, un buen modelo.</p>' };
+
+/* ---- Módulos de la materia ---- */
+const MODULES_REG = [
+  {id:0, icon:'📊', name:'Introducción a la regresión', desc:'Descriptiva/inferencial/predictiva, variables X e Y y tipos de regresión.', kind:'Quiz mixto', build:buildRG1},
+  {id:1, icon:'🧭', name:'Construcción de un modelo', desc:'Recolección, calidad de datos, dispersión, ajuste, diagnóstico y sobreajuste.', kind:'Ordenar y decidir', build:buildRG2},
+  {id:2, icon:'📈', name:'Regresión lineal simple', desc:'Yᵢ=β₀+β₁Xᵢ+εᵢ, interpretación de pendiente/intercepto y supuestos.', kind:'Quiz mixto', lesson:LESSON_RG_MODELO, build:buildRG3},
+  {id:3, icon:'📐', name:'Mínimos cuadrados', desc:'Tabla auxiliar, Sxx, Sxy y estimadores β̂₀, β̂₁.', kind:'Ejercicios ilimitados', lesson:LESSON_RG_MINIMOS, build:buildRG4},
+  {id:4, icon:'📉', name:'Ajuste, predicción y residuos', desc:'Ŷ, eᵢ, propiedades (Σeᵢ=0), interpolación vs. extrapolación.', kind:'Ejercicios ilimitados', build:buildRG5},
+  {id:5, icon:'🎯', name:'Propiedades de los estimadores', desc:'Insesgado/eficiente/consistente/suficiente y distribución de β̂.', kind:'Quiz + cálculo', build:buildRG6},
+  {id:6, icon:'🔬', name:'σ² e inferencia', desc:'σ̂²=SCE/(n−2), error estándar, IC y prueba t sobre la pendiente.', kind:'Ejercicios ilimitados', build:buildRG7},
+  {id:7, icon:'📏', name:'Respuesta media y predicción', desc:'IC para E(Y|x₀) vs. intervalo de predicción individual.', kind:'Constructor de intervalos', build:buildRG8},
+  {id:8, icon:'🧮', name:'Variabilidad, ANOVA y R²', desc:'SCT=SCR+SCE, R² y IC para σ². Caso integrador.', kind:'Ejercicios + caso', lesson:LESSON_RG_ANOVA, build:buildRG9}
+];
+const TOPIC_NAMES_REG = {
+  rg_intro:'Introducción', rg_proceso:'Construcción del modelo', rg_modelo:'Modelo lineal', rg_minimos:'Mínimos cuadrados',
+  rg_ajuste:'Ajuste y residuos', rg_propiedades:'Propiedades de estimadores', rg_inferencia:'Inferencia', rg_prediccion:'Predicción', rg_anova:'ANOVA y R²'
+};
+/* Examen diario de Regresión: mezcla de preguntas de los módulos */
+function buildExamReg(){
+  const pool = [];
+  MODULES_REG.forEach(m => { if(m.build){ try{ pool.push(...m.build()); }catch(e){} } });
+  return rgShuffle(pool).slice(0, 12);
+}
+Object.assign(TOPIC_NAMES, TOPIC_NAMES_REG);
+/* Estructura reservada para el Repaso Examen con preguntas reales (aún sin poblar) */
+const EXAM_REVIEWS_BY_SUBJECT = {
+  'modelos-regresion': { pending:true, subject:'modelos-regresion', originals:[] /* {parcial, enunciado, datos, respuesta, procedimiento, tema, dificultad, tipo, variaciones, fijos, fuente, fecha} */ }
+};
+
+const MODULES_BY_SUBJECT = { ca3: MODULES_CA3, 'modelos-regresion': MODULES_REG, nopar: [], stoch: MODULES_STOCH, fin: [] };
 /* MODULES siempre apunta a los módulos de la materia activa */
 let MODULES = MODULES_BY_SUBJECT[S.activeSubject] || [];
 /* ==================== Modal ==================== */
@@ -4226,7 +4631,20 @@ const STOCH_PARCIAL_META = {
 };
 function startRepasoExamen(){
   const pm = PARCIALES_BY_SUBJECT[S.activeSubject];
-  if(!pm){ toast('🚧 El Repaso Examen está disponible en Procesos Estocásticos.'); sfx('bad'); return; }
+  // Materias con examen real aún no capturado: tarjeta "esperando preguntas".
+  if(!pm){
+    const rev = EXAM_REVIEWS_BY_SUBJECT[S.activeSubject];
+    if(rev && rev.pending){
+      const ov = openModal('<h2 style="margin-top:0">🎓 Repaso Examen · '+esc(subjectById(S.activeSubject).name)+'</h2>'
+        + '<div class="panel" style="margin:6px 0;background:var(--surface2)"><h3 style="margin-top:0">⏳ '+esc(subjectById(S.activeSubject).name)+' — Esperando preguntas del examen</h3>'
+        + '<p style="color:var(--ink2);font-size:.9rem">Cuando se agreguen las preguntas reales, podrás practicar el <b>examen original</b> y <b>nuevas variaciones</b> del mismo tipo.</p>'
+        + '<p class="q-help">Mientras tanto, practica los 9 módulos y usa el 📝 Reto diario o el ⚡ Contrarreloj para repasar.</p></div>'
+        + '<div class="q-actions" style="justify-content:center"><button class="btn ghost" id="rvOk">Entendido</button></div>');
+      ov.querySelector('#rvOk').addEventListener('click', ()=>{ closeModal(); sfx('click'); });
+      return;
+    }
+    toast('🚧 El Repaso Examen aún no está disponible en esta materia.'); sfx('bad'); return;
+  }
   const card = (key, titulo) => {
     const meta = STOCH_PARCIAL_META[key];
     const dis = meta.estado!=='ok';
@@ -4293,7 +4711,7 @@ const GAME_MODES = [
 ];
 function modeAvailable(m){
   if(m.needs==='ca3') return S.activeSubject==='ca3';
-  if(m.needs==='repaso') return !!PARCIALES_BY_SUBJECT[S.activeSubject];
+  if(m.needs==='repaso') return !!PARCIALES_BY_SUBJECT[S.activeSubject] || !!EXAM_REVIEWS_BY_SUBJECT[S.activeSubject];
   if(m.needs==='content') return MODULES.length>0;
   return true;
 }
@@ -4586,7 +5004,7 @@ $('#btnBoard').addEventListener('click', () => { sfx('click'); renderBoard(); sh
    SEED_TASKS / SEED_CALENDAR: el administrador puede editarlos directamente
    aquí en el HTML (y publicar) o desde su panel dentro de la vista 📋.
    Formato de tarea:
-   {id, title, subject:'ca3'|'reg'|'nopar'|'stoch'|'fin'|'all', partial:1|2|3|'final',
+   {id, title, subject:'ca3'|'modelos-regresion'|'nopar'|'stoch'|'fin'|'all', partial:1|2|3|'final',
     due:'YYYY-MM-DD', priority:'alta'|'media'|'baja', desc, steps:[], materials:[],
     notes, published:'YYYY-MM-DD'} */
 const SEED_TASKS = [];   // sin tareas fijas: las publica el admin vía tasks.json
@@ -4594,7 +5012,7 @@ const SEED_TASKS = [];   // sin tareas fijas: las publica el admin vía tasks.js
    El archivo tasks.json publicado puede sobrescribir estas fechas. */
 const SEED_CALENDAR = {
   ca3:   {p1:'2026-06-10', p2:'2026-07-08', p3:'2026-08-12', final:'2026-08-12'},
-  reg:   {p1:'2026-06-08', p2:'2026-07-06', p3:'2026-08-10', final:'2026-08-10'},
+  'modelos-regresion': {p1:'2026-06-08', p2:'2026-07-06', p3:'2026-08-10', final:'2026-08-10'},
   nopar: {p1:'2026-06-09', p2:'2026-07-07', p3:'2026-08-11', final:'2026-08-11'},
   stoch: {p1:'2026-06-11', p2:'2026-07-10', p3:'2026-08-13', final:'2026-08-13'},
   fin:   {p1:'2026-06-12', p2:'2026-07-10', p3:'2026-08-14', final:'2026-08-14'}
@@ -5299,7 +5717,7 @@ $('#btnPrint').addEventListener('click', () => {
 /* ==================== Examen diario ==================== */
 /* Los exámenes son POR MATERIA: cada materia registra su generador aquí.
    Los temas no se mezclan entre materias. */
-const EXAM_BUILDERS_BY_SUBJECT = { ca3: buildExam, stoch: buildExamStoch };
+const EXAM_BUILDERS_BY_SUBJECT = { ca3: buildExam, stoch: buildExamStoch, 'modelos-regresion': buildExamReg };
 function buildExam(){
   const usedTF = new Set(), usedF = new Set(), usedP = new Set();
   return shuffle([

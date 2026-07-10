@@ -23,9 +23,38 @@ globales. Cambia de materia desde el chip del encabezado.
 |---------|--------|
 | 🛡️ Cálculo Actuarial III | 12 módulos con contenido completo |
 | 🎲 Procesos Estocásticos | 12 módulos (Parcial 1 y 2) + modo Repaso Examen |
-| 📉 Modelos de Regresión | En preparación (tareas y calendario disponibles) |
+| 📉 Modelos de Regresión | 9 módulos (regresión lineal simple) |
 | 📊 Análisis Estadístico No Paramétrico | En preparación |
 | 💼 Administración Financiera | En preparación |
+
+### 📉 Modelos de Regresión
+
+Clave interna `modelos-regresion`. Misma infraestructura que las demás
+materias (progreso/estrellas/XP global, estadísticas por materia, examen
+diario, blitz, flashcards, revisión de respuestas, localStorage). 9 módulos
+centrados en **regresión lineal simple**, fieles al cuaderno:
+
+1. Introducción (descriptiva/inferencial/predictiva, X e Y, tipos de regresión).
+2. Construcción del modelo (calidad de datos, dispersión, ajuste, sobreajuste).
+3. Modelo lineal simple (Yᵢ=β₀+β₁Xᵢ+εᵢ, interpretación, supuestos).
+4. Mínimos cuadrados (tabla auxiliar, Sxx, Sxy, β̂₁=Sxy/Sxx, β̂₀=Ȳ−β̂₁X̄).
+5. Ajuste, predicción y residuos (Ŷ, eᵢ, Σeᵢ=0, interpolación/extrapolación).
+6. Propiedades y distribución de estimadores (insesgado/eficiente/…, β̂₁~N(β₁,σ²/Sxx)).
+7. σ² e inferencia (σ̂²=SCE/(n−2), IC y prueba t sobre la pendiente).
+8. Respuesta media vs. predicción individual (el «+1» que ensancha el intervalo).
+9. Variabilidad, ANOVA y R² (SCT=SCR+SCE, R²=SCR/SCT, IC para σ²).
+
+Los ejercicios se generan con `regCompute(X,Y)` (una sola implementación
+reutilizada) que devuelve todas las cantidades (medias, sumas, Sxx, β̂,
+residuos, SCE/SCR/SCT, σ̂², R²) con solución paso a paso. Regresión múltiple,
+logística, polinomial, Ridge/Lasso y diagnóstico avanzado **solo se
+mencionan** (no generan ejercicios). En **Repaso Examen** aparece la tarjeta
+«Esperando preguntas del examen» con la estructura reservada para cargar
+después las preguntas reales del profesor.
+
+**Caso de control verificado** (X=25,21,15,22,15,16,28,30,23,15 · Y=126,110,
+87,97,80,84,129,126,115,91): Sxx=284, β̂₁≈3.1690, β̂₀≈37.9507, Ŷ(25)≈117.176,
+SCE≈378.387, SCT=3230.5, SCR≈2852.113, σ̂²≈47.298, R²≈0.8829, Σeᵢ=ΣeᵢXᵢ≈0.
 
 ### 🎲 Procesos Estocásticos
 
