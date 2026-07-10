@@ -126,7 +126,6 @@ header.top{
 .btn.ghost:hover{box-shadow:var(--shadow); background:var(--surface2)}
 .btn.onhero{background:rgba(255,255,255,.94); color:#1c1c50}
 .btn.good{background:var(--good)}
-.btn.warn-b{background:var(--c8)}
 .btn.small{padding:7px 14px; font-size:.84rem; border-radius:10px}
 .btn:disabled{opacity:.45; cursor:not-allowed; transform:none; box-shadow:none}
 /* ============ Stats strip (stat tiles) ============ */
@@ -301,10 +300,6 @@ header.top{
 .r-meta{display:flex; justify-content:center; gap:24px; margin:12px 0 20px; font-size:.85rem; color:var(--ink2)}
 .r-meta b{display:block; font-size:1.1rem; color:var(--ink)}
 .recap{max-width:720px; margin:10px auto; text-align:left}
-.recap-item{display:flex; gap:10px; align-items:flex-start; padding:10px 14px; border-radius:11px; background:var(--surface); border:1px solid var(--border); margin-bottom:8px; font-size:.85rem}
-.recap-item .ri-ico{flex:none; font-weight:800}
-.recap-item.ok .ri-ico{color:var(--good-text)}
-.recap-item.bad .ri-ico{color:var(--bad-text)}
 /* ============ Lección ============ */
 .lesson{max-width:780px; margin:0 auto}
 .lesson-card{background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:24px 26px; margin-bottom:14px; animation:fadeUp .4s ease both}
@@ -424,8 +419,7 @@ header.top{
 .pbar{flex:1; height:7px; border-radius:99px; background:var(--surface3); overflow:hidden}
 .pbar i{display:block; height:100%; background:var(--accent); border-radius:99px; transition:width .5s}
 .reward-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(118px,1fr)); gap:10px}
-.reward-card{background:var(--surface2); border:1px solid var(--line); border-radius:var(--radius-s); padding:12px 8px; text-align:center; display:flex; flex-direction:column; align-items:center; gap:6px}
-.reward-card{border-top:3px solid var(--rar,var(--line))}
+.reward-card{position:relative; background:var(--surface2); border:1px solid var(--line); border-top:3px solid var(--rar,var(--line)); border-radius:var(--radius-s); padding:12px 8px; text-align:center; display:flex; flex-direction:column; align-items:center; gap:6px}
 .reward-card.unlocked{border-color:var(--accent); border-top-color:var(--rar,var(--accent))}
 .rw-rar{position:absolute; top:6px; left:8px; font-size:.55rem; font-weight:800; text-transform:uppercase; letter-spacing:.04em}
 .rw-ico{font-size:28px}
@@ -435,7 +429,6 @@ header.top{
 .rw-lock small{color:var(--muted); font-size:.68rem}
 .reward-card.equipped{border-color:var(--good); box-shadow:0 0 0 2px color-mix(in srgb,var(--good) 40%,transparent) inset}
 .reward-card .rw-tag{position:absolute; top:6px; right:6px; font-size:.6rem; font-weight:800; padding:1px 6px; border-radius:99px}
-.reward-card{position:relative}
 .rw-tag.owned{background:var(--accent-soft); color:var(--accent-strong)}
 .rw-tag.eq{background:var(--good-soft); color:var(--good-text)}
 .rw-tag.lock{background:var(--surface3); color:var(--muted)}
@@ -453,7 +446,6 @@ header.top{
 @keyframes av-spin{to{transform:rotate(360deg)}}
 /* ---- Efectos del MARCO: solo decoran el anillo/borde (sin emojis) ---- */
 .av-stack .av-ring{position:absolute; inset:-5px; border-radius:50%; z-index:3; pointer-events:none}
-.av-ring-mask{-webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 6px),#000 calc(100% - 5px)); mask:radial-gradient(farthest-side,transparent calc(100% - 6px),#000 calc(100% - 5px))}
 /* Anillo de destellos (dorado giratorio) */
 .av-stack.fx-sparkle .av-ring{background:conic-gradient(from 0deg,transparent 0deg,var(--gold) 40deg,transparent 90deg,transparent 180deg,#fff3c4 220deg,transparent 270deg,var(--gold) 320deg,transparent 360deg); -webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 6px),#000 calc(100% - 5px)); mask:radial-gradient(farthest-side,transparent calc(100% - 6px),#000 calc(100% - 5px)); animation:av-spin 3.5s linear infinite; filter:drop-shadow(0 0 3px var(--gold))}
 /* Aura brillante (halo pulsante) */
@@ -472,7 +464,6 @@ header.top{
 .equip-item{position:relative; border:2px solid var(--line); border-radius:12px; background:var(--surface); padding:8px 4px; text-align:center; cursor:pointer; transition:transform .12s, border-color .15s}
 .equip-item:hover{transform:translateY(-2px)}
 .equip-item.on{border-color:var(--good); background:var(--good-soft)}
-.equip-item.locked{opacity:.4; cursor:not-allowed}
 .equip-item .ei-ico{font-size:22px; line-height:1}
 .equip-item .ei-name{font-size:.62rem; font-weight:700; margin-top:3px; color:var(--ink2); line-height:1.1}
 .equip-item .ei-on{position:absolute; top:-6px; right:-6px; width:18px; height:18px; border-radius:50%; background:var(--good); color:#fff; font-size:.6rem; display:grid; place-items:center; font-weight:800}
@@ -498,7 +489,6 @@ details.coll-sec[open] > summary::before{transform:rotate(90deg)}
 .lb-table tr.first td{background:color-mix(in srgb, var(--gold) 14%, var(--surface)); font-weight:800}
 .lb-table tr.me td{background:color-mix(in srgb, var(--accent) 9%, var(--surface))}
 .lb-medal{font-size:1.05rem}
-.lb-av{font-size:20px; line-height:1}
 .lb-motiv{margin:10px 0 0; padding:10px 14px; border-radius:var(--radius-s); background:var(--surface2); font-size:.88rem; font-weight:700; color:var(--ink2)}
 /* ============ Modal de desbloqueo múltiple ============ */
 .reward-unlock-list{max-height:min(46vh,320px); overflow-y:auto; margin:12px 0; text-align:left; display:flex; flex-direction:column; gap:6px}
@@ -513,15 +503,9 @@ details.coll-sec[open] > summary::before{transform:rotate(90deg)}
 .task-card.done{opacity:.72; border-left-color:var(--good)}
 .task-card.late{border-left-color:var(--bad)}
 .task-card.soon{border-left-color:var(--warn)}
-.task-head{display:flex; align-items:center; gap:10px; flex-wrap:wrap}
-.task-title{font-weight:800; flex:1; min-width:150px}
-.task-chips{display:flex; gap:6px; flex-wrap:wrap; margin:6px 0}
-.task-chips .tag{font-size:.68rem}
 .tag.prio-alta{background:var(--bad-soft); color:var(--bad-text)}
 .tag.prio-media{background:var(--warn-soft); color:#8a6400}
 .tag.prio-baja{background:var(--surface2); color:var(--ink2)}
-.task-desc{font-size:.88rem; color:var(--ink2); margin:6px 0}
-.task-meta{font-size:.74rem; color:var(--muted); margin-top:6px}
 .task-card details{margin-top:8px; font-size:.86rem}
 .task-card details summary{cursor:pointer; font-weight:700; color:var(--accent)}
 .due-chip{font-size:.74rem; font-weight:800; padding:3px 10px; border-radius:99px; background:var(--surface2); white-space:nowrap}
@@ -592,6 +576,11 @@ details.coll-sec[open] > summary::before{transform:rotate(90deg)}
 .dsec > summary small{font-weight:400; color:var(--muted); font-size:.76rem}
 .dsec .dsec-body{padding-bottom:12px}
 .eq-slot-label{font-size:.72rem; font-weight:800; color:var(--muted); text-transform:uppercase; letter-spacing:.04em; margin:2px 0 4px}
+.av-modes{display:flex; gap:6px; margin:8px 0; width:100%}
+.av-mode{flex:1; padding:8px 6px; border:2px solid var(--line); border-radius:11px; background:var(--surface); font-weight:700; font-size:.82rem; cursor:pointer; transition:border-color .15s, background .15s}
+.av-mode.on{border-color:var(--accent); background:color-mix(in srgb,var(--accent) 12%, var(--surface))}
+.builder .builder-row{display:flex; align-items:center; gap:10px}
+.builder .b-name{flex:1; font-size:.85rem; font-weight:700}
 @media(max-width:720px){
   .dresser{grid-template-columns:1fr; gap:8px}
   .dresser-preview{display:contents}
@@ -600,11 +589,6 @@ details.coll-sec[open] > summary::before{transform:rotate(90deg)}
   .dp-tags{margin-top:2px}
   .av-modes{max-width:340px; margin:8px auto}
 }
-.av-modes{display:flex; gap:6px; margin:8px 0; width:100%}
-.av-mode{flex:1; padding:8px 6px; border:2px solid var(--line); border-radius:11px; background:var(--surface); font-weight:700; font-size:.82rem; cursor:pointer; transition:border-color .15s, background .15s}
-.av-mode.on{border-color:var(--accent); background:color-mix(in srgb,var(--accent) 12%, var(--surface))}
-.builder .builder-row{display:flex; align-items:center; gap:10px; padding:6px 0}
-.builder .b-name{flex:1; font-size:.85rem; font-weight:700}
 .avatar-pick{display:flex; flex-wrap:wrap; gap:6px; justify-content:center; margin:10px 0}
 .avatar-pick .av{width:42px; height:42px; font-size:22px; border-radius:11px; border:2px solid var(--line); background:var(--surface);
   transition:transform .12s; display:inline-grid; place-items:center; line-height:1; padding:0; overflow:hidden}
@@ -626,7 +610,6 @@ select.ainput{appearance:auto}
 .lvlbox:hover{transform:translateY(-2px)}
 /* ============ Constructor de avatar ============ */
 .builder-row{display:flex; align-items:center; gap:8px; padding:6px 0; border-bottom:1px dashed var(--line); font-size:.85rem}
-.builder-row .b-label{flex:1; font-weight:700; color:var(--ink2)}
 .builder-row .b-val{min-width:96px; text-align:center; font-weight:700; font-size:.8rem}
 .builder-row .bnav{width:30px; height:30px; border-radius:9px; border:1px solid var(--border); background:var(--surface2); font-weight:800; font-size:1rem}
 .builder-row .bnav:hover{background:var(--accent); color:#fff}
@@ -644,9 +627,11 @@ select.ainput{appearance:auto}
 /* ============ Guía progresiva ============ */
 .guide-locked{text-align:center; border-style:dashed !important; color:var(--ink2); font-size:.9rem; opacity:.85}
 .guide-locked span{font-size:.82rem; color:var(--muted)}
-/* ============ Preferencias / accesibilidad ============ */
-:root.big-text body{font-size:17.5px}
-:root.less-motion *, :root.less-motion *::before, :root.less-motion *::after{animation-duration:.01ms !important; transition-duration:.01ms !important}
+/* ============ Accesibilidad ============ */
+:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
+@media (prefers-reduced-motion: reduce){
+  *, *::before, *::after{animation-duration:.01ms !important; transition-duration:.01ms !important}
+}
 /* ============ Responsive ============ */
 @media (max-width:720px){
   .app{padding:0 14px 70px}
@@ -672,7 +657,6 @@ select.ainput{appearance:auto}
   #printGuide th,#printGuide td{border:1px solid #999; padding:4px 6px; text-align:left; vertical-align:top}
   #printGuide th{background:#eee}
   #printGuide .pf{font-family:ui-monospace,monospace; background:#f2f2f2; padding:2px 6px}
-  #printGuide .pg-break{page-break-before:always}
   #printGuide ol,#printGuide ul{margin:4px 0; padding-left:18px}
 }
 </style>
@@ -690,13 +674,13 @@ select.ainput{appearance:auto}
     <span><span class="lvlbar"><i id="lvlBar" style="width:0%"></i></span><small id="lvlXpTxt">0 XP</small></span>
   </div>
   <span class="chip hdr-badge hidden" id="hdrBadge" title="Insignia destacada"></span>
-  <button class="iconbtn" id="btnProfile" title="Mi perfil y configuración">🎓</button>
-  <button class="iconbtn" id="btnShop" title="Tienda y colección">🛒</button>
-  <button class="iconbtn" id="btnModes" title="Modos de juego">🎮</button>
-  <button class="iconbtn" id="btnTasks" title="Tareas y calendario" style="position:relative">📋<span id="taskBadge" class="task-badge hidden"></span></button>
+  <button class="iconbtn" id="btnProfile" title="Mi perfil y configuración" aria-label="Mi perfil y configuración">🎓</button>
+  <button class="iconbtn" id="btnShop" title="Tienda y colección" aria-label="Tienda y colección">🛒</button>
+  <button class="iconbtn" id="btnModes" title="Modos de juego" aria-label="Modos de juego">🎮</button>
+  <button class="iconbtn" id="btnTasks" title="Tareas y calendario" aria-label="Tareas y calendario" style="position:relative">📋<span id="taskBadge" class="task-badge hidden"></span></button>
   <span class="chip streak" title="Racha de días de estudio"><span class="icon">🔥</span><b id="streakTxt">0</b></span>
   <div class="more-wrap">
-    <button class="iconbtn" id="btnMore" title="Más opciones" aria-expanded="false">⋯</button>
+    <button class="iconbtn" id="btnMore" title="Más opciones" aria-label="Más opciones" aria-haspopup="true" aria-expanded="false">⋯</button>
     <div class="more-menu hidden" id="moreMenu">
       <button class="more-item" id="btnBoard">🏆 Leaderboard</button>
       <button class="more-item" id="btnStats">📊 Estadísticas</button>
@@ -938,6 +922,25 @@ select.ainput{appearance:auto}
 
 <script>
 "use strict";
+/* ============================================================================
+   ActuarIQ · arquitectura del script (regiones en este orden)
+
+   1. Utilidades           helpers puros: $, $$, azar, formato, esc, fechas CDMX
+   2. Materias             SUBJECTS y claves por materia
+   3. Almacenamiento       Store: único acceso a localStorage + download/readJSON
+   4. Perfiles y estado    PROFILES, S (estado del perfil activo), save/loadState
+   5. Sonido               AudioManager: WebAudio + fallback <audio>
+   6. Tema                 applyTheme (claro/oscuro, acento, temas de la tienda)
+   7. UI base              toast, confetti, navegación showView, header (HDR)
+   8. Contenido            glosario, preguntas, lecciones, módulos, exámenes
+   9. Modos de juego       memorama, escape, flashcards, blitz, muerte súbita…
+  10. Leaderboard          datos (lbLoad/lbSave/sync) · orden · render · admin
+  11. Tareas/calendario    tasks.json compartido + panel admin
+  12. Insignias/estadíst.  BADGES + panel de estadísticas (builders por panel)
+  13. Recompensas/tienda   catálogo, rarezas, equipar, avatar (render en capas)
+  14. Perfil               vestidor, preferencias, respaldo import/export
+  15. Arranque             render inicial, onboarding, sync remoto, PWA
+   ========================================================================== */
 /* ==================== Utilidades ==================== */
 const $  = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
@@ -946,7 +949,6 @@ const pick = a => a[ri(0,a.length-1)];
 const shuffle = a => { a=[...a]; for(let i=a.length-1;i>0;i--){const j=ri(0,i);[a[i],a[j]]=[a[j],a[i]];} return a; };
 const money = n => '$' + Number(n).toLocaleString('es-MX',{maximumFractionDigits:2});
 const r2 = n => Math.round(n*100)/100;
-const r4 = n => Math.round(n*10000)/10000;
 const pct = n => (Math.round(n*10000)/100) + '%';
 const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 /* Todas las fechas/horas usan la zona horaria de CDMX (America/Mexico_City, UTC-6). */
@@ -987,6 +989,35 @@ const subjectById = id => SUBJECTS.find(s=>s.id===id) || SUBJECTS[0];
 const SUBJ_KEYS = ['modules','history','concepts','examDay','examHistory','flashSRS','subjXP'];
 const defaultSubjectData = () => ({ modules:{}, history:[], concepts:{}, examDay:null, examHistory:[], flashSRS:{}, subjXP:0 });
 
+/* ==================== Almacenamiento (StorageManager) ====================
+   Único punto de acceso a localStorage: siempre con try/catch (modo privado,
+   cuota llena) y con variantes JSON. Nadie más toca localStorage directo. */
+const Store = {
+  get(key){ try{ return localStorage.getItem(key); }catch(e){ return null; } },
+  set(key, val){ try{ localStorage.setItem(key, val); return true; }catch(e){ return false; } },
+  remove(key){ try{ localStorage.removeItem(key); }catch(e){} },
+  getJSON(key, fallback){ try{ const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; }catch(e){ return fallback; } },
+  setJSON(key, obj){ return Store.set(key, JSON.stringify(obj)); }
+};
+/* Descarga un objeto como archivo .json (usado por respaldos, leaderboard y tareas) */
+function downloadJSON(filename, obj){
+  const blob = new Blob([JSON.stringify(obj, null, 2)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download = filename;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(a.href), 3000);
+}
+/* Lee un archivo del usuario y entrega el JSON parseado; si no es JSON válido
+   (o el callback lanza por formato inesperado) muestra errMsg. */
+function readJSONFile(file, errMsg, onData){
+  const rd = new FileReader();
+  rd.onload = () => {
+    try{ onData(JSON.parse(rd.result)); }
+    catch(e){ toast(errMsg); sfx('bad'); }
+  };
+  rd.readAsText(file);
+}
+
 /* ==================== Perfiles y estado persistente ==================== */
 const PKEY = 'actuariq_profiles_v1';
 const DEFAULT_STATE = () => ({
@@ -994,7 +1025,7 @@ const DEFAULT_STATE = () => ({
   streak:0, lastDay:null, totalTime:0, bestBlitz:0, bestBlitzCombo:0, bestSudden:0, totalAnswered:0,
   examDay:null, examHistory:[],   // examen diario de la materia activa: {t, score, sec, n, xp, failedTopics}
   stepsOnOk:false, confetti:true,
-  bigText:false, reduceMotion:false, xpGoal:50, guideProgressive:true, avatarBeta:true,
+  xpGoal:50, guideProgressive:true,
   dayXP:null,                     // {d:'YYYY-MM-DD', xp, goalHit}
   modules:{},           // materia activa: id -> {best, stars, attempts, done}
   history:[],           // materia activa: {t, mod, score, xp, sec}
@@ -1014,23 +1045,20 @@ const DEFAULT_STATE = () => ({
   subjXP:0,             // XP ganado en la materia activa
   taskDone:{}           // tareas marcadas como realizadas: taskId -> timestamp
 });
-let PROFILES;
-try { PROFILES = JSON.parse(localStorage.getItem(PKEY) || 'null'); } catch(e){ PROFILES = null; }
+let PROFILES = Store.getJSON(PKEY, null);
 if(!PROFILES || !Array.isArray(PROFILES.list) || !PROFILES.list.length){
   const pid = 'p' + Date.now().toString(36);
   PROFILES = { active:pid, onboarded:false, list:[{id:pid, name:'Estudiante', avatar:'🎓', created:Date.now()}] };
   // migración desde la versión sin perfiles
-  const legacy = localStorage.getItem('actuariq_v1');
-  if(legacy){ try{ localStorage.setItem('actuariq_u_'+pid, legacy); localStorage.removeItem('actuariq_v1'); PROFILES.onboarded = true; }catch(e){} }
-  try{ localStorage.setItem(PKEY, JSON.stringify(PROFILES)); }catch(e){}
+  const legacy = Store.get('actuariq_v1');
+  if(legacy && Store.set('actuariq_u_'+pid, legacy)){ Store.remove('actuariq_v1'); PROFILES.onboarded = true; }
+  Store.setJSON(PKEY, PROFILES);
 }
-const saveProfiles = () => { try{ localStorage.setItem(PKEY, JSON.stringify(PROFILES)); }catch(e){} };
+const saveProfiles = () => Store.setJSON(PKEY, PROFILES);
 const dataKey = () => 'actuariq_u_' + PROFILES.active;
 const activeProfile = () => PROFILES.list.find(p => p.id === PROFILES.active) || PROFILES.list[0];
 function loadState(){
-  let st;
-  try { st = Object.assign(DEFAULT_STATE(), JSON.parse(localStorage.getItem(dataKey()) || '{}')); }
-  catch(e){ st = DEFAULT_STATE(); }
+  const st = Object.assign(DEFAULT_STATE(), Store.getJSON(dataKey(), {}));
   // migración a multi-materia: el progreso previo pertenece a Cálculo Actuarial III
   if(!st.subjectData) st.subjectData = {};
   if(!SUBJECTS.some(x => x.id === st.activeSubject)) st.activeSubject = 'ca3';
@@ -1039,12 +1067,16 @@ function loadState(){
   return st;
 }
 let S = loadState();
+/* Recarga estado + módulos tras cambiar/crear/eliminar perfil o importar datos.
+   (MODULES se declara más abajo, junto a los módulos por materia; para entonces
+   esta función solo se ha definido, no ejecutado.) */
+function reloadActiveState(){ S = loadState(); MODULES = MODULES_BY_SUBJECT[S.activeSubject] || []; }
 /* Al guardar se sincroniza la copia por materia, así S.subjectData siempre
    refleja también la materia activa (útil para estadísticas generales). */
 const save = () => {
   const snap = {}; SUBJ_KEYS.forEach(k => snap[k] = S[k]);
   S.subjectData[S.activeSubject] = snap;
-  try{ localStorage.setItem(dataKey(), JSON.stringify(S)); }catch(e){}
+  Store.setJSON(dataKey(), S);
 };
 /* Datos de una materia (la activa se lee del nivel superior) */
 function subjSnapshot(id){
@@ -1132,17 +1164,6 @@ function getAC(){
   try{ AC = new Ctx(); }catch(e){ AC = null; }
   return AC;
 }
-/* Debe llamarse desde un gesto del usuario (clic) para desbloquear el audio en navegadores restrictivos. */
-function primeAudio(){
-  try{
-    const ctx = getAC();
-    if(!ctx){ audioBlocked = true; return false; }
-    if(ctx.state === 'suspended') ctx.resume();
-    audioBlocked = (ctx.state === 'suspended');
-    if(!audioBlocked) sfx('ok');
-    return !audioBlocked;
-  }catch(e){ audioBlocked = true; return false; }
-}
 function fallbackBeep(){
   try{
     const el = $('#sfxFallback');
@@ -1205,11 +1226,6 @@ function applyTheme(){
     document.body.style.backgroundImage = '';
     document.body.style.backgroundAttachment = '';
   }
-}
-/* hex (#rrggbb) → rgba con alfa */
-function hexA(hex, a){
-  const m = /^#?([0-9a-f]{6})$/i.exec(hex||''); if(!m) return 'rgba(0,0,0,'+a+')';
-  const n = parseInt(m[1],16); return 'rgba('+((n>>16)&255)+','+((n>>8)&255)+','+(n&255)+','+a+')';
 }
 $('#btnTheme').addEventListener('click', ()=>{
   const dark = S.theme==='dark' || (!S.theme && matchMedia('(prefers-color-scheme: dark)').matches);
@@ -1328,7 +1344,7 @@ const TIPS = [
 
 /* ==================== Navegación ==================== */
 const VIEWS = ['home','lesson','session','result','memo','escape','flash','blitz','sudden','board','tasks','stats','guide','profile','levels','shop','modes'];
-let sessionTimer = null, memoTimerInt = null, blitzInt = null;
+let memoTimerInt = null, blitzInt = null;
 function showView(name){
   VIEWS.forEach(v => $('#view-'+v).classList.toggle('hidden', v!==name));
   window.scrollTo({top:0, behavior:'smooth'});
@@ -1340,24 +1356,30 @@ $('#btnHome').addEventListener('click', ()=>{ sfx('click'); goHome(); });
 function goHome(){ renderHome(); showView('home'); }
 
 /* ==================== Header ==================== */
+/* Nodos fijos del encabezado, consultados una sola vez (renderHeader corre
+   tras casi cualquier acción). */
+const HDR = {
+  lvlNum:$('#lvlNum'), lvlBar:$('#lvlBar'), lvlXpTxt:$('#lvlXpTxt'), streakTxt:$('#streakTxt'),
+  btnProfile:$('#btnProfile'), btnSound:$('#btnSound'), hdrBadge:$('#hdrBadge'),
+  subjIcon:$('#subjIcon'), subjShort:$('#subjShort')
+};
 function renderHeader(){
   const li = levelInfo();
-  $('#lvlNum').textContent = li.lvl;
-  $('#lvlBar').style.width = Math.round(li.frac*100)+'%';
-  $('#lvlXpTxt').textContent = S.xp+' XP · faltan '+li.toNext;
-  $('#streakTxt').textContent = S.streak;
-  $('#btnProfile').innerHTML = avatarHTML(activeProfile(), 26);
-  $('#btnSound').textContent = S.sound ? '🔊 Sonido: activado' : '🔇 Sonido: apagado';
-  $('#btnSound').setAttribute('aria-pressed', S.sound);
+  HDR.lvlNum.textContent = li.lvl;
+  HDR.lvlBar.style.width = Math.round(li.frac*100)+'%';
+  HDR.lvlXpTxt.textContent = S.xp+' XP · faltan '+li.toNext;
+  HDR.streakTxt.textContent = S.streak;
+  HDR.btnProfile.innerHTML = avatarStack(activeProfile(), 26);
+  HDR.btnSound.textContent = S.sound ? '🔊 Sonido: activado' : '🔇 Sonido: apagado';
+  HDR.btnSound.setAttribute('aria-pressed', S.sound);
   // insignia destacada en el encabezado
   ensureEquip();
-  const hb = $('#hdrBadge');
   const bd = S.equip.badge ? BADGES.find(b=>b.id===S.equip.badge) : null;
-  if(bd){ hb.textContent = bd.ico; hb.title = 'Insignia destacada: '+bd.name; hb.classList.remove('hidden'); }
-  else hb.classList.add('hidden');
+  if(bd){ HDR.hdrBadge.textContent = bd.ico; HDR.hdrBadge.title = 'Insignia destacada: '+bd.name; HDR.hdrBadge.classList.remove('hidden'); }
+  else HDR.hdrBadge.classList.add('hidden');
   const subj = subjectById(S.activeSubject);
-  $('#subjIcon').textContent = subj.icon;
-  $('#subjShort').textContent = subj.short;
+  HDR.subjIcon.textContent = subj.icon;
+  HDR.subjShort.textContent = subj.short;
   updateTaskBadge();
 }
 /* — Selector de materia — */
@@ -3673,10 +3695,10 @@ function selfAvg(){
   return all.length ? Math.round(all.reduce((a,b)=>a+b,0)/all.length) : 0;
 }
 function lbLoad(){
-  try{ const b = JSON.parse(localStorage.getItem(LBKEY)||'null'); return (b && Array.isArray(b.students)) ? b : {students:[]}; }
-  catch(e){ return {students:[]}; }
+  const b = Store.getJSON(LBKEY, null);
+  return (b && Array.isArray(b.students)) ? b : {students:[]};
 }
-function lbSave(b){ b.updated = Date.now(); try{ localStorage.setItem(LBKEY, JSON.stringify(b)); }catch(e){} }
+function lbSave(b){ b.updated = Date.now(); Store.setJSON(LBKEY, b); }
 function lbSyncSelf(){
   const b = lbLoad();
   const p = activeProfile();
@@ -3763,49 +3785,40 @@ function lbMotivation(pos, total){
   if(pos <= Math.ceil(total/2)) return '💪 Vas en la parte alta de la tabla. ¡Sigue sumando XP!';
   return '🚀 Cada actividad suma XP. ¡Tú puedes escalar posiciones!';
 }
-function renderBoard(){
-  const b = lbSyncSelf();
-  const rankedXP = lbRanked(b);
-  const myPos = rankedXP.findIndex(s => s.pid === PROFILES.active) + 1;   // la posición oficial es por XP
-  // aviso de "subiste de rango" comparando con la última posición conocida
-  if(myPos && S.lbRank && myPos < S.lbRank){ toast('📈 ¡Subiste de rango! Ahora eres #'+myPos); confetti(45); sfx('unlock'); }
-  if(myPos && myPos !== S.lbRank){ S.lbRank = myPos; save(); }
-  const ranked = lbSorted(b, lbSort);        // orden mostrado (elegido por el usuario)
-  const medal = i => i===0?'🥇':i===1?'🥈':i===2?'🥉':'';
+/* — Leaderboard: fila de un estudiante (la propia usa el equipo real) — */
+function lbRowHTML(s, i){
+  const medal = i===0?'🥇':i===1?'🥈':i===2?'🥉':'';
+  const isMe = s.pid===PROFILES.active;
+  const eqOv = isMe ? ensureEquip() : {frame:s.frame||null, acc:s.acc||[], bg:s.bg||null, effect:null};
+  const title = isMe ? currentTitle() : (s.title||'');
+  const badgeId = isMe ? S.equip.badge : s.badge;
+  const bd = badgeId ? BADGES.find(b=>b.id===badgeId) : null;
+  const avp = {avatar:s.avatar, photo:s.photo, avatarMode:s.avatarMode, custom:s.custom};
+  return '<tr class="'+(i===0?'first ':'')+(isMe?'me':'')+'">'
+    + '<td>'+(i+1)+' <span class="lb-medal">'+medal+'</span></td>'
+    + '<td>'+avatarStack(avp, 32, eqOv)+'</td>'
+    + '<td><b>'+esc(s.name||'—')+'</b>'+(bd?' <span title="'+esc(bd.name)+'">'+bd.ico+'</span>':'')
+      + (title?'<br><small style="color:var(--accent)">🏷️ '+esc(title)+'</small>':'')+'</td>'
+    + '<td class="num"><b>'+(s.xp||0).toLocaleString()+'</b></td>'
+    + '<td class="num">'+(s.lvl||1)+'</td>'
+    + '<td class="num">'+(s.avg!=null?s.avg+'%':'—')+'</td>'
+    + '<td class="num">'+(s.streak||0)+' 🔥</td>'
+    + (lbAdminOn ? '<td><button class="btn ghost small" data-lbedit="'+esc(s.pid)+'">✏️</button> <button class="btn ghost small" data-lbdel="'+esc(s.pid)+'">🗑️</button></td>' : '')
+    + '</tr>';
+}
+/* — Leaderboard: panel principal (búsqueda, orden, tabla y acciones) — */
+function lbBoardPanelHTML(visible, myPos, total){
   const sortLabels = {xp:'XP', lvl:'Nivel', streak:'Racha', avg:'Promedio'};
-  const visible = ranked.filter(s => {
-    if(!lbFilterQ) return true;
-    const q = lbFilterQ.toLowerCase();
-    return (s.name||'').toLowerCase().includes(q);
-  });
-  let html = '<div class="panel">'
+  return '<div class="panel">'
     + '<div class="lb-controls">'
     + '<input class="ainput" id="lbSearch" placeholder="🔎 Buscar por nombre…" value="'+esc(lbFilterQ)+'">'
     + '<select class="ainput" id="lbSortSel" style="max-width:200px">'
     + Object.entries(sortLabels).map(([k,v])=>'<option value="'+k+'"'+(lbSort===k?' selected':'')+'>Ordenar por '+v+'</option>').join('')
     + '</select></div>'
     + '<table class="hist-table lb-table"><tr><th>#</th><th></th><th>Estudiante</th><th class="num">XP</th><th class="num">Nivel</th><th class="num">Prom.</th><th class="num">Racha</th>'+(lbAdminOn?'<th></th>':'')+'</tr>'
-    + (visible.length ? visible.map((s, i) => {
-        const isMe = s.pid===PROFILES.active;
-        const eqOv = isMe ? ensureEquip() : {frame:s.frame||null, acc:s.acc||[], bg:s.bg||null, effect:null};
-        const title = isMe ? currentTitle() : (s.title||'');
-        const badgeId = isMe ? S.equip.badge : s.badge;
-        const bd = badgeId ? BADGES.find(b=>b.id===badgeId) : null;
-        const avp = {avatar:s.avatar, photo:s.photo, avatarMode:s.avatarMode, custom:s.custom};
-        return '<tr class="'+(i===0?'first ':'')+(isMe?'me':'')+'">'
-          + '<td>'+(i+1)+' <span class="lb-medal">'+medal(i)+'</span></td>'
-          + '<td>'+avatarStack(avp, 32, eqOv)+'</td>'
-          + '<td><b>'+esc(s.name||'—')+'</b>'+(bd?' <span title="'+esc(bd.name)+'">'+bd.ico+'</span>':'')
-            + (title?'<br><small style="color:var(--accent)">🏷️ '+esc(title)+'</small>':'')+'</td>'
-          + '<td class="num"><b>'+(s.xp||0).toLocaleString()+'</b></td>'
-          + '<td class="num">'+(s.lvl||1)+'</td>'
-          + '<td class="num">'+(s.avg!=null?s.avg+'%':'—')+'</td>'
-          + '<td class="num">'+(s.streak||0)+' 🔥</td>'
-          + (lbAdminOn ? '<td><button class="btn ghost small" data-lbedit="'+esc(s.pid)+'">✏️</button> <button class="btn ghost small" data-lbdel="'+esc(s.pid)+'">🗑️</button></td>' : '')
-          + '</tr>';
-      }).join('') : '<tr><td colspan="8" style="color:var(--muted)">Sin estudiantes que coincidan con la búsqueda.</td></tr>')
+    + (visible.length ? visible.map(lbRowHTML).join('') : '<tr><td colspan="8" style="color:var(--muted)">Sin estudiantes que coincidan con la búsqueda.</td></tr>')
     + '</table>'
-    + '<p class="lb-motiv">'+lbMotivation(myPos, rankedXP.length)+'</p>'
+    + '<p class="lb-motiv">'+lbMotivation(myPos, total)+'</p>'
     + '<div class="q-actions" style="justify-content:flex-start;flex-wrap:wrap;margin-top:12px">'
     + '<button class="btn ghost small" id="lbRefresh">🔄 Actualizar</button>'
     + '<button class="btn ghost small" id="lbExport">⬇️ Exportar JSON</button>'
@@ -3814,10 +3827,11 @@ function renderBoard(){
     + '</div>'
     + '<p class="q-help">🌐 La tabla se sincroniza con el archivo <code>leaderboard.json</code> publicado junto a la página cada vez que abres esta pantalla (o al tocar Actualizar).</p>'
     + '</div>';
-  // — Panel de administrador (visible solo para el perfil "Oliver") —
-  if(lbIsAdmin()){
-    const editing = lbEditId ? b.students.find(s=>s.pid===lbEditId) : null;
-    html += '<div class="panel" style="margin-top:16px"><h3>🛠️ Panel de administrador</h3>'
+}
+/* — Leaderboard: panel de administrador (solo perfil "Oliver") — */
+function lbAdminPanelHTML(b){
+  const editing = lbEditId ? b.students.find(s=>s.pid===lbEditId) : null;
+  return '<div class="panel" style="margin-top:16px"><h3>🛠️ Panel de administrador</h3>'
       + '<div class="q-actions" style="justify-content:flex-start;flex-wrap:wrap">'
       + '<button class="btn small'+(lbAdminOn?'':' ghost')+'" id="lbAdminToggle">'+(lbAdminOn?'🟢 Modo administrador: ON':'⚪ Modo administrador: OFF')+'</button>'
       + (lbAdminOn ? '' : '<input class="ainput" id="lbAdminPass" type="password" placeholder="Contraseña de administrador" style="max-width:220px">')
@@ -3841,37 +3855,41 @@ function renderBoard(){
         + '<p class="q-help">🌐 <b>Para publicar la tabla a todo el grupo:</b> toca “⬇️ Exportar JSON” (descarga <code>leaderboard.json</code>) y súbelo al repositorio de GitHub reemplazando el archivo <code>leaderboard.json</code> (Add file → Upload files). Al desplegarse, todos verán la tabla actualizada al abrir la página.</p>'
         : '<p class="q-help">Escribe la contraseña y toca el botón para activar el modo administrador.</p>')
       + '</div>';
-  }
-  $('#boardBody').innerHTML = html;
-  // — Eventos —
+}
+function renderBoard(){
+  const board = lbSyncSelf();
+  const rankedXP = lbRanked(board);
+  const myPos = rankedXP.findIndex(s => s.pid === PROFILES.active) + 1;   // la posición oficial es por XP
+  // aviso de "subiste de rango" comparando con la última posición conocida
+  if(myPos && S.lbRank && myPos < S.lbRank){ toast('📈 ¡Subiste de rango! Ahora eres #'+myPos); confetti(45); sfx('unlock'); }
+  if(myPos && myPos !== S.lbRank){ S.lbRank = myPos; save(); }
+  const shown = lbSorted(board, lbSort);     // orden mostrado (elegido por el usuario)
+  const visible = shown.filter(s => !lbFilterQ || (s.name||'').toLowerCase().includes(lbFilterQ.toLowerCase()));
+  $('#boardBody').innerHTML = lbBoardPanelHTML(visible, myPos, rankedXP.length)
+    + (lbIsAdmin() ? lbAdminPanelHTML(board) : '');
+  bindBoardEvents();
+}
+/* — Leaderboard: eventos (el cuerpo se re-renderiza, se re-enlazan aquí) — */
+function bindBoardEvents(){
   $('#lbSearch').addEventListener('input', e => { lbFilterQ = e.target.value; renderBoard(); const el=$('#lbSearch'); el.focus(); el.setSelectionRange(el.value.length,el.value.length); });
   $('#lbSortSel').addEventListener('change', e => { lbSort = e.target.value; renderBoard(); });
   $('#lbRefresh').addEventListener('click', () => { sfx('click'); lbMaybeFetch(true); });
   $('#lbExport').addEventListener('click', () => {
-    const blob = new Blob([JSON.stringify({app:'actuariq-board', version:1, exported:new Date().toISOString(), students:lbRanked(lbLoad())}, null, 2)], {type:'application/json'});
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob); a.download = 'leaderboard.json';
-    document.body.appendChild(a); a.click(); a.remove();
-    setTimeout(()=>URL.revokeObjectURL(a.href), 3000);
+    downloadJSON('leaderboard.json', {app:'actuariq-board', version:1, exported:new Date().toISOString(), students:lbRanked(lbLoad())});
     toast('⬇️ Descargado leaderboard.json: súbelo al repositorio para publicarlo'); sfx('ok');
   });
   $('#lbImport').addEventListener('click', () => $('#lbImportFile').click());
   $('#lbImportFile').addEventListener('change', e => {
     const file = e.target.files[0]; e.target.value = '';
     if(!file) return;
-    const rd = new FileReader();
-    rd.onload = () => {
-      try{
-        const payload = JSON.parse(rd.result);
-        const inc = (payload && payload.app==='actuariq-board' && Array.isArray(payload.students)) ? payload.students
-          : (Array.isArray(payload) ? payload : null);
-        if(!inc) throw new Error('formato');
-        const changed = lbMergeStudents(inc, false); // importación manual: pisa lo local
-        renderBoard();
-        toast('⬆️ Importado: '+changed+' fila'+(changed===1?'':'s')+' aplicada'+(changed===1?'':'s')); sfx('unlock');
-      }catch(err){ toast('❌ El archivo no es un JSON de leaderboard válido'); sfx('bad'); }
-    };
-    rd.readAsText(file);
+    readJSONFile(file, '❌ El archivo no es un JSON de leaderboard válido', payload => {
+      const inc = (payload && payload.app==='actuariq-board' && Array.isArray(payload.students)) ? payload.students
+        : (Array.isArray(payload) ? payload : null);
+      if(!inc) throw new Error('formato');
+      const changed = lbMergeStudents(inc, false); // importación manual: pisa lo local
+      renderBoard();
+      toast('⬆️ Importado: '+changed+' fila'+(changed===1?'':'s')+' aplicada'+(changed===1?'':'s')); sfx('unlock');
+    });
   });
   $$('#boardBody [data-lbedit]').forEach(btn => btn.addEventListener('click', () => { lbEditId = btn.dataset.lbedit; renderBoard(); }));
   $$('#boardBody [data-lbdel]').forEach(btn => btn.addEventListener('click', () => {
@@ -3946,11 +3964,9 @@ const SEED_CALENDAR = {
 /* Store compartido a nivel dispositivo (todas las cuentas del navegador lo ven) */
 const SHKEY = 'actuariq_shared_v1';
 function shLoad(){
-  try{ const s = JSON.parse(localStorage.getItem(SHKEY)||'null');
-    return Object.assign({tasks:{}, deletedTasks:[], archivedTasks:[], calendar:{}}, s||{}); }
-  catch(e){ return {tasks:{}, deletedTasks:[], archivedTasks:[], calendar:{}}; }
+  return Object.assign({tasks:{}, deletedTasks:[], archivedTasks:[], calendar:{}}, Store.getJSON(SHKEY, null) || {});
 }
-function shSave(sh){ sh.updated = Date.now(); try{ localStorage.setItem(SHKEY, JSON.stringify(sh)); }catch(e){} }
+function shSave(sh){ sh.updated = Date.now(); Store.setJSON(SHKEY, sh); }
 /* Tareas efectivas = semillas del HTML + altas/ediciones del admin − eliminadas */
 function allTasks(){
   const sh = shLoad();
@@ -4260,13 +4276,8 @@ function bindTaskEvents(){
   const te = $('#tExport');
   if(te) te.addEventListener('click', () => {
     const sh = shLoad();
-    const payload = {app:'actuariq-tasks', version:1, exported:new Date().toISOString(),
-      tasks: allTasks(), archivedTasks: sh.archivedTasks||[], deletedTasks: sh.deletedTasks||[], calendar: calMerged()};
-    const blob = new Blob([JSON.stringify(payload, null, 2)], {type:'application/json'});
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob); a.download = 'tasks.json';
-    document.body.appendChild(a); a.click(); a.remove();
-    setTimeout(()=>URL.revokeObjectURL(a.href), 3000);
+    downloadJSON('tasks.json', {app:'actuariq-tasks', version:1, exported:new Date().toISOString(),
+      tasks: allTasks(), archivedTasks: sh.archivedTasks||[], deletedTasks: sh.deletedTasks||[], calendar: calMerged()});
     toast('⬇️ Descargado tasks.json: súbelo al repositorio para publicarlo a todo el grupo'); sfx('ok');
   });
   const trf = $('#tRefresh');
@@ -4277,21 +4288,16 @@ function bindTaskEvents(){
   if(tif) tif.addEventListener('change', e => {
     const file = e.target.files[0]; e.target.value = '';
     if(!file) return;
-    const rd = new FileReader();
-    rd.onload = () => {
-      try{
-        const payload = JSON.parse(rd.result);
-        if(!payload || payload.app !== 'actuariq-tasks' || !Array.isArray(payload.tasks)) throw new Error('formato');
-        const sh = shLoad();
-        payload.tasks.forEach(t => { if(t && t.id && t.title) sh.tasks[t.id] = t; });
-        if(Array.isArray(payload.archivedTasks)) sh.archivedTasks = payload.archivedTasks;
-        if(Array.isArray(payload.deletedTasks)) sh.deletedTasks = payload.deletedTasks;
-        if(payload.calendar) SUBJECTS.forEach(s => { if(payload.calendar[s.id]) { sh.calendar[s.id] = Object.assign({}, sh.calendar[s.id]||{}, payload.calendar[s.id]); } });
-        shSave(sh);
-        toast('⬆️ Tareas y calendario importados'); sfx('unlock'); updateTaskBadge(); renderTasks();
-      }catch(err){ toast('❌ El archivo no es un JSON de tareas válido'); sfx('bad'); }
-    };
-    rd.readAsText(file);
+    readJSONFile(file, '❌ El archivo no es un JSON de tareas válido', payload => {
+      if(!payload || payload.app !== 'actuariq-tasks' || !Array.isArray(payload.tasks)) throw new Error('formato');
+      const sh = shLoad();
+      payload.tasks.forEach(t => { if(t && t.id && t.title) sh.tasks[t.id] = t; });
+      if(Array.isArray(payload.archivedTasks)) sh.archivedTasks = payload.archivedTasks;
+      if(Array.isArray(payload.deletedTasks)) sh.deletedTasks = payload.deletedTasks;
+      if(payload.calendar) SUBJECTS.forEach(s => { if(payload.calendar[s.id]) { sh.calendar[s.id] = Object.assign({}, sh.calendar[s.id]||{}, payload.calendar[s.id]); } });
+      shSave(sh);
+      toast('⬆️ Tareas y calendario importados'); sfx('unlock'); updateTaskBadge(); renderTasks();
+    });
   });
 }
 /* — Tareas y calendario compartidos: tasks.json publicado junto a la página —
@@ -4380,11 +4386,9 @@ function checkBadges(){
 }
 
 /* ==================== Panel de estadísticas ==================== */
-function renderStats(){
-  const o = overallStats();
-  const exams = S.examHistory || [];
-  const exAvg = exams.length ? Math.round(exams.reduce((a,b)=>a+b.score,0)/exams.length) : 0;
-  let html = '<div class="stats-strip">'
+/* — Estadísticas: tira de tarjetas resumen — */
+function statsTilesHTML(o, exams, exAvg){
+  return '<div class="stats-strip">'
     + tile('✅','Módulos completados', o.done, '', 'de '+o.total)
     + tile('📈','Promedio general', Math.round(o.avg), '%', S.history.length+' actividades')
     + tile('🎯','Precisión', Math.round(o.acc*100), '%', o.answered+' respuestas')
@@ -4393,22 +4397,20 @@ function renderStats(){
     + tile('🔥','Racha', S.streak, S.streak===1?' día':' días', 'mejor blitz: '+S.bestBlitz+' aciertos · mejor racha: '+(S.bestBlitzCombo||0))
     + tile('📝','Exámenes diarios', exams.length, '', exams.length ? 'promedio '+exAvg+'%' : 'aún sin exámenes')
     + '</div>';
-  html += '<div class="dash-grid">';
-  const subjActive = subjectById(S.activeSubject);
-  // — 🌍 Generales (todas las materias) —
+}
+/* — Estadísticas generales de todas las materias — */
+function statsGlobalPanelHTML(myPos, lbTotal){
   const perSubj = SUBJECTS.map(s => Object.assign({s}, subjStats(s.id)));
   const withHist = perSubj.filter(x => x.attempts > 0);
   const globalAvg = withHist.length ? Math.round(withHist.reduce((a,x)=>a+x.avg,0)/withHist.length) : 0;
   const withMods = perSubj.filter(x => x.total > 0);
   const globalProg = withMods.length ? Math.round(withMods.reduce((a,x)=>a+x.progress,0)/withMods.length*100) : 0;
   const topSubj = [...perSubj].sort((a,b)=>b.xp-a.xp)[0];
-  const rankedG = lbRanked(lbLoad());
-  const myPosG = rankedG.findIndex(s=>s.pid===PROFILES.active)+1;
   const upcomingG = [];
   { const cal = calMerged(), today = todayKey();
     SUBJECTS.forEach(s => Object.entries(cal[s.id]).forEach(([per,d]) => { if(d && d >= today) upcomingG.push({s, per, d}); }));
     upcomingG.sort((a,b)=>a.d.localeCompare(b.d)); }
-  html += '<div class="panel"><h3>🌍 Generales · todas las materias</h3>'
+  return '<div class="panel"><h3>🌍 Generales · todas las materias</h3>'
     + '<div class="tag-list" style="margin-bottom:10px">'
     + '<span class="tag neutral">⚡ '+S.xp.toLocaleString()+' XP · nivel '+levelInfo().lvl+'</span>'
     + '<span class="tag neutral">📈 Promedio general: '+(withHist.length?globalAvg+'%':'—')+'</span>'
@@ -4417,7 +4419,7 @@ function renderStats(){
     + '<span class="tag neutral">🏆 Progreso total: '+globalProg+'%</span>'
     + '<span class="tag neutral">📋 Tareas pendientes: '+pendingTasksCount()+'</span>'
     + (topSubj && topSubj.xp>0 ? '<span class="tag dom">⭐ Más estudiada: '+topSubj.s.icon+' '+esc(topSubj.s.short)+' ('+topSubj.xp+' XP)</span>' : '')
-    + (myPosG ? '<span class="tag neutral">🥇 Leaderboard: #'+myPosG+' de '+rankedG.length+'</span>' : '')
+    + (myPos ? '<span class="tag neutral">🥇 Leaderboard: #'+myPos+' de '+lbTotal+'</span>' : '')
     + '</div>'
     + (upcomingG.length ? '<p style="font-size:.85rem;font-weight:700;margin:6px 0 4px">⏳ Próximos exámenes:</p>'
         + upcomingG.slice(0,2).map(u => '<div class="cal-exam"><span class="ce-date">'+fmtDay(u.d)+'</span>'
@@ -4432,14 +4434,14 @@ function renderStats(){
         + '<td class="num">'+(x.attempts ? x.avg+'%' : '—')+'</td>'
         + '<td class="num">'+x.attempts+'</td></tr>').join('')
     + '</table></div>';
-  // Mi tarjeta de jugador
+}
+/* — Tarjeta del jugador (nivel, racha, próxima recompensa) — */
+function statsPlayerCardHTML(o, myPos){
   const p = activeProfile();
   const li = levelInfo();
-  const ranked = rankedG;
-  const myPos = myPosG;
   const nr = nextReward();
-  html += '<div class="panel"><h3>👤 Mi tarjeta</h3>'
-    + '<div style="text-align:center">'+avatarFramedHTML(p, 84)
+  return '<div class="panel"><h3>👤 Mi tarjeta</h3>'
+    + '<div style="text-align:center">'+avatarStack(p, 84)
     + '<div style="font-weight:800;margin-top:6px">'+esc(p.name)+'</div>'
     + '<div style="font-size:.82rem;color:var(--ink2)">🏷️ '+currentTitle()+'</div></div>'
     + '<div class="qprog" style="margin:12px 0 4px"><i style="width:'+Math.round(li.frac*100)+'%"></i></div>'
@@ -4455,10 +4457,12 @@ function renderStats(){
         + '<p class="q-help">'+S.xp+' / '+nr.xp+' XP · equípala desde tu perfil 🎁</p>'
       : '<p style="font-size:.85rem;font-weight:700;color:var(--good-text);margin-top:12px">🏆 Desbloqueaste toda la tienda de recompensas</p>')
     + '</div>';
-  // Último examen + temas por repasar
+}
+/* — Último examen diario + temas fallados con acceso directo al módulo — */
+function statsLastExamPanelHTML(exams, subj){
   const lastEx = exams[0];
   const lastTopics = (lastEx && lastEx.failedTopics) ? lastEx.failedTopics : [];
-  html += '<div class="panel"><h3>📝 Último examen · '+esc(subjActive.short)+'</h3>'
+  return '<div class="panel"><h3>📝 Último examen · '+esc(subj.short)+'</h3>'
     + (lastEx
       ? '<p style="font-size:1.5rem;font-weight:800;margin:4px 0">'+lastEx.score+'%</p>'
         + '<p class="q-help" style="margin:0 0 10px">'+fmtDate(lastEx.t)+' · '+fmtDur(lastEx.sec)+(lastEx.n?' · '+lastEx.n+' preguntas':'')+(lastEx.xp!=null?' · +'+lastEx.xp+' XP':'')+'</p>'
@@ -4472,32 +4476,40 @@ function renderStats(){
           : '<p style="color:var(--good-text);font-size:.85rem;font-weight:700">🎉 Sin errores en tu último examen.</p>')
       : '<p style="color:var(--muted);font-size:.85rem">Aún no presentas el examen diario. ¡Inténtalo desde la pantalla de inicio!</p>')
     + '</div>';
-  // Logros recientes (recompensas de la tienda)
+}
+/* — Recompensas desbloqueadas recientemente — */
+function statsRecentRewardsHTML(){
   const rlog = (S.rewardLog||[]).slice(0,8);
-  html += '<div class="panel"><h3>🕘 Logros recientes</h3>'
+  return '<div class="panel"><h3>🕘 Logros recientes</h3>'
     + (rlog.length ? rlog.map(e => {
         const r = REWARDS.find(x=>x.id===e.id);
         return r ? '<div class="profile-row"><span class="pr-av">'+r.ico+'</span><span class="pr-name">'+esc(r.name)+'</span><small style="color:var(--muted)">'+fmtDate(e.t)+'</small></div>' : '';
       }).join('') : '<p style="color:var(--muted);font-size:.85rem">Tus recompensas desbloqueadas aparecerán aquí. La próxima te espera en la tienda 🎁.</p>')
     + '</div>';
-  // Progreso por módulo
-  html += '<div class="panel"><h3>📚 Progreso por módulo · '+esc(subjActive.short)+'</h3>'
+}
+/* — Progreso por módulo de la materia activa — */
+function statsModulesPanelHTML(subj){
+  return '<div class="panel"><h3>📚 Progreso por módulo · '+esc(subj.short)+'</h3>'
     + MODULES.map((m,i) => { const st = modState(m.id);
       return '<div class="hbar-row"><span class="hb-label" title="'+esc(m.name)+'">'+m.icon+' '+esc(m.name)+'</span>'
         + '<span class="hbar-track"><i style="width:'+st.best+'%"></i></span>'
         + '<span class="hb-val">'+(st.attempts? st.best+'%' : '—')+'</span></div>'; }).join('')
     + '</div>';
-  // Progreso por tema
+}
+/* — Precisión por tema (los 12 con más respuestas) — */
+function statsTopicsPanelHTML(subj){
   const topics = Object.entries(S.concepts).map(([k,c]) => ({k, n:c.ok+c.bad, acc:c.ok/(c.ok+c.bad)}))
     .filter(t => t.n>0).sort((a,b)=>b.n-a.n).slice(0,12);
-  html += '<div class="panel"><h3>🧩 Progreso por tema · '+esc(subjActive.short)+'</h3>'
+  return '<div class="panel"><h3>🧩 Progreso por tema · '+esc(subj.short)+'</h3>'
     + (topics.length ? topics.map(t =>
         '<div class="hbar-row"><span class="hb-label">'+(TOPIC_NAMES[t.k]||t.k)+'</span>'
         + '<span class="hbar-track"><i style="width:'+Math.round(t.acc*100)+'%"></i></span>'
         + '<span class="hb-val">'+Math.round(t.acc*100)+'%</span></div>').join('')
       : '<p style="color:var(--muted);font-size:.85rem">Responde algunas actividades para ver tu avance por tema.</p>')
     + '</div>';
-  // Conceptos dominados / por reforzar
+}
+/* — Conceptos dominados / por reforzar / en progreso — */
+function statsConceptsPanelHTML(subj){
   const dom = [], ref = [], prog = [];
   Object.entries(S.concepts).forEach(([k,c]) => {
     const n = c.ok+c.bad, acc = n ? c.ok/n : 0;
@@ -4506,17 +4518,19 @@ function renderStats(){
     else if(n>=2 && acc<0.6) ref.push(name);
     else if(n>0) prog.push(name);
   });
-  html += '<div class="panel"><h3>🏅 Conceptos dominados · '+esc(subjActive.short)+'</h3><div class="tag-list">'
+  return '<div class="panel"><h3>🏅 Conceptos dominados · '+esc(subj.short)+'</h3><div class="tag-list">'
     + (dom.length ? dom.map(d=>'<span class="tag dom">✔ '+d+'</span>').join('') : '<span class="tag neutral">Aún ninguno: sigue practicando</span>')
     + '</div><h3 style="margin-top:16px">🔁 Por reforzar</h3><div class="tag-list">'
     + (ref.length ? ref.map(d=>'<span class="tag ref">⚠ '+d+'</span>').join('') : '<span class="tag neutral">Nada pendiente por ahora 🎉</span>')
     + '</div>'
     + (prog.length ? '<h3 style="margin-top:16px">⏳ En progreso</h3><div class="tag-list">'+prog.map(d=>'<span class="tag neutral">'+d+'</span>').join('')+'</div>' : '')
     + '</div>';
-  // Insignias
+}
+/* — Rejilla de insignias (las secretas se ocultan hasta ganarlas) — */
+function statsBadgesPanelHTML(){
   const secretTotal = BADGES.filter(b=>b.secret).length;
   const secretGot = BADGES.filter(b=>b.secret && S.badges.includes(b.id)).length;
-  html += '<div class="panel"><h3>🎖️ Insignias ('+S.badges.length+'/'+BADGES.length+')</h3><div class="badge-grid">'
+  return '<div class="panel"><h3>🎖️ Insignias ('+S.badges.length+'/'+BADGES.length+')</h3><div class="badge-grid">'
     + BADGES.map(b => {
         const got = S.badges.includes(b.id);
         const hidden = b.secret && !got;               // secreto no revelado
@@ -4527,31 +4541,57 @@ function renderStats(){
           + '<div class="b-ico">'+ico+'</div><div class="b-name">'+esc(name)+'</div><div class="b-desc">'+esc(desc)+'</div></div>';
       }).join('')
     + '</div><p class="q-help">🕵️ Logros secretos: '+secretGot+'/'+secretTotal+' descubiertos.</p></div>';
-  // Mejores resultados
+}
+/* — Mejores resultados de la materia activa — */
+function statsBestPanelHTML(subj){
   const best = [...S.history].sort((a,b)=>b.score-a.score).slice(0,5);
-  html += '<div class="panel"><h3>🥇 Mejores resultados · '+esc(subjActive.short)+'</h3>'
+  return '<div class="panel"><h3>🥇 Mejores resultados · '+esc(subj.short)+'</h3>'
     + (best.length ? '<table class="hist-table"><tr><th>Módulo</th><th>Calif.</th><th>XP</th></tr>'
         + best.map(h => '<tr><td>'+MODULES[h.mod].icon+' '+esc(MODULES[h.mod].name)+'</td><td class="num"><b>'+h.score+'%</b></td><td class="num">+'+h.xp+'</td></tr>').join('')
         + '</table>'
       : '<p style="color:var(--muted);font-size:.85rem">Completa una actividad para ver tus marcas.</p>')
     + '</div>';
-  // Últimas actividades
-  html += '<div class="panel"><h3>🕓 Últimas actividades · '+esc(subjActive.short)+'</h3>'
+}
+/* — Historial reciente de actividades — */
+function statsRecentActivityPanelHTML(subj){
+  return '<div class="panel"><h3>🕓 Últimas actividades · '+esc(subj.short)+'</h3>'
     + (S.history.length ? '<table class="hist-table"><tr><th>Fecha</th><th>Módulo</th><th>Calif.</th><th>Tiempo</th></tr>'
         + S.history.slice(0,8).map(h => '<tr><td>'+fmtDate(h.t)+'</td><td>'+MODULES[h.mod].icon+' '+esc(MODULES[h.mod].name).slice(0,26)+'</td>'
           + '<td class="num">'+h.score+'%</td><td class="num">'+fmtDur(h.sec)+'</td></tr>').join('')
         + '</table>'
       : '<p style="color:var(--muted);font-size:.85rem">Tu historial aparecerá aquí.</p>')
     + '</div>';
-  // Exámenes diarios
-  html += '<div class="panel"><h3>📝 Exámenes diarios · '+esc(subjActive.short)+'</h3>'
+}
+/* — Historial de exámenes diarios — */
+function statsDailyExamsPanelHTML(exams, exAvg, subj){
+  return '<div class="panel"><h3>📝 Exámenes diarios · '+esc(subj.short)+'</h3>'
     + (exams.length ? '<table class="hist-table"><tr><th>Fecha</th><th>Calificación</th><th>Tiempo</th></tr>'
         + exams.slice(0,10).map(e => '<tr><td>'+fmtDate(e.t)+'</td><td class="num"><b>'+e.score+'%</b></td><td class="num">'+fmtDur(e.sec)+'</td></tr>').join('')
         + '</table><p class="q-help">Promedio: <b>'+exAvg+'%</b> · Un examen por día.</p>'
       : '<p style="color:var(--muted);font-size:.85rem">Aún no presentas ningún examen diario. ¡Inténtalo desde la pantalla de inicio!</p>')
     + '</div>';
-  html += '</div>';
-  $('#statsBody').innerHTML = html;
+}
+function renderStats(){
+  const o = overallStats();
+  const exams = S.examHistory || [];
+  const exAvg = exams.length ? Math.round(exams.reduce((a,b)=>a+b.score,0)/exams.length) : 0;
+  const ranked = lbRanked(lbLoad());
+  const myPos = ranked.findIndex(s=>s.pid===PROFILES.active)+1;
+  const subj = subjectById(S.activeSubject);
+  $('#statsBody').innerHTML = statsTilesHTML(o, exams, exAvg)
+    + '<div class="dash-grid">'
+    + statsGlobalPanelHTML(myPos, ranked.length)
+    + statsPlayerCardHTML(o, myPos)
+    + statsLastExamPanelHTML(exams, subj)
+    + statsRecentRewardsHTML()
+    + statsModulesPanelHTML(subj)
+    + statsTopicsPanelHTML(subj)
+    + statsConceptsPanelHTML(subj)
+    + statsBadgesPanelHTML()
+    + statsBestPanelHTML(subj)
+    + statsRecentActivityPanelHTML(subj)
+    + statsDailyExamsPanelHTML(exams, exAvg, subj)
+    + '</div>';
   $$('#statsBody [data-goto-mod]').forEach(b => b.addEventListener('click', () => { sfx('click'); openModule(+b.dataset.gotoMod); }));
 }
 
@@ -5076,10 +5116,11 @@ const BUILDER_LABELS = {skin:'🖐️ Piel', hair:'💇 Peinado', hairColor:'�
 /* Modo de avatar: 'emoji' | 'photo' | 'custom' */
 function avatarMode(p){ return p && p.avatarMode ? p.avatarMode : (p && p.photo ? 'photo' : 'emoji'); }
 function avatarBase(p, size){
+  // photo y avatar pueden venir del leaderboard publicado (datos externos): se escapan
   const mode = avatarMode(p);
-  if(mode === 'photo' && p && p.photo) return '<img src="'+p.photo+'" alt="avatar">';
+  if(mode === 'photo' && p && p.photo) return '<img src="'+esc(p.photo)+'" alt="avatar">';
   if(mode === 'custom') return avatarSVG((p&&p.custom)||defaultCustom(), size);
-  return '<span class="av-emoji" style="font-size:'+Math.round(size*0.58)+'px">'+((p&&p.avatar)||'🎓')+'</span>';
+  return '<span class="av-emoji" style="font-size:'+Math.round(size*0.58)+'px">'+esc((p&&p.avatar)||'🎓')+'</span>';
 }
 function accHTML(a, size){
   let content;
@@ -5109,9 +5150,6 @@ function avatarStack(p, size, equipOv){
   accIds.forEach(id => { const a = ACCESSORIES.find(x=>x.id===id); if(a) inner += accHTML(a, size); });
   return '<span class="'+cls.join(' ')+'" style="width:'+size+'px;height:'+size+'px;font-size:'+size+'px">'+inner+'</span>';
 }
-/* compat: algunas partes llaman avatarHTML / avatarFramedHTML */
-function avatarHTML(p, size){ return avatarStack(p, size); }
-function avatarFramedHTML(p, size){ return avatarStack(p, size); }
 /* Equipar / desequipar respetando las reglas (un marco/fondo/título/efecto/tema; varios accesorios) */
 function equipReward(r){
   if(!isUnlockedReward(r.id)){ toast('🔒 Primero desbloquéala en la tienda'); sfx('bad'); return; }
@@ -5219,10 +5257,6 @@ function equipGridHTML(type){
   return '<div class="equip-grid"><div class="equip-item'+(none?' on':'')+'" data-eqnone="'+type+'"><span class="ei-ico">🚫</span><span class="ei-name">Ninguno</span></div>'
     + owned.map(equipItemHTML).join('')+'</div>';
 }
-function profileGeneralProgress(){
-  const ws = SUBJECTS.map(x=>subjStats(x.id)).filter(x=>x.total>0);
-  return ws.length ? Math.round(ws.reduce((a,x)=>a+x.progress,0)/ws.length*100) : 0;
-}
 /* Editor de avatar en formato "vestidor": dos columnas responsive.
    Izquierda (sticky): vista previa en vivo del avatar + identidad + modo
    (emoji/foto/3D) + controles del modo. Derecha (scroll): secciones para
@@ -5302,19 +5336,26 @@ function bindAvatarEditor(p){
     p.avatarMode = 'custom';
     saveProfiles(); renderHeader(); renderProfile(); sfx('flip');
   }));
-  // — Equipar marco / fondo / accesorios / efecto (vista previa arriba) —
-  $$('#profileBody [data-eqid]').forEach(el => el.addEventListener('click', () => { const r = rewardById(el.dataset.eqid); if(r) equipReward(r); }));
-  $$('#profileBody [data-eqnone]').forEach(el => el.addEventListener('click', () => {
-    const t = el.dataset.eqnone; const eq = ensureEquip();
+}
+/* Delegación: equipar desde el vestidor del perfil con un solo listener
+   (el contenido de #profileBody se re-renderiza; el contenedor persiste). */
+$('#profileBody').addEventListener('click', e => {
+  const eqEl = e.target.closest('[data-eqid]');
+  if(eqEl){ const r = rewardById(eqEl.dataset.eqid); if(r) equipReward(r); return; }
+  const noneEl = e.target.closest('[data-eqnone]');
+  if(noneEl){
+    const t = noneEl.dataset.eqnone; const eq = ensureEquip();
     if(t==='acc') eq.acc = []; else eq[t] = null;
     save(); applyTheme(); renderHeader(); renderProfile(); sfx('click');
-  }));
-  $$('#profileBody [data-eqnoneslot]').forEach(el => el.addEventListener('click', () => {
-    const slot = el.dataset.eqnoneslot; const eq = ensureEquip();
-    eq.acc = eq.acc.filter(id => accSlot(id) !== slot);
+    return;
+  }
+  const slotEl = e.target.closest('[data-eqnoneslot]');
+  if(slotEl){
+    const eq = ensureEquip();
+    eq.acc = eq.acc.filter(id => accSlot(id) !== slotEl.dataset.eqnoneslot);
     save(); renderHeader(); renderProfile(); sfx('click');
-  }));
-}
+  }
+});
 function renderProfile(){
   const p = activeProfile();
   const toggleRow = (id, label, on) =>
@@ -5362,7 +5403,7 @@ function renderProfile(){
       + '<span class="pr-av">'+(pr.photo?'<img src="'+pr.photo+'" style="width:26px;height:26px;border-radius:50%;object-fit:cover">':pr.avatar)+'</span><span class="pr-name">'+esc(pr.name)+'</span>'
       + (pr.id===PROFILES.active ? '<span class="tag dom">✔ Activo</span>'
         : '<button class="btn ghost small" data-use="'+pr.id+'">Usar</button>')
-      + (PROFILES.list.length>1 ? '<button class="iconbtn" style="width:32px;height:32px;font-size:14px" title="Eliminar este perfil" data-del="'+pr.id+'">🗑️</button>' : '')
+      + (PROFILES.list.length>1 ? '<button class="iconbtn" style="width:32px;height:32px;font-size:14px" title="Eliminar este perfil" aria-label="Eliminar este perfil" data-del="'+pr.id+'">🗑️</button>' : '')
       + '</div>').join('')
     + '<div class="answer-row"><input class="ainput" id="newProfName" placeholder="Nombre del nuevo perfil…" maxlength="24">'
     + '<button class="btn small" id="pfNew">＋ Crear</button></div>'
@@ -5410,7 +5451,7 @@ function renderProfile(){
   $('#logoFile').addEventListener('change', e => { if(e.target.files[0]) setLogoFromFile(e.target.files[0]); e.target.value=''; });
   const lr = $('#btnLogoReset');
   if(lr) lr.addEventListener('click', () => {
-    try{ localStorage.removeItem(LOGOKEY); }catch(e){}
+    Store.remove(LOGOKEY);
     applyLogo(); renderProfile(); toast('↩️ Logo restablecido'); sfx('click');
   });
   $('#btnExport').addEventListener('click', exportData);
@@ -5425,7 +5466,7 @@ function renderProfile(){
 }
 function switchProfile(id){
   PROFILES.active = id; saveProfiles();
-  S = loadState(); MODULES = MODULES_BY_SUBJECT[S.activeSubject] || [];
+  reloadActiveState();
   applyTheme(); renderHeader(); renderProfile();
   toast('👤 Perfil activo: '+esc(activeProfile().name)); sfx('unlock');
 }
@@ -5433,7 +5474,7 @@ function createProfile(name){
   const id = 'p' + Date.now().toString(36) + ri(10,99);
   PROFILES.list.push({id, name, avatar: pick(AVATARS), created: Date.now()});
   PROFILES.active = id; saveProfiles();
-  S = loadState(); MODULES = MODULES_BY_SUBJECT[S.activeSubject] || [];
+  reloadActiveState();
   save(); applyTheme(); renderHeader(); renderProfile();
   toast('👤 Perfil "'+esc(name)+'" creado y activo'); sfx('unlock');
 }
@@ -5441,51 +5482,41 @@ function deleteProfile(id){
   const pr = PROFILES.list.find(x => x.id === id);
   if(!pr || PROFILES.list.length < 2) return;
   if(!confirm('¿Eliminar el perfil "'+pr.name+'" y todo su progreso? No se puede deshacer.')) return;
-  try{ localStorage.removeItem('actuariq_u_'+id); }catch(e){}
+  Store.remove('actuariq_u_'+id);
   PROFILES.list = PROFILES.list.filter(x => x.id !== id);
-  if(PROFILES.active === id){ PROFILES.active = PROFILES.list[0].id; S = loadState(); MODULES = MODULES_BY_SUBJECT[S.activeSubject] || []; applyTheme(); }
+  if(PROFILES.active === id){ PROFILES.active = PROFILES.list[0].id; reloadActiveState(); applyTheme(); }
   saveProfiles(); renderHeader(); renderProfile(); toast('🗑️ Perfil eliminado'); sfx('bad');
 }
 function exportData(){
   const p = activeProfile();
-  const payload = { app:'actuariq', version:2, exported:new Date().toISOString(),
-    profile:{ name:p.name, avatar:p.avatar, created:p.created, photo:p.photo||null, avatarMode:p.avatarMode||null, custom:p.custom||null }, data:S };
-  const blob = new Blob([JSON.stringify(payload, null, 2)], {type:'application/json'});
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = 'actuariq-'+p.name.toLowerCase().replace(/[^a-z0-9ñáéíóú]+/gi,'-')+'-'+todayKey()+'.json';
-  document.body.appendChild(a); a.click(); a.remove();
-  setTimeout(()=>URL.revokeObjectURL(a.href), 3000);
+  downloadJSON('actuariq-'+p.name.toLowerCase().replace(/[^a-z0-9ñáéíóú]+/gi,'-')+'-'+todayKey()+'.json',
+    { app:'actuariq', version:2, exported:new Date().toISOString(),
+      profile:{ name:p.name, avatar:p.avatar, created:p.created, photo:p.photo||null, avatarMode:p.avatarMode||null, custom:p.custom||null }, data:S });
   toast('⬇️ Respaldo exportado como archivo JSON'); sfx('ok');
 }
 function importData(file){
-  const rd = new FileReader();
-  rd.onload = () => {
-    try{
-      const payload = JSON.parse(rd.result);
-      const data = (payload && payload.app === 'actuariq' && payload.data) ? payload.data
-        : (payload && typeof payload.xp === 'number' ? payload : null);
-      if(!data) throw new Error('formato');
-      if(!confirm('Esto reemplazará TODO el progreso del perfil actual ("'+activeProfile().name+'") con el del archivo. ¿Continuar?')) return;
-      S = Object.assign(DEFAULT_STATE(), data);
-      // migración multi-materia también para respaldos antiguos
-      if(!S.subjectData) S.subjectData = {};
-      if(!SUBJECTS.some(x => x.id === S.activeSubject)) S.activeSubject = 'ca3';
-      if(S.subjXP === undefined || S.subjXP === null) S.subjXP = S.xp;
-      if(!S.taskDone) S.taskDone = {};
-      MODULES = MODULES_BY_SUBJECT[S.activeSubject] || [];
-      if(payload.profile){
-        const p = activeProfile();
-        if(payload.profile.name) p.name = payload.profile.name;
-        if(payload.profile.avatar) p.avatar = payload.profile.avatar;
-        ['photo','avatarMode','custom'].forEach(k => { if(payload.profile[k] !== undefined) p[k] = payload.profile[k]; });
-        saveProfiles();
-      }
-      save(); applyTheme(); renderHeader(); renderProfile();
-      toast('⬆️ Datos importados correctamente'); sfx('unlock');
-    }catch(e){ toast('❌ El archivo no es un respaldo válido de ActuarIQ'); sfx('bad'); }
-  };
-  rd.readAsText(file);
+  readJSONFile(file, '❌ El archivo no es un respaldo válido de ActuarIQ', payload => {
+    const data = (payload && payload.app === 'actuariq' && payload.data) ? payload.data
+      : (payload && typeof payload.xp === 'number' ? payload : null);
+    if(!data) throw new Error('formato');
+    if(!confirm('Esto reemplazará TODO el progreso del perfil actual ("'+activeProfile().name+'") con el del archivo. ¿Continuar?')) return;
+    S = Object.assign(DEFAULT_STATE(), data);
+    // migración multi-materia también para respaldos antiguos
+    if(!S.subjectData) S.subjectData = {};
+    if(!SUBJECTS.some(x => x.id === S.activeSubject)) S.activeSubject = 'ca3';
+    if(S.subjXP === undefined || S.subjXP === null) S.subjXP = S.xp;
+    if(!S.taskDone) S.taskDone = {};
+    MODULES = MODULES_BY_SUBJECT[S.activeSubject] || [];
+    if(payload.profile){
+      const p = activeProfile();
+      if(payload.profile.name) p.name = payload.profile.name;
+      if(payload.profile.avatar) p.avatar = payload.profile.avatar;
+      ['photo','avatarMode','custom'].forEach(k => { if(payload.profile[k] !== undefined) p[k] = payload.profile[k]; });
+      saveProfiles();
+    }
+    save(); applyTheme(); renderHeader(); renderProfile();
+    toast('⬆️ Datos importados correctamente'); sfx('unlock');
+  });
 }
 $('#btnProfile').addEventListener('click', ()=>{ sfx('click'); renderProfile(); showView('profile'); });
 
@@ -5536,18 +5567,22 @@ function renderShop(){
     html += secHTML('🔒 Bloqueadas', locked, '¡Ya tienes todo! 🏆', false);
   }
   $('#shopBody').innerHTML = html;
-  $$('#shopBody [data-eq]').forEach(b => b.addEventListener('click', () => { const r = rewardById(b.dataset.eq); if(r) equipReward(r); }));
-  $$('#shopBody [data-badge]').forEach(el => el.addEventListener('click', () => {
-    S.equip.badge = el.dataset.badge || null; save(); renderHeader(); renderShop(); sfx('click');
-  }));
 }
+/* Delegación: un solo listener para todas las tarjetas/las insignias de la tienda
+   (el contenido de #shopBody se re-renderiza; el contenedor persiste). */
+$('#shopBody').addEventListener('click', e => {
+  const eqBtn = e.target.closest('[data-eq]');
+  if(eqBtn){ const r = rewardById(eqBtn.dataset.eq); if(r) equipReward(r); return; }
+  const badgeEl = e.target.closest('[data-badge]');
+  if(badgeEl){ S.equip.badge = badgeEl.dataset.badge || null; save(); renderHeader(); renderShop(); sfx('click'); }
+});
 $('#btnShop').addEventListener('click', () => { sfx('click'); shopTab='tienda'; renderShop(); showView('shop'); });
 $$('#shopTabs [data-shtab]').forEach(b => b.addEventListener('click', () => { sfx('click'); shopTab = b.dataset.shtab; renderShop(); }));
 $('#btnModes').addEventListener('click', () => { sfx('click'); renderModes(); showView('modes'); });
 
 /* ==================== Logo personalizable (nivel dispositivo) ==================== */
 const LOGOKEY = 'actuariq_logo_v1';
-function getLogo(){ try{ return localStorage.getItem(LOGOKEY); }catch(e){ return null; } }
+function getLogo(){ return Store.get(LOGOKEY); }
 function applyLogo(){
   const d = getLogo();
   const mark = $('.logo .mark');
@@ -5555,48 +5590,40 @@ function applyLogo(){
   if(d) mark.innerHTML = '<img src="'+d+'" alt="logo" style="width:100%;height:100%;object-fit:cover;border-radius:10px">';
   else mark.textContent = '🛡️';
 }
-function setLogoFromFile(file){
+/* Lee un archivo de imagen, lo recorta al cuadrado central, lo reescala a
+   size×size y entrega el dataURL a onReady. Errores → toast + sonido. */
+function imageFileToDataURL(file, size, mime, quality, onReady){
   if(!file || !file.type.startsWith('image/')){ toast('❌ Elige un archivo de imagen'); sfx('bad'); return; }
   const rd = new FileReader();
   rd.onload = () => {
     const img = new Image();
     img.onload = () => {
-      // se reduce a 128×128 para que quepa cómodo en localStorage
-      const cv = document.createElement('canvas'); cv.width = cv.height = 128;
-      const cx = cv.getContext('2d');
+      const cv = document.createElement('canvas'); cv.width = cv.height = size;
       const side = Math.min(img.width, img.height);
-      cx.drawImage(img, (img.width-side)/2, (img.height-side)/2, side, side, 0, 0, 128, 128);
+      cv.getContext('2d').drawImage(img, (img.width-side)/2, (img.height-side)/2, side, side, 0, 0, size, size);
       let data;
-      try{ data = cv.toDataURL('image/png'); localStorage.setItem(LOGOKEY, data); }
-      catch(e){ toast('❌ No se pudo guardar el logo (imagen demasiado grande)'); sfx('bad'); return; }
-      applyLogo(); renderProfile(); toast('🖼️ Logo actualizado en este dispositivo'); sfx('ok');
+      try{ data = cv.toDataURL(mime, quality); }
+      catch(e){ toast('❌ No se pudo procesar la imagen'); sfx('bad'); return; }
+      onReady(data);
     };
     img.onerror = () => { toast('❌ No se pudo leer la imagen'); sfx('bad'); };
     img.src = rd.result;
   };
   rd.readAsDataURL(file);
 }
+function setLogoFromFile(file){
+  // 128×128 para que quepa cómodo en localStorage
+  imageFileToDataURL(file, 128, 'image/png', undefined, data => {
+    if(!Store.set(LOGOKEY, data)){ toast('❌ No se pudo guardar el logo (imagen demasiado grande)'); sfx('bad'); return; }
+    applyLogo(); renderProfile(); toast('🖼️ Logo actualizado en este dispositivo'); sfx('ok');
+  });
+}
 /* Foto de perfil del usuario (por perfil, no por dispositivo) */
 function setPhotoFromFile(file){
-  if(!file || !file.type.startsWith('image/')){ toast('❌ Elige un archivo de imagen'); sfx('bad'); return; }
-  const rd = new FileReader();
-  rd.onload = () => {
-    const img = new Image();
-    img.onload = () => {
-      const cv = document.createElement('canvas'); cv.width = cv.height = 160;
-      const cx = cv.getContext('2d');
-      const side = Math.min(img.width, img.height);
-      cx.drawImage(img, (img.width-side)/2, (img.height-side)/2, side, side, 0, 0, 160, 160);
-      let data;
-      try{ data = cv.toDataURL('image/jpeg', 0.82); }
-      catch(e){ toast('❌ No se pudo procesar la imagen'); sfx('bad'); return; }
-      const p = activeProfile(); p.photo = data; p.avatarMode = 'photo'; saveProfiles();
-      renderHeader(); renderProfile(); toast('📷 Foto de perfil actualizada'); sfx('ok');
-    };
-    img.onerror = () => { toast('❌ No se pudo leer la imagen'); sfx('bad'); };
-    img.src = rd.result;
-  };
-  rd.readAsDataURL(file);
+  imageFileToDataURL(file, 160, 'image/jpeg', 0.82, data => {
+    const p = activeProfile(); p.photo = data; p.avatarMode = 'photo'; saveProfiles();
+    renderHeader(); renderProfile(); toast('📷 Foto de perfil actualizada'); sfx('ok');
+  });
 }
 
 /* ==================== Bienvenida (primer uso) ==================== */
