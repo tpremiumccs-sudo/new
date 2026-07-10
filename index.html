@@ -987,7 +987,7 @@ const SUBJECTS = [
   {id:'modelos-regresion', icon:'📉', name:'Modelos de Regresión',        short:'Regresión',        wm:'📉📈'},
   {id:'estadistica-no-parametrica', icon:'📊', name:'Estadística No Paramétrica', short:'No Paramétrico', wm:'📊🎯'},
   {id:'stoch', icon:'🎲', name:'Procesos Estocásticos',               short:'Estocásticos',     wm:'🎲🔀'},
-  {id:'fin',   icon:'💼', name:'Administración Financiera',           short:'Admin. Financiera', wm:'💼💰', soon:true}
+  {id:'administracion-financiera', icon:'💼', name:'Administración Financiera', short:'Admin. Financiera', wm:'💼💰'}
 ];
 const subjectById = id => SUBJECTS.find(s=>s.id===id) || SUBJECTS[0];
 /* Claves del estado que pertenecen a la materia activa (se intercambian al
@@ -4168,7 +4168,413 @@ function startNPLab(){
     introToast:'🧪 Identifica la prueba correcta para cada escenario.' });
 }
 
-const MODULES_BY_SUBJECT = { ca3: MODULES_CA3, 'modelos-regresion': MODULES_REG, 'estadistica-no-parametrica': MODULES_NP, stoch: MODULES_STOCH, fin: [] };
+/* ==================== Administración Financiera (materia "administracion-financiera") ====================
+   Fiel al cuaderno: rentabilidad y apalancamiento, estructura óptima de capital,
+   políticas de crédito (Sartoris-Hill), Gallinger + riesgo de insolvencia,
+   inventarios/EOQ, descuentos por volumen, flujo libre/CAPM/WACC/DuPont y
+   valuación de empresas (una y dos etapas). Sin VPN/TIR/bonos/opciones/etc.
+   Reutiliza npPhi (Φ), peR y ri/pick/shuffle (sin duplicar). */
+const afRi = ri, afPick = pick, afShuffle = shuffle;
+const afR = (x,d=4) => peR(x,d);
+const afMoney = x => '$'+peR(x,2).toLocaleString('es-MX');
+
+/* ============ M1: Rentabilidad y apalancamiento ============ */
+function qROA(){
+  const AT = afPick([2000,2500,3000,4000,5000]); const UO = Math.round(AT*afPick([0.15,0.2,0.25,0.275,0.3]));
+  const r = UO/AT;
+  return { type:'numeric', topic:'af_rent', tol:0.005,
+    prompt:'Una empresa tiene utilidad operativa UO='+afMoney(UO)+' y activos totales A_T='+afMoney(AT)+'. Calcula el <b>retorno sobre activos ROA = UO / A_T</b>.',
+    answer:r, correctText:afR(r,4).toString(),
+    explain:'ROA = r = UO / A_T.', steps:['ROA = '+UO+' / '+AT+' = '+afR(r,4)] };
+}
+function qROEdir(){
+  const C = afPick([1000,2000,2500,3000]); const UN = Math.round(C*afPick([0.15,0.2,0.2485,0.3]));
+  return { type:'numeric', topic:'af_rent', tol:0.005,
+    prompt:'Con utilidad neta U_N='+afMoney(UN)+' y capital contable C='+afMoney(C)+', calcula el <b>retorno sobre capital ROE = U_N / C</b>.',
+    answer:UN/C, correctText:afR(UN/C,4).toString(),
+    explain:'ROE = U_N / C.', steps:['ROE = '+UN+' / '+C+' = '+afR(UN/C,4)] };
+}
+function qROElev(){
+  const r = afPick([0.20,0.25,0.275,0.30]); const i = afPick([0.10,0.115,0.12,0.15]);
+  const D = afPick([1000,1500,2000]); const C = afPick([2000,2500,3000]); const t = afPick([0.30,0.35]);
+  const roe = (r+(r-i)*(D/C))*(1-t);
+  return { type:'numeric', topic:'af_rent', tol:0.005,
+    prompt:'Con deuda: <b>ROE = [r + (r−i)(D/C)](1−t)</b>. Con r='+r+', i='+i+', D='+D+', C='+C+' y t='+t+', calcula el ROE.',
+    answer:roe, correctText:afR(roe,4).toString(),
+    explain:'El apalancamiento amplifica el ROE cuando r>i.',
+    steps:['D/C = '+D+'/'+C+' = '+afR(D/C,4),
+      'r−i = '+r+'−'+i+' = '+afR(r-i,4),
+      'ROE = ['+r+' + '+afR(r-i,4)+'·'+afR(D/C,4)+']·(1−'+t+') = '+afR(roe,4)] };
+}
+function qUN(){
+  const roe = afPick([0.20,0.2485,0.26,0.30]); const C = afPick([1000,2000,2500,3000]);
+  return { type:'numeric', topic:'af_rent', tol:1,
+    prompt:'Con ROE='+roe+' y capital C='+afMoney(C)+', calcula la <b>utilidad neta U_N = ROE · C</b>.',
+    answer:roe*C, correctText:afR(roe*C,2).toString(),
+    explain:'U_N = ROE · C.', steps:['U_N = '+roe+' · '+C+' = '+afR(roe*C,2)] };
+}
+function buildAF1(){
+  return afShuffle([ qROA(), qROA(), qROEdir(), qROElev(), qROElev(), qUN(),
+    { type:'fill', topic:'af_rent', prompt:'Los activos totales se reparten en A_T = C + ____ .', accept:['D','deuda'], correctText:'D (deuda)' },
+    { type:'mc', topic:'af_rent', prompt:'El apalancamiento financiero <b>aumenta</b> el ROE cuando:',
+      options:[{t:'r > i (el retorno de activos supera el costo de la deuda)', ok:true},{t:'r < i', ok:false},{t:'D = 0', ok:false},{t:'la tasa de impuestos es 0', ok:false}],
+      explain:'Si r>i, endeudarse amplifica el ROE; si r<i, lo reduce (incluso puede volverlo negativo).', correctText:'r > i' },
+    { type:'tf', topic:'af_rent', prompt:'La razón D/C representa el nivel de apalancamiento.',
+      answer:true, explain:'D/C mide cuánta deuda hay por cada unidad de capital.', correctText:'Verdadero' },
+    { type:'mc', topic:'af_rent', prompt:'No debes confundir:',
+      options:[{t:'ROA = UO/A_T con ROE = U_N/C', ok:true},{t:'ROA = U_N/C con ROE = UO/A_T', ok:false},{t:'ROA y ROE son idénticos', ok:false},{t:'ROE = UO/D', ok:false}],
+      explain:'ROA usa utilidad operativa sobre activos; ROE, utilidad neta sobre capital.', correctText:'ROA=UO/A_T, ROE=U_N/C' } ]);
+}
+
+/* ============ M2: Estructura óptima de capital ============ */
+function qIx(){
+  const a = afPick([0.08,0.09,0.10]); const b = afPick([0.08,0.10,0.12]); const x = afPick([0.3,0.5,0.6,0.8]);
+  const i = a+b*x*x;
+  return { type:'numeric', topic:'af_estructura', tol:0.005,
+    prompt:'El costo de la deuda crece con el apalancamiento: <b>i(x) = a + b·x²</b>, con x=D/C. Con a='+a+', b='+b+' y x='+x+', calcula i(x).',
+    answer:i, correctText:afR(i,5).toString(),
+    explain:'i(x) = a + b·x².', steps:['x² = '+x+'² = '+afR(x*x,4), 'i = '+a+' + '+b+'·'+afR(x*x,4)+' = '+afR(i,5)] };
+}
+function qXopt(){
+  const a = afPick([0.08,0.09,0.10]); const b = afPick([0.08,0.10,0.12]); const r = afPick([0.25,0.275,0.30]);
+  const x = Math.sqrt((r-a)/(3*b));
+  return { type:'numeric', topic:'af_estructura', tol:0.005,
+    prompt:'La estructura óptima de capital es <b>(D/C)* = √[(r − a)/(3b)]</b>. Con r='+r+', a='+a+' y b='+b+', calcula x*. (Requiere r>a y b>0.)',
+    answer:x, correctText:afR(x,5).toString(),
+    explain:'x* = √[(r−a)/(3b)] surge de derivar ROE(x) e igualar a cero.',
+    steps:['(r−a)/(3b) = ('+r+'−'+a+')/(3·'+b+') = '+afR((r-a)/(3*b),5),
+      'x* = √'+afR((r-a)/(3*b),5)+' = '+afR(x,5)] };
+}
+function qROEopt(){
+  const a=0.09,b=0.10,r=0.275,t=0.30; const x=Math.sqrt((r-a)/(3*b)); const i=a+b*x*x; const roe=(r+(r-i)*x)*(1-t);
+  return { type:'numeric', topic:'af_estructura', tol:0.005,
+    prompt:'En la estructura óptima x*='+afR(x,5)+' con i*='+afR(i,5)+', r='+r+' y t='+t+', calcula el <b>ROE óptimo = [r + (r − i*)x*](1 − t)</b>.',
+    answer:roe, correctText:afR(roe,5).toString(),
+    explain:'Se evalúa ROE(x) en el óptimo x*.',
+    steps:['(r − i*)·x* = ('+r+'−'+afR(i,5)+')·'+afR(x,5)+' = '+afR((r-i)*x,5),
+      'ROE* = ['+r+' + '+afR((r-i)*x,5)+']·(1−'+t+') = '+afR(roe,5)] };
+}
+function buildAF2(){
+  return afShuffle([ qIx(), qIx(), qXopt(), qXopt(), qROEopt(),
+    { type:'order', topic:'af_estructura', prompt:'Ordena la obtención de la estructura óptima:',
+      stepsList:['Definir x = D/C','Sustituir i(x)=a+bx² en ROE(x)','Derivar ROE(x) respecto de x','Igualar la derivada a cero','Despejar x* = √[(r−a)/(3b)]','Verificar que sea real y positivo (r>a, b>0)'],
+      correctText:'x=D/C → sustituir i(x) → derivar → =0 → x* → verificar' },
+    { type:'mc', topic:'af_estructura', prompt:'¿Cuándo la fórmula x*=√[(r−a)/(3b)] da una <b>raíz inválida</b>?',
+      options:[{t:'Cuando r ≤ a (el radicando sería ≤ 0)', ok:true},{t:'Cuando r > a', ok:false},{t:'Cuando b > 0', ok:false},{t:'Nunca', ok:false}],
+      explain:'Si r≤a el radicando es negativo o cero y no hay óptimo válido.', correctText:'Cuando r ≤ a' },
+    { type:'tf', topic:'af_estructura', prompt:'El óptimo x* se obtiene derivando ROE(x) e igualando a cero.',
+      answer:true, explain:'Es un problema de máximo: dROE/dx = 0.', correctText:'Verdadero' } ]);
+}
+
+/* ============ M3: Sartoris-Hill ============ */
+function qKdiario(){
+  const cppc = afPick([0.10,0.12,0.15,0.18]);
+  return { type:'numeric', topic:'af_credito', tol:0.00001,
+    prompt:'El costo de capital anual es CPPC='+cppc+'. Calcula el <b>costo de capital diario k = CPPC/365</b>.',
+    answer:cppc/365, correctText:afR(cppc/365,6).toString(),
+    explain:'k_diario = CPPC / 365.', steps:['k = '+cppc+'/365 = '+afR(cppc/365,6)] };
+}
+function qVP(){
+  const P=afPick([10,12,15,20]); const Q=afPick([500,1000,1500]); const c=afPick([6,8,10,12]);
+  if(c>=P){ return qVP(); }
+  const cppc=afPick([0.10,0.12,0.15]); const DSO=afPick([30,45,60,75]); const k=cppc/365;
+  const vp=P*Q/Math.pow(1+k,DSO)-c*Q;
+  return { type:'numeric', topic:'af_credito', tol:1,
+    prompt:'Modelo de Sartoris-Hill: <b>VP = PQ/(1+k)^DSO − cQ</b>. Con P='+P+', Q='+Q+', c='+c+', k=CPPC/365='+afR(k,6)+' (CPPC='+cppc+') y DSO='+DSO+' días, calcula VP.',
+    answer:vp, correctText:afR(vp,2).toString(),
+    explain:'Se descuenta el ingreso PQ al costo diario durante DSO días y se resta el costo variable cQ.',
+    steps:['(1+k)^DSO = (1+'+afR(k,6)+')^'+DSO+' = '+afR(Math.pow(1+k,DSO),5),
+      'PQ/(1+k)^DSO = '+(P*Q)+'/'+afR(Math.pow(1+k,DSO),5)+' = '+afR(P*Q/Math.pow(1+k,DSO),2),
+      'VP = '+afR(P*Q/Math.pow(1+k,DSO),2)+' − '+(c*Q)+' = '+afR(vp,2)] };
+}
+function qVPb(){
+  const P=afPick([10,12,15]); const Q=afPick([1000,1500]); const c=afPick([8,10]);
+  const cppc=afPick([0.12,0.15]); const DSO=afPick([60,75]); const k=cppc/365; const bb=afPick([0.02,0.03,0.05]);
+  const vp=P*Q*(1-bb)/Math.pow(1+k,DSO)-c*Q;
+  return { type:'numeric', topic:'af_credito', tol:1,
+    prompt:'Con cuentas incobrables: <b>VP = PQ(1−b)/(1+k)^DSO − cQ</b>. Con P='+P+', Q='+Q+', c='+c+', k='+afR(k,6)+', DSO='+DSO+' y b='+bb+', calcula VP.',
+    answer:vp, correctText:afR(vp,2).toString(),
+    explain:'La fracción incobrable b reduce el ingreso cobrable a PQ(1−b).',
+    steps:['PQ(1−b) = '+(P*Q)+'·(1−'+bb+') = '+afR(P*Q*(1-bb),2),
+      'VP = '+afR(P*Q*(1-bb),2)+'/'+afR(Math.pow(1+k,DSO),5)+' − '+(c*Q)+' = '+afR(vp,2)] };
+}
+function buildAF3(){
+  return afShuffle([ qKdiario(), qKdiario(), qVP(), qVP(), qVPb(), qVPb(),
+    { type:'mc', topic:'af_credito', prompt:'En el modelo con descuento/plazo neto/cobro, las proporciones PDR, PN y PRC deben cumplir:',
+      options:[{t:'PDR + PN + PRC = 1 (y cada una entre 0 y 1)', ok:true},{t:'PDR + PN + PRC = DSO', ok:false},{t:'Pueden sumar más de 1', ok:false},{t:'Deben ser negativas', ok:false}],
+      explain:'Son proporciones de clientes por forma de pago: suman 1 y están en [0,1].', correctText:'Suman 1, cada una en [0,1]' },
+    { type:'fill', topic:'af_credito', prompt:'Si el costo de capital es anual, el diario es k = CPPC / ____ .', accept:['365'], correctText:'365' },
+    { type:'tf', topic:'af_credito', prompt:'En Sartoris-Hill el ingreso PQ se descuenta durante el periodo promedio de cobro (DSO).',
+      answer:true, explain:'El cobro llega en promedio a los DSO días, por eso se descuenta ese plazo.', correctText:'Verdadero' } ]);
+}
+
+/* ============ M4: Gallinger + insolvencia ============ */
+function qGallinger(){
+  const S=afPick([10000,20000,50000]); const c=afPick([100,200,300]); const V=afPick([0.01,0.02,0.03]); const k=afPick([0.01,0.02]); const n=afRi(2,6);
+  const pn=(c/S)*(n-1)+V*Math.pow(1+k,n);
+  return { type:'numeric', topic:'af_insolvencia', tol:0.01,
+    prompt:'Modelo de Gallinger: <b>pₙ = (c/S)(n−1) + V(1+k)ⁿ</b>. Con S='+S+', c='+c+', V='+V+', k='+k+' y n='+n+' meses, calcula pₙ.',
+    answer:pn, correctText:afR(pn,5).toString(),
+    explain:'Se aplica la fórmula del cuaderno directamente (S: ventas mensuales, c: costo de cobranza, V: proporción incobrable, k: costo de capital por periodo).',
+    steps:['(c/S)(n−1) = ('+c+'/'+S+')·'+(n-1)+' = '+afR((c/S)*(n-1),5),
+      'V(1+k)ⁿ = '+V+'·(1+'+k+')^'+n+' = '+afR(V*Math.pow(1+k,n),5),
+      'pₙ = '+afR((c/S)*(n-1),5)+' + '+afR(V*Math.pow(1+k,n),5)+' = '+afR(pn,5)] };
+}
+function qLambda(){
+  const L0=afPick([4000,5000,6000]); const muT=afPick([-570,-400,-800,-300]); const sig=afPick([800,941.19,1000,1200]); const T=afPick([4,6,9]);
+  const lam=(L0+muT)/(sig*Math.sqrt(T));
+  return { type:'numeric', topic:'af_insolvencia', tol:0.01,
+    prompt:'Índice de liquidez: <b>λ = (L₀ + μT)/(σ√T)</b>. Con L₀='+L0+', μT='+muT+', σ='+sig+' y T='+T+', calcula λ.',
+    answer:lam, correctText:afR(lam,4).toString(),
+    explain:'λ estandariza la reserva más el flujo neto esperado acumulado.',
+    steps:['L₀ + μT = '+L0+' + ('+muT+') = '+(L0+muT),
+      'σ√T = '+sig+'·√'+T+' = '+afR(sig*Math.sqrt(T),4),
+      'λ = '+(L0+muT)+' / '+afR(sig*Math.sqrt(T),4)+' = '+afR(lam,4)] };
+}
+function qPinsolv(){
+  const lam=afPick([1.5,1.9215,2.0,1.65,2.33]);
+  const p=1-npPhi(lam);
+  return { type:'numeric', topic:'af_insolvencia', tol:0.005,
+    prompt:'La probabilidad de insolvencia es <b>P = 1 − Φ(λ)</b> (cola derecha de la normal). Con λ='+lam+', calcula P.',
+    answer:p, correctText:afR(p,4).toString(),
+    explain:'Se consulta Φ(λ) en la normal estándar y se toma 1−Φ(λ).',
+    steps:['Φ('+lam+') = '+afR(npPhi(lam),4), 'P = 1 − '+afR(npPhi(lam),4)+' = '+afR(p,4)] };
+}
+function buildAF4(){
+  return afShuffle([ qGallinger(), qGallinger(), qLambda(), qLambda(), qPinsolv(), qPinsolv(),
+    { type:'order', topic:'af_insolvencia', prompt:'Ordena el cálculo del riesgo de insolvencia:',
+      stepsList:['Registrar los flujos netos de caja','Calcular la media μ y la desviación σ','Establecer T e identificar L₀','Calcular λ = (L₀+μT)/(σ√T)','Consultar la normal estándar Φ(λ)','Obtener P = 1−Φ(λ) e interpretar el riesgo'],
+      correctText:'flujos → μ,σ → T,L₀ → λ → Φ(λ) → 1−Φ(λ)' },
+    { type:'tf', topic:'af_insolvencia', prompt:'Una λ más grande (mayor reserva relativa) implica menor probabilidad de insolvencia.',
+      answer:true, explain:'P=1−Φ(λ) decrece cuando λ crece.', correctText:'Verdadero' } ]);
+}
+
+/* ============ M5: Inventarios / EOQ ============ */
+function qEOQ(){
+  const D=afPick([2000,5000,10000,50000]); const Co=afPick([50,95,4.5,120]); const Cm=afPick([42,0.5,20,10]);
+  const Q=Math.sqrt(2*D*Co/Cm);
+  return { type:'numeric', topic:'af_inventario', tol:0.5,
+    prompt:'Lote económico: <b>Q* = √(2·D·C_o / C_m)</b>. Con demanda D='+D+', costo de ordenar C_o='+Co+' y costo de mantener C_m='+Cm+', calcula Q*.',
+    answer:Q, correctText:afR(Q,4).toString(),
+    explain:'Q* minimiza CT(Q)=(Q/2)C_m+(D/Q)C_o.',
+    steps:['2·D·C_o = 2·'+D+'·'+Co+' = '+(2*D*Co), 'Q* = √('+(2*D*Co)+'/'+Cm+') = '+afR(Q,4)] };
+}
+function qEOQcost(){
+  const D=afPick([2000,5000,10000]); const Co=afPick([50,95,120]); const Cm=afPick([42,20,10]);
+  const Q=Math.sqrt(2*D*Co/Cm); const which=afPick(['mantener','ordenar']);
+  const val=which==='mantener'?(Q/2*Cm):(D/Q*Co);
+  return { type:'numeric', topic:'af_inventario', tol:0.5,
+    prompt:'Con D='+D+', C_o='+Co+', C_m='+Cm+' y Q*='+afR(Q,4)+', calcula el <b>costo de '+which+'</b> ('+(which==='mantener'?'(Q/2)·C_m':'(D/Q)·C_o')+').',
+    answer:val, correctText:afR(val,4).toString(),
+    explain:'En el óptimo el costo de mantener ≈ el costo de ordenar.',
+    steps:[which==='mantener'? '(Q/2)·C_m = ('+afR(Q,4)+'/2)·'+Cm+' = '+afR(val,4) : '(D/Q)·C_o = ('+D+'/'+afR(Q,4)+')·'+Co+' = '+afR(val,4)] };
+}
+function qReorden(){
+  const D=afPick([36500,50000,73000]); const dias=365; const Cd=D/dias; const Te=afPick([2,3,5]); const Is=afPick([100,136,200]);
+  const pr=Te*Cd+Is;
+  return { type:'numeric', topic:'af_inventario', tol:0.5,
+    prompt:'Punto de reorden: <b>PR = ΔT_e·C_d + I_s</b>, con consumo diario C_d = D/días. Con D='+D+', días=365, ΔT_e='+Te+', I_s='+Is+', calcula PR.',
+    answer:pr, correctText:afR(pr,4).toString(),
+    explain:'Primero el consumo diario C_d=D/días; luego PR=ΔT_e·C_d+I_s.',
+    steps:['C_d = '+D+'/365 = '+afR(Cd,4), 'PR = '+Te+'·'+afR(Cd,4)+' + '+Is+' = '+afR(pr,4)] };
+}
+function buildAF5(){
+  return afShuffle([ qEOQ(), qEOQ(), qEOQcost(), qEOQcost(), qReorden(), qReorden(),
+    { type:'order', topic:'af_inventario', prompt:'Ordena la derivación del lote económico:',
+      stepsList:['Escribir CT(Q)=(Q/2)C_m+(D/Q)C_o','Derivar dCT/dQ = C_m/2 − DC_o/Q²','Igualar a cero: C_m/2 = DC_o/Q²','Despejar Q* = √(2DC_o/C_m)'],
+      correctText:'CT(Q) → derivar → =0 → Q*=√(2DC_o/C_m)' },
+    { type:'tf', topic:'af_inventario', prompt:'En el lote óptimo, el costo de mantener es aproximadamente igual al costo de ordenar.',
+      answer:true, explain:'Es una propiedad del EOQ: ambos costos se igualan en Q*.', correctText:'Verdadero' },
+    { type:'fill', topic:'af_inventario', prompt:'El inventario promedio es Q/____ .', accept:['2','dos'], correctText:'2' } ]);
+}
+
+/* ============ M6: Descuentos por volumen ============ */
+function qEOQdisc(){
+  const D=afPick([5000,10000,20000]); const Co=afPick([50,80,100]); const rr=afPick([0.15,0.20,0.25]); const P=afPick([10,20,50]);
+  const Cm=rr*P; const Q=Math.sqrt(2*D*Co/Cm);
+  return { type:'numeric', topic:'af_descuentos', tol:0.5,
+    prompt:'Cuando el costo de mantener es un % del precio (C_m=r·P), el lote es <b>Q* = √(2·D·C_o/(r·P))</b>. Con D='+D+', C_o='+Co+', r='+rr+' y P='+P+', calcula Q*.',
+    answer:Q, correctText:afR(Q,4).toString(),
+    explain:'Se sustituye C_m=r·P en la fórmula del EOQ.',
+    steps:['C_m = r·P = '+rr+'·'+P+' = '+afR(Cm,4), 'Q* = √(2·'+D+'·'+Co+'/'+afR(Cm,4)+') = '+afR(Q,4)] };
+}
+function qCTI(){
+  const D=afPick([5000,10000]); const Co=afPick([50,80]); const rr=afPick([0.20,0.25]); const P=afPick([10,20]);
+  const Cm=rr*P; const Q=Math.round(Math.sqrt(2*D*Co/Cm));
+  const cti=P*D+(D/Q)*Co+(Q/2)*Cm;
+  return { type:'numeric', topic:'af_descuentos', tol:2,
+    prompt:'Costo total del inventario: <b>CTI = P·D + (D/Q)C_o + (Q/2)C_m</b>. Con P='+P+', D='+D+', Q='+Q+', C_o='+Co+' y C_m=r·P='+afR(Cm,2)+', calcula CTI.',
+    answer:cti, correctText:afR(cti,2).toString(),
+    explain:'Incluye el costo de compra P·D, el de ordenar y el de mantener.',
+    steps:['P·D = '+P+'·'+D+' = '+(P*D),
+      '(D/Q)C_o = ('+D+'/'+Q+')·'+Co+' = '+afR(D/Q*Co,2),
+      '(Q/2)C_m = ('+Q+'/2)·'+afR(Cm,2)+' = '+afR(Q/2*Cm,2),
+      'CTI = '+(P*D)+' + '+afR(D/Q*Co,2)+' + '+afR(Q/2*Cm,2)+' = '+afR(cti,2)] };
+}
+function buildAF6(){
+  return afShuffle([ qEOQdisc(), qEOQdisc(), qCTI(), qCTI(),
+    { type:'order', topic:'af_descuentos', prompt:'Ordena la decisión con descuentos por volumen:',
+      stepsList:['Calcular Q* para cada precio','Verificar si Q* pertenece a su rango','Si no pertenece, usar el mínimo factible del rango','Calcular el CTI (incluyendo el costo de compra P·D)','Comparar candidatos y elegir el de menor costo total'],
+      correctText:'Q* por precio → factibilidad → ajustar al rango → CTI → comparar' },
+    { type:'mc', topic:'af_descuentos', prompt:'Al comparar alternativas con descuento por volumen, se elige:',
+      options:[{t:'La de menor <b>costo total</b> (incluyendo el precio de compra)', ok:true},{t:'Siempre el Q* más pequeño', ok:false},{t:'El precio más bajo sin importar el lote', ok:false},{t:'El lote más grande posible', ok:false}],
+      explain:'No se elige por Q* solo: hay que comparar el CTI completo, que incluye P·D.', correctText:'La de menor costo total' },
+    { type:'tf', topic:'af_descuentos', prompt:'Si el Q* calculado no cae en su rango de precio, se usa el punto mínimo factible de ese rango.',
+      answer:true, explain:'Se ajusta Q al límite factible del rango antes de comparar costos.', correctText:'Verdadero' } ]);
+}
+
+/* ============ M7: FLE, CAPM, WACC, crecimiento ============ */
+function qFLE(){
+  const UO=afPick([500,825,1000,1500]); const T=afPick([0.30,0.35]); const Dep=afPick([100,200,300]); const CAPEX=afPick([150,300,400]); const dCWT=afPick([50,100,-50]);
+  const fle=UO*(1-T)+Dep-CAPEX-dCWT;
+  return { type:'numeric', topic:'af_wacc', tol:1,
+    prompt:'Flujo libre de efectivo: <b>FLE = UO(1−T) + Dep − CAPEX − ΔCWT</b>. Con UO='+UO+', T='+T+', Dep='+Dep+', CAPEX='+CAPEX+' y ΔCWT='+dCWT+', calcula FLE.',
+    answer:fle, correctText:afR(fle,2).toString(),
+    explain:'La depreciación se suma (no es salida de efectivo); CAPEX y el aumento de capital de trabajo se restan.',
+    steps:['UO(1−T) = '+UO+'·(1−'+T+') = '+afR(UO*(1-T),2),
+      'FLE = '+afR(UO*(1-T),2)+' + '+Dep+' − '+CAPEX+' − ('+dCWT+') = '+afR(fle,2)] };
+}
+function qCAPM(){
+  const Rf=afPick([0.03,0.04,0.05]); const beta=afPick([0.8,1.0,1.2,1.5]); const Rm=afPick([0.10,0.12,0.14]);
+  const Re=Rf+beta*(Rm-Rf);
+  return { type:'numeric', topic:'af_wacc', tol:0.005,
+    prompt:'CAPM: <b>R_e = R_f + β(R_m − R_f)</b>. Con R_f='+Rf+', β='+beta+' y R_m='+Rm+', calcula el costo del capital propio R_e.',
+    answer:Re, correctText:afR(Re,5).toString(),
+    explain:'R_e = tasa libre de riesgo + beta × prima de riesgo del mercado.',
+    steps:['R_m − R_f = '+Rm+'−'+Rf+' = '+afR(Rm-Rf,4), 'R_e = '+Rf+' + '+beta+'·'+afR(Rm-Rf,4)+' = '+afR(Re,5)] };
+}
+function qBeta(){
+  const cov=afPick([0.004,0.006,0.009,0.012]); const varm=afPick([0.004,0.005,0.006]);
+  return { type:'numeric', topic:'af_wacc', tol:0.02,
+    prompt:'La beta se obtiene con <b>β = Cov(R_i,R_m) / Var(R_m)</b>. Con Cov='+cov+' y Var(R_m)='+varm+', calcula β.',
+    answer:cov/varm, correctText:afR(cov/varm,4).toString(),
+    explain:'β mide la sensibilidad del activo respecto al mercado.', steps:['β = '+cov+'/'+varm+' = '+afR(cov/varm,4)] };
+}
+function qWACC(){
+  const D=afPick([1000,2000,3000]); const C=afPick([2000,3000,4000]); const AT=D+C; const Rd=afPick([0.08,0.10,0.12]); const Re=afPick([0.12,0.15,0.18]); const T=afPick([0.30,0.35]);
+  const wacc=(D/AT)*Rd*(1-T)+(C/AT)*Re;
+  return { type:'numeric', topic:'af_wacc', tol:0.003,
+    prompt:'WACC = <b>(D/A_T)·R_d(1−T) + (C/A_T)·R_e</b>. Con D='+D+', C='+C+' (A_T=D+C='+AT+'), R_d='+Rd+', R_e='+Re+' y T='+T+', calcula el WACC.',
+    answer:wacc, correctText:afR(wacc,5).toString(),
+    explain:'Promedio ponderado del costo de la deuda (después de impuestos) y del capital propio.',
+    steps:['(D/A_T)·R_d(1−T) = ('+D+'/'+AT+')·'+Rd+'·(1−'+T+') = '+afR((D/AT)*Rd*(1-T),5),
+      '(C/A_T)·R_e = ('+C+'/'+AT+')·'+Re+' = '+afR((C/AT)*Re,5),
+      'WACC = '+afR((D/AT)*Rd*(1-T),5)+' + '+afR((C/AT)*Re,5)+' = '+afR(wacc,5)] };
+}
+function qGrowth(){
+  const roe=afPick([0.15,0.20,0.25]); const d=afPick([0.2,0.3,0.4]); const TR=1-d; const g=roe*TR;
+  return { type:'numeric', topic:'af_wacc', tol:0.003,
+    prompt:'Crecimiento sostenible: <b>g = ROE · TR</b>, con tasa de retención TR = 1 − d. Con ROE='+roe+' y tasa de pago de dividendos d='+d+', calcula g.',
+    answer:g, correctText:afR(g,5).toString(),
+    explain:'TR es lo que la empresa reinvierte; g = ROE × TR.',
+    steps:['TR = 1 − d = 1 − '+d+' = '+afR(TR,4), 'g = '+roe+'·'+afR(TR,4)+' = '+afR(g,5)] };
+}
+function buildAF7(){
+  return afShuffle([ qFLE(), qFLE(), qCAPM(), qCAPM(), qBeta(), qWACC(), qWACC(), qGrowth(),
+    { type:'mc', topic:'af_wacc', prompt:'La descomposición DuPont del ROE es:',
+      options:[{t:'margen neto × rotación de activos × multiplicador del capital', ok:true},{t:'margen × precio × cantidad', ok:false},{t:'deuda × capital × impuestos', ok:false},{t:'ventas − costos', ok:false}],
+      explain:'ROE = (UN/Ventas)(Ventas/Activos)(Activos/Capital).', correctText:'Margen × rotación × multiplicador' },
+    { type:'tf', topic:'af_wacc', prompt:'La depreciación se suma al calcular el FLE porque no representa una salida de efectivo.',
+      answer:true, explain:'Es un gasto contable no monetario, por eso se reintegra.', correctText:'Verdadero' } ]);
+}
+
+/* ============ M8: Valuación de empresas ============ */
+function qVF1(){
+  const FLE0=afPick([800,1000,1200,1500]); const g=afPick([0.02,0.03,0.04]); const WACC=afPick([0.08,0.10,0.12]);
+  const FLE1=FLE0*(1+g); const vf=FLE1/(WACC-g);
+  return { type:'numeric', topic:'af_valuacion', tol:5,
+    prompt:'Valuación en una etapa (Gordon): <b>V_F = FLE₁/(WACC − g)</b>, con FLE₁=FLE₀(1+g). Con FLE₀='+FLE0+', g='+g+' y WACC='+WACC+' (WACC>g), calcula V_F.',
+    answer:vf, correctText:afR(vf,2).toString(),
+    explain:'Requiere WACC>g. Primero se proyecta FLE₁, luego se capitaliza a (WACC−g).',
+    steps:['FLE₁ = FLE₀(1+g) = '+FLE0+'·(1+'+g+') = '+afR(FLE1,2),
+      'V_F = '+afR(FLE1,2)+'/('+WACC+'−'+g+') = '+afR(FLE1,2)+'/'+afR(WACC-g,4)+' = '+afR(vf,2)] };
+}
+function qVTn(){
+  const FLEn=afPick([1200,1500,1800]); const g2=afPick([0.02,0.03]); const WACC=afPick([0.09,0.10,0.12]);
+  const vtn=FLEn*(1+g2)/(WACC-g2);
+  return { type:'numeric', topic:'af_valuacion', tol:5,
+    prompt:'Valor terminal (segunda etapa): <b>VT_n = FLE_n(1+g₂)/(WACC − g₂)</b>. Con FLE_n='+FLEn+', g₂='+g2+' y WACC='+WACC+', calcula VT_n.',
+    answer:vtn, correctText:afR(vtn,2).toString(),
+    explain:'Es una perpetuidad creciente al final de la primera etapa.',
+    steps:['FLE_n(1+g₂) = '+FLEn+'·(1+'+g2+') = '+afR(FLEn*(1+g2),2),
+      'VT_n = '+afR(FLEn*(1+g2),2)+'/('+WACC+'−'+g2+') = '+afR(vtn,2)] };
+}
+function buildAF8(){
+  return afShuffle([ qVF1(), qVF1(), qVTn(), qVTn(),
+    { type:'mc', topic:'af_valuacion', prompt:'Si al valuar resulta <b>WACC ≤ g</b>, se debe:',
+      options:[{t:'No calcular un valor convencional y revisar los supuestos', ok:true},{t:'Usar el valor negativo tal cual', ok:false},{t:'Cambiar g por WACC', ok:false},{t:'Ignorar la advertencia', ok:false}],
+      explain:'La fórmula de Gordon exige WACC>g; si no, el resultado no tiene sentido y hay que revisar supuestos.', correctText:'No calcular y revisar supuestos' },
+    { type:'order', topic:'af_valuacion', prompt:'Ordena la valuación en dos etapas:',
+      stepsList:['Calcular el FLE base y el crecimiento g₁','Proyectar y descontar cada FLE de la primera etapa','Calcular FLE del año n','Calcular el valor terminal VT_n = FLE_n(1+g₂)/(WACC−g₂)','Descontar el valor terminal','Sumar todos los valores presentes'],
+      correctText:'FLE base → proyectar/descontar → FLE_n → VT_n → descontar VT → sumar' },
+    { type:'tf', topic:'af_valuacion', prompt:'No hay que confundir FLE₀ con FLE₁: FLE₁ = FLE₀(1+g).',
+      answer:true, explain:'El numerador de Gordon usa el flujo del <i>siguiente</i> periodo, FLE₁.', correctText:'Verdadero' },
+    { type:'mc', topic:'af_valuacion', prompt:'Si la empresa <b>no paga dividendos</b>, entonces:',
+      options:[{t:'d = 0 y TR = 1', ok:true},{t:'d = 1 y TR = 0', ok:false},{t:'g = WACC', ok:false},{t:'no se puede valuar', ok:false}],
+      explain:'Sin dividendos, la tasa de pago d=0 y la retención TR=1.', correctText:'d = 0, TR = 1' } ]);
+}
+
+/* ---- Lecciones ---- */
+const LESSON_AF_RENT = { title:'💰 Rentabilidad y apalancamiento', html:
+  '<p>A_T = C + D. <b>ROA = r = UO/A_T</b> y <b>ROE = U_N/C</b>. Con deuda:</p>'
+  +'<p style="text-align:center"><b>ROE = [r + (r − i)(D/C)](1 − t)</b>, &nbsp; U_N = ROE·C</p>'
+  +'<ul><li>Si r&gt;i, el apalancamiento (D/C) <b>aumenta</b> el ROE.</li><li>Si r&lt;i, la deuda lo <b>reduce</b> (puede volverlo negativo).</li>'
+  +'<li>No confundir ROA (UO/A_T) con ROE (U_N/C), ni D/A con D/C.</li></ul>' };
+const LESSON_AF_INV = { title:'📦 Inventarios y lote económico', html:
+  '<p>Costo total: CT(Q)=(Q/2)C_m+(D/Q)C_o. Derivando e igualando a cero:</p>'
+  +'<p style="text-align:center"><b>Q* = √(2·D·C_o / C_m)</b></p>'
+  +'<p>En Q* el costo de mantener ≈ el de ordenar. Inventario promedio = Q/2; número de pedidos = D/Q. '
+  +'Punto de reorden <b>PR = ΔT_e·C_d + I_s</b>, con consumo diario C_d = D/días.</p>' };
+const LESSON_AF_WACC = { title:'🏦 FLE, CAPM y WACC', html:
+  '<p><b>FLE = UO(1−T) + Dep − CAPEX − ΔCWT</b> (la depreciación se suma; CAPEX y el aumento de capital de trabajo se restan).</p>'
+  +'<p><b>CAPM: R_e = R_f + β(R_m−R_f)</b>, β = Cov/Var. Costo de deuda después de impuestos: R_d(1−T).</p>'
+  +'<p><b>WACC = (D/A_T)R_d(1−T) + (C/A_T)R_e</b>. Crecimiento sostenible g = ROE·TR, con TR=1−d. '
+  +'DuPont: ROE = margen × rotación × multiplicador del capital.</p>' };
+
+/* ---- Módulos ---- */
+const MODULES_AF = [
+  {id:0, icon:'💰', name:'Rentabilidad y apalancamiento', desc:'ROA, ROE, utilidad neta y efecto de la deuda (D/C).', kind:'Ejercicios ilimitados', lesson:LESSON_AF_RENT, build:buildAF1},
+  {id:1, icon:'⚖️', name:'Estructura óptima de capital', desc:'i(x)=a+bx², ROE(x) y (D/C)*=√[(r−a)/(3b)].', kind:'Ejercicios ilimitados', build:buildAF2},
+  {id:2, icon:'🧾', name:'Políticas de crédito (Sartoris-Hill)', desc:'VP con costo de capital diario, incobrables y descuentos.', kind:'Ejercicios ilimitados', build:buildAF3},
+  {id:3, icon:'🚨', name:'Gallinger y riesgo de insolvencia', desc:'pₙ de Gallinger y λ=(L₀+μT)/(σ√T), P=1−Φ(λ).', kind:'Ejercicios ilimitados', build:buildAF4},
+  {id:4, icon:'📦', name:'Inventarios y lote económico', desc:'Q*=√(2DC_o/C_m), costos y punto de reorden.', kind:'Ejercicios ilimitados', lesson:LESSON_AF_INV, build:buildAF5},
+  {id:5, icon:'🏷️', name:'Descuentos por volumen', desc:'C_m=rP, Q* por rango y comparación de costo total.', kind:'Ejercicios + caso', build:buildAF6},
+  {id:6, icon:'🏦', name:'FLE, CAPM, WACC y crecimiento', desc:'Flujo libre, costo de capital, WACC, DuPont y g sostenible.', kind:'Ejercicios ilimitados', lesson:LESSON_AF_WACC, build:buildAF7},
+  {id:7, icon:'🏢', name:'Valuación de empresas', desc:'Gordon en una etapa y modelo de dos etapas con valor terminal.', kind:'Ejercicios + caso', build:buildAF8}
+];
+const TOPIC_NAMES_AF = {
+  af_rent:'Rentabilidad', af_estructura:'Estructura de capital', af_credito:'Políticas de crédito', af_insolvencia:'Insolvencia',
+  af_inventario:'Inventarios', af_descuentos:'Descuentos por volumen', af_wacc:'FLE/CAPM/WACC', af_valuacion:'Valuación'
+};
+function buildExamAF(){
+  const pool=[]; MODULES_AF.forEach(m=>{ if(m.build){ try{ pool.push(...m.build()); }catch(e){} } });
+  return afShuffle(pool).slice(0,12);
+}
+Object.assign(TOPIC_NAMES, TOPIC_NAMES_AF);
+EXAM_REVIEWS_BY_SUBJECT['administracion-financiera'] = { pending:true, subject:'administracion-financiera', originals:[] };
+
+/* ---- Juego: Director Financiero (secuencia de decisiones con las fórmulas de los módulos) ---- */
+function startDirectorFinanciero(){
+  if(S.activeSubject!=='administracion-financiera'){ toast('🏢 El Director Financiero está en Administración Financiera.'); sfx('bad'); return; }
+  // una empresa con parámetros válidos; cada decisión usa una fórmula ya implementada
+  const r = afPick([0.25,0.275,0.30]); const i = afPick([0.10,0.115,0.12]); const D=afPick([1000,1500,2000]); const C=afPick([2000,2500,3000]); const t=0.30;
+  const roe=(r+(r-i)*(D/C))*(1-t);
+  const L0=5000, muT=afPick([-570,-400,-300]), sig=afPick([900,941.19,1000]), T=6; const lam=(L0+muT)/(sig*Math.sqrt(T)); const pins=1-npPhi(lam);
+  const Dd=afPick([2000,5000]), Co=afPick([50,95]), Cm=afPick([20,42]); const Q=Math.sqrt(2*Dd*Co/Cm);
+  const wD=D/(D+C), wC=C/(D+C), Rd=i, Re=afPick([0.15,0.18]); const wacc=wD*Rd*(1-t)+wC*Re;
+  const FLE0=afPick([800,1000,1200]), g=afPick([0.02,0.03]); const vf=FLE0*(1+g)/(wacc-g);
+  const qs = afShuffle([
+    { type:'numeric', topic:'af_rent', tol:0.005, stage:'cfo', prompt:'<b>🏢 Director Financiero — Decisión 1 (apalancamiento).</b> Con r='+r+', i='+i+', D='+D+', C='+C+', t='+t+', ¿cuál es el ROE = [r+(r−i)(D/C)](1−t)?', answer:roe, correctText:afR(roe,4).toString(), explain:'ROE apalancado.', steps:['ROE = ['+r+'+('+r+'−'+i+')('+D+'/'+C+')]·0.7 = '+afR(roe,4)] },
+    { type:'numeric', topic:'af_insolvencia', tol:0.005, stage:'cfo', prompt:'<b>Decisión 2 (liquidez).</b> Con L₀='+L0+', μT='+muT+', σ='+sig+', T='+T+', calcula P(insolvencia)=1−Φ(λ), λ=(L₀+μT)/(σ√T).', answer:pins, correctText:afR(pins,4).toString(), explain:'Riesgo de insolvencia.', steps:['λ = '+afR(lam,4), 'P = 1−Φ(λ) = '+afR(pins,4)] },
+    { type:'numeric', topic:'af_inventario', tol:0.5, stage:'cfo', prompt:'<b>Decisión 3 (inventario).</b> Con D='+Dd+', C_o='+Co+', C_m='+Cm+', ¿cuál es el lote económico Q*=√(2DC_o/C_m)?', answer:Q, correctText:afR(Q,4).toString(), explain:'EOQ.', steps:['Q* = √(2·'+Dd+'·'+Co+'/'+Cm+') = '+afR(Q,4)] },
+    { type:'numeric', topic:'af_wacc', tol:0.003, stage:'cfo', prompt:'<b>Decisión 4 (costo de capital).</b> Con D='+D+', C='+C+', R_d='+Rd+', R_e='+Re+', t='+t+', calcula el WACC.', answer:wacc, correctText:afR(wacc,5).toString(), explain:'WACC ponderado.', steps:['WACC = (D/A_T)R_d(1−t)+(C/A_T)R_e = '+afR(wacc,5)] },
+    { type:'numeric', topic:'af_valuacion', tol:5, stage:'cfo', prompt:'<b>Decisión 5 (valuación).</b> Con FLE₀='+FLE0+', g='+g+' y WACC='+afR(wacc,4)+', calcula V_F = FLE₀(1+g)/(WACC−g).', answer:vf, correctText:afR(vf,2).toString(), explain:'Valor de la empresa (Gordon).', steps:['V_F = '+FLE0+'(1+'+g+')/('+afR(wacc,4)+'−'+g+') = '+afR(vf,2)] }
+  ]);
+  startMode({ id:'cfo', title:'🏢 Director Financiero', icon:'🏢', qs,
+    introToast:'🏢 Toma 5 decisiones financieras usando las fórmulas del curso.' });
+}
+
+const MODULES_BY_SUBJECT = { ca3: MODULES_CA3, 'modelos-regresion': MODULES_REG, 'estadistica-no-parametrica': MODULES_NP, stoch: MODULES_STOCH, 'administracion-financiera': MODULES_AF };
 /* MODULES siempre apunta a los módulos de la materia activa */
 let MODULES = MODULES_BY_SUBJECT[S.activeSubject] || [];
 /* ==================== Modal ==================== */
@@ -5148,6 +5554,7 @@ const GAME_MODES = [
   {id:'final',   cat:'Exámenes',    ico:'🏆', name:'Examen final',            desc:'Mezcla todos los temas de la materia.',        run:startFinalExam,   needs:'content'},
   {id:'repasoex', cat:'Exámenes',    ico:'🎓', name:'Repaso Examen',            desc:'Prepárate por parcial: estudio o simulación.', run:startRepasoExamen, needs:'repaso'},
   {id:'nplab',    cat:'Juegos',      ico:'🧪', name:'Laboratorio No Paramétrico',desc:'Elige la prueba correcta para cada escenario.', run:startNPLab, needs:'nplab'},
+  {id:'cfo',      cat:'Juegos',      ico:'🏢', name:'Director Financiero',      desc:'Toma decisiones y valúa la empresa con las fórmulas del curso.', run:startDirectorFinanciero, needs:'cfo'},
   {id:'blitz',   cat:'Rapidez',     ico:'⚡', name:'Examen contrarreloj',     desc:'+5 s por acierto; cada falla resta más tiempo.', run:()=>{touchStreak();startBlitz();}, needs:'content'},
   {id:'vf',      cat:'Rapidez',     ico:'⚖️', name:'Verdadero / Falso rápido',desc:'12 afirmaciones a toda velocidad.',            run:startVF,          needs:'content'},
   {id:'carrera', cat:'Rapidez',     ico:'🏁', name:'Carrera de XP',           desc:'Llega a 100 XP lo antes posible.',             run:startCarrera,     needs:'content'},
@@ -5171,6 +5578,7 @@ function modeAvailable(m){
   if(m.needs==='ca3') return S.activeSubject==='ca3';
   if(m.needs==='repaso') return !!PARCIALES_BY_SUBJECT[S.activeSubject] || !!EXAM_REVIEWS_BY_SUBJECT[S.activeSubject];
   if(m.needs==='nplab') return S.activeSubject==='estadistica-no-parametrica';
+  if(m.needs==='cfo') return S.activeSubject==='administracion-financiera';
   if(m.needs==='content') return MODULES.length>0;
   return true;
 }
@@ -5463,7 +5871,7 @@ $('#btnBoard').addEventListener('click', () => { sfx('click'); renderBoard(); sh
    SEED_TASKS / SEED_CALENDAR: el administrador puede editarlos directamente
    aquí en el HTML (y publicar) o desde su panel dentro de la vista 📋.
    Formato de tarea:
-   {id, title, subject:'ca3'|'modelos-regresion'|'estadistica-no-parametrica'|'stoch'|'fin'|'all', partial:1|2|3|'final',
+   {id, title, subject:'ca3'|'modelos-regresion'|'estadistica-no-parametrica'|'stoch'|'administracion-financiera'|'all', partial:1|2|3|'final',
     due:'YYYY-MM-DD', priority:'alta'|'media'|'baja', desc, steps:[], materials:[],
     notes, published:'YYYY-MM-DD'} */
 const SEED_TASKS = [];   // sin tareas fijas: las publica el admin vía tasks.json
@@ -5474,7 +5882,7 @@ const SEED_CALENDAR = {
   'modelos-regresion': {p1:'2026-06-08', p2:'2026-07-06', p3:'2026-08-10', final:'2026-08-10'},
   'estadistica-no-parametrica': {p1:'2026-06-09', p2:'2026-07-07', p3:'2026-08-11', final:'2026-08-11'},
   stoch: {p1:'2026-06-11', p2:'2026-07-10', p3:'2026-08-13', final:'2026-08-13'},
-  fin:   {p1:'2026-06-12', p2:'2026-07-10', p3:'2026-08-14', final:'2026-08-14'}
+  'administracion-financiera': {p1:'2026-06-12', p2:'2026-07-10', p3:'2026-08-14', final:'2026-08-14'}
 };
 /* Store compartido a nivel dispositivo (todas las cuentas del navegador lo ven) */
 const SHKEY = 'actuariq_shared_v1';
@@ -6176,7 +6584,7 @@ $('#btnPrint').addEventListener('click', () => {
 /* ==================== Examen diario ==================== */
 /* Los exámenes son POR MATERIA: cada materia registra su generador aquí.
    Los temas no se mezclan entre materias. */
-const EXAM_BUILDERS_BY_SUBJECT = { ca3: buildExam, stoch: buildExamStoch, 'modelos-regresion': buildExamReg, 'estadistica-no-parametrica': buildExamNP };
+const EXAM_BUILDERS_BY_SUBJECT = { ca3: buildExam, stoch: buildExamStoch, 'modelos-regresion': buildExamReg, 'estadistica-no-parametrica': buildExamNP, 'administracion-financiera': buildExamAF };
 function buildExam(){
   const usedTF = new Set(), usedF = new Set(), usedP = new Set();
   return shuffle([

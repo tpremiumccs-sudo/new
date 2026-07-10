@@ -25,7 +25,34 @@ globales. Cambia de materia desde el chip del encabezado.
 | 🎲 Procesos Estocásticos | 12 módulos (Parcial 1 y 2) + modo Repaso Examen |
 | 📉 Modelos de Regresión | 9 módulos (regresión lineal simple) |
 | 📊 Estadística No Paramétrica | 9 módulos + Laboratorio No Paramétrico |
-| 💼 Administración Financiera | En preparación |
+| 💼 Administración Financiera | 8 módulos + juego Director Financiero |
+
+### 💼 Administración Financiera
+
+Clave interna `administracion-financiera`. Misma infraestructura que las demás
+materias (progreso/estrellas/XP global, estadísticas por materia, examen
+diario, blitz, flashcards, revisión, localStorage). 8 módulos fieles al
+cuaderno:
+
+1. Rentabilidad y apalancamiento (ROA, ROE=[r+(r−i)(D/C)](1−t), U_N).
+2. Estructura óptima de capital (i(x)=a+bx², (D/C)*=√[(r−a)/(3b)]).
+3. Políticas de crédito · Sartoris-Hill (VP con costo diario, incobrables).
+4. Gallinger y riesgo de insolvencia (pₙ; λ=(L₀+μT)/(σ√T), P=1−Φ(λ)).
+5. Inventarios y lote económico (Q*=√(2DC_o/C_m), PR=ΔT_e·C_d+I_s).
+6. Descuentos por volumen (C_m=rP, comparación de costo total CTI).
+7. FLE, CAPM, WACC, DuPont y crecimiento sostenible g=ROE·TR.
+8. Valuación de empresas (Gordon en una etapa y modelo de dos etapas).
+
+Incluye el juego **🏢 Director Financiero**: 5 decisiones encadenadas
+(apalancamiento → liquidez → inventario → WACC → valuación) usando únicamente
+las fórmulas de los módulos. Temas no desarrollados (VPN, TIR, bonos, opciones,
+derivados, portafolios, Black-Scholes, valuación de más de dos etapas, etc.)
+**no** se implementan. En Repaso Examen aparece «Esperando preguntas del
+examen». La Φ de la insolvencia reutiliza el helper `npPhi` (sin duplicar).
+
+**Casos de control verificados** (todos exactos, sin errores del pizarrón):
+ROE=0.2485, U_N=497, x*=0.785281, i*=0.151667, ROE*=0.260296; VP=1756.48 y
+1561.35; λ=1.9215, P=0.0273; Q*=95.11897 y 948.6833, C_T=474.3416, PR=546.9589.
 
 ### 📊 Estadística No Paramétrica
 
