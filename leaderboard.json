@@ -1,6 +1,7 @@
 {
   "app": "actuariq-board",
   "version": 1,
+  "syncUrl": "https://script.google.com/macros/s/AKfycbwRBwWECt61hp09dPeRMsoXfwWFyyEY7L7ZSclLwkI_ebP-OIWxJShyxJTNhyfosP5E/exec",
   "exported": "2026-07-09T17:05:20.487Z",
   "students": [
     {
