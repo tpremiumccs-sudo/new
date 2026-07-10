@@ -24,8 +24,36 @@ globales. Cambia de materia desde el chip del encabezado.
 | 🛡️ Cálculo Actuarial III | 12 módulos con contenido completo |
 | 🎲 Procesos Estocásticos | 12 módulos (Parcial 1 y 2) + modo Repaso Examen |
 | 📉 Modelos de Regresión | 9 módulos (regresión lineal simple) |
-| 📊 Análisis Estadístico No Paramétrico | En preparación |
+| 📊 Estadística No Paramétrica | 9 módulos + Laboratorio No Paramétrico |
 | 💼 Administración Financiera | En preparación |
+
+### 📊 Estadística No Paramétrica
+
+Clave interna `estadistica-no-parametrica`. Misma infraestructura que las demás
+materias (progreso/estrellas/XP global, estadísticas por materia, examen
+diario, blitz, flashcards, revisión, localStorage). 9 módulos fieles al
+cuaderno:
+
+1. Fundamentos (paramétrico vs. no paramétrico, tipos de dato, H₀/H₁, errores I/II).
+2. Función empírica Fₙ(x)=(1/n)ΣI(Xᵢ≤x) y Glivenko-Cantelli.
+3. Kolmogórov-Smirnov y Lilliefors (D=máx|Fₙ−F|, parámetros conocidos/estimados).
+4. Bondad de ajuste χ²=Σ(Oᵢ−Eᵢ)²/Eᵢ, gl=k−p−1, ajuste exponencial.
+5. Proporciones (z con p₀) y prueba binomial exacta.
+6. Cuantiles y prueba de los signos (mediana, empates, X~Bin(n,0.5)).
+7. McNemar (tabla 2×2 pareada, Yates o binomial exacta según B+C).
+8. Cox-Stuart (tendencia temporal, T~Bin(C,0.5)).
+9. Rangos: Spearman ρs=1−6Σdᵢ²/[n(n²−1)] y Mann-Whitney U=mín(U₁,U₂).
+
+Incluye el modo **🧪 Laboratorio No Paramétrico**: dado un escenario, eliges
+la prueba correcta entre las 11 vistas. No se agregan pruebas no desarrolladas
+(Wilcoxon, Kruskal-Wallis, Friedman, Kendall, rachas, etc.). En Repaso Examen
+aparece la tarjeta «Esperando preguntas del examen».
+
+**Casos de control verificados** (con dos correcciones documentadas por
+truncamiento de tabla z en el cuaderno): KS D≈0.1338 / 0.175 / 0.1359;
+χ²≈1.6667 (O=[8,4,5,7], λ̂≈0.02353, gl=2); z de proporción≈0.6667; binomial
+P(X≥15)≈0.0207 (bilateral 0.0414); McNemar Yates≈12.9706; Cox-Stuart
+(0.5)⁶=0.015625; Spearman ρs=−1 y −0.1879; Mann-Whitney U=0.
 
 ### 📉 Modelos de Regresión
 

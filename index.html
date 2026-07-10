@@ -985,7 +985,7 @@ const clamp = (n,a,b) => Math.max(a,Math.min(b,n));
 const SUBJECTS = [
   {id:'ca3',   icon:'🛡️', name:'Cálculo Actuarial III',              short:'Cálculo III',       wm:'🛡️📐'},
   {id:'modelos-regresion', icon:'📉', name:'Modelos de Regresión',        short:'Regresión',        wm:'📉📈'},
-  {id:'nopar', icon:'📊', name:'Análisis Estadístico No Paramétrico', short:'No Paramétrico',   wm:'📊🎯', soon:true},
+  {id:'estadistica-no-parametrica', icon:'📊', name:'Estadística No Paramétrica', short:'No Paramétrico', wm:'📊🎯'},
   {id:'stoch', icon:'🎲', name:'Procesos Estocásticos',               short:'Estocásticos',     wm:'🎲🔀'},
   {id:'fin',   icon:'💼', name:'Administración Financiera',           short:'Admin. Financiera', wm:'💼💰', soon:true}
 ];
@@ -3711,7 +3711,464 @@ const EXAM_REVIEWS_BY_SUBJECT = {
   'modelos-regresion': { pending:true, subject:'modelos-regresion', originals:[] /* {parcial, enunciado, datos, respuesta, procedimiento, tema, dificultad, tipo, variaciones, fijos, fuente, fecha} */ }
 };
 
-const MODULES_BY_SUBJECT = { ca3: MODULES_CA3, 'modelos-regresion': MODULES_REG, nopar: [], stoch: MODULES_STOCH, fin: [] };
+/* ==================== Estadística No Paramétrica (materia "estadistica-no-parametrica") ====================
+   Fiel al cuaderno: fundamentos, función empírica/Glivenko-Cantelli, KS/Lilliefors,
+   χ² bondad de ajuste, proporciones/binomial exacta, cuantiles/signos, McNemar,
+   Cox-Stuart, Spearman y Mann-Whitney. Sin pruebas no desarrolladas (Wilcoxon,
+   Kruskal-Wallis, Friedman, Kendall, rachas, etc. quedan solo como nombres).
+   Reutiliza peR/peComb (redondeo y combinaciones) y ri/pick/shuffle. */
+const npRi = ri, npPick = pick, npShuffle = shuffle;
+/* Φ normal estándar (erf de Abramowitz-Stegun 7.1.26) */
+function npErf(x){ const s=x<0?-1:1; x=Math.abs(x); const t=1/(1+0.3275911*x);
+  const y=1-(((((1.061405429*t-1.453152027)*t)+1.421413741)*t-0.284496736)*t+0.254829592)*t*Math.exp(-x*x); return s*y; }
+const npPhi = z => 0.5*(1+npErf(z/Math.SQRT2));
+const npBinPmf = (n,k,p) => peComb(n,k)*Math.pow(p,k)*Math.pow(1-p,n-k);
+const npBinTailGe = (n,x,p) => { let s=0; for(let k=x;k<=n;k++) s+=npBinPmf(n,k,p); return s; };
+const npBinTailLe = (n,x,p) => { let s=0; for(let k=0;k<=x;k++) s+=npBinPmf(n,k,p); return s; };
+/* D de Kolmogórov-Smirnov con Fn(xi)=i/n (convención del cuaderno) */
+function npKsD(data, F){ const x=[...data].sort((a,b)=>a-b); const n=x.length; let D=0, at=x[0];
+  x.forEach((xi,i)=>{ const d=Math.abs((i+1)/n - F(xi)); if(d>D){ D=d; at=xi; } }); return {D, at}; }
+/* Rangos con promedio en empates */
+function npRanks(arr){ const idx=arr.map((v,i)=>[v,i]).sort((a,b)=>a[0]-b[0]); const r=new Array(arr.length); let i=0;
+  while(i<idx.length){ let j=i; while(j+1<idx.length && idx[j+1][0]===idx[i][0]) j++;
+    const avg=(i+j+2)/2; for(let k=i;k<=j;k++) r[idx[k][1]]=avg; i=j+1; } return r; }
+function npSpearman(X,Y){ const rx=npRanks(X), ry=npRanks(Y), n=X.length;
+  const d2=rx.reduce((a,r,i)=>a+(r-ry[i])*(r-ry[i]),0); return {rho:1-6*d2/(n*(n*n-1)), d2, n, rx, ry}; }
+function npMannWhitney(A,B){ const all=A.map(v=>['A',v]).concat(B.map(v=>['B',v])); const ranks=npRanks(all.map(x=>x[1]));
+  let R1=0; all.forEach((x,i)=>{ if(x[0]==='A') R1+=ranks[i]; }); const n1=A.length,n2=B.length;
+  const U1=n1*n2+n1*(n1+1)/2-R1, U2=n1*n2-U1; return {R1,U1,U2,U:Math.min(U1,U2),n1,n2}; }
+const npMag = r => { r=Math.abs(r); return r<0.1?'prácticamente ninguna':r<0.3?'baja':r<0.5?'media':r<0.7?'alta':'muy alta'; };
+
+/* ============ M1: Fundamentos ============ */
+function buildNP1(){
+  const scen = npShuffle([
+    {t:'El tipo de sangre (A, B, AB, O)', a:'nominal'},
+    {t:'El nivel de satisfacción (bajo, medio, alto)', a:'ordinal'},
+    {t:'El monto exacto de un siniestro en pesos', a:'cuantitativo'}
+  ])[0];
+  const nombres={nominal:'Nominal',ordinal:'Ordinal',cuantitativo:'Cuantitativo'};
+  return npShuffle([
+    { type:'mc', topic:'np_fund', prompt:'¿Cuándo conviene una prueba <b>no paramétrica</b> en vez de una paramétrica?',
+      options:[{t:'Con muestras pequeñas, datos ordinales o cuando no se cumple la normalidad', ok:true},
+        {t:'Siempre que haya muchos datos y sean normales', ok:false},
+        {t:'Solo cuando la varianza es conocida', ok:false},
+        {t:'Únicamente para datos perfectamente normales', ok:false}],
+      explain:'Las no paramétricas exigen menos supuestos sobre la distribución poblacional; útiles con muestras pequeñas, datos ordinales/nominales o distribuciones asimétricas.', correctText:'Muestras pequeñas / ordinales / sin normalidad' },
+    { type:'tf', topic:'np_fund', prompt:'«No paramétrico» significa que la prueba <b>no tiene ningún supuesto</b>.',
+      answer:false, explain:'No es ausencia total de supuestos: se requieren <i>menos</i> supuestos sobre la distribución poblacional.', correctText:'Falso' },
+    { type:'mc', topic:'np_fund', prompt:'Clasifica el dato: «'+scen.t+'».',
+      options: npShuffle(Object.entries(nombres).map(([k,v])=>({t:v, ok:k===scen.a}))),
+      explain:'Es un dato de tipo '+nombres[scen.a]+'.', correctText:nombres[scen.a] },
+    { type:'mc', topic:'np_fund', prompt:'El <b>error tipo I</b> consiste en:',
+      options:[{t:'Rechazar H₀ siendo verdadera', ok:true},{t:'No rechazar H₀ siendo falsa', ok:false},
+        {t:'Aceptar H₁ siendo verdadera', ok:false},{t:'Calcular mal la media', ok:false}],
+      explain:'Error tipo I: rechazar H₀ cuando es verdadera (su probabilidad es α). Tipo II: no rechazar H₀ siendo falsa.', correctText:'Rechazar H₀ verdadera' },
+    { type:'match', topic:'np_fund', prompt:'Relaciona cada concepto:',
+      pairs:[{l:'α', r:'Nivel de significancia / P(error I)'},{l:'Error II', r:'No rechazar H₀ siendo falsa'},
+        {l:'Región crítica', r:'Valores que llevan a rechazar H₀'},{l:'H₀', r:'Hipótesis nula'}],
+      correctText:'α=signif., ErrorII=no rechazar H₀ falsa, R.crítica=rechazo, H₀=nula' },
+    { type:'tf', topic:'np_fund', prompt:'La probabilidad del error tipo I es el nivel de significancia α.',
+      answer:true, explain:'α = P(rechazar H₀ | H₀ verdadera).', correctText:'Verdadero' }
+  ]);
+}
+
+/* ============ M2: Función empírica y Glivenko-Cantelli ============ */
+function qFn(){
+  const n = npPick([4,5,6]); const data=[]; let cur=npRi(1,4);
+  for(let i=0;i<n;i++){ cur+=npRi(1,4); data.push(cur); }
+  const x0 = data[npRi(1,n-2)] + (npPick([0,1])); // punto dentro del rango
+  const cnt = data.filter(v=>v<=x0).length; const fn=cnt/n;
+  return { type:'numeric', topic:'np_empirica', tol:0.001,
+    prompt:'Para la muestra ordenada {'+data.join(', ')+'}, calcula la función de distribución empírica <b>Fₙ('+x0+')</b>.',
+    answer:fn, correctText:peR(fn,4).toString(),
+    explain:'Fₙ(x) = (1/n)·Σ I(Xᵢ ≤ x): cuenta cuántos datos son ≤ x y divide entre n.',
+    steps:['Observaciones ≤ '+x0+': '+cnt, 'n = '+n, 'Fₙ('+x0+') = '+cnt+'/'+n+' = '+peR(fn,4)] };
+}
+function buildNP2(){
+  return npShuffle([ qFn(), qFn(),
+    { type:'fill', topic:'np_empirica', prompt:'La función de distribución empírica es Fₙ(x) = (1/n)·Σ I(Xᵢ ≤ ____ ).',
+      accept:['x'], correctText:'x' },
+    { type:'mc', topic:'np_empirica', prompt:'Para la muestra 3, 5, 7, 8, ¿cuánto vale Fₙ(6)?',
+      options:[{t:'2/4 = 0.5', ok:true},{t:'3/4 = 0.75', ok:false},{t:'1/4 = 0.25', ok:false},{t:'6/4 = 1.5', ok:false}],
+      explain:'Hay 2 datos ≤ 6 (el 3 y el 5): Fₙ(6)=2/4=0.5 ⇒ 50% de los datos son ≤ 6.', correctText:'2/4 = 0.5' },
+    { type:'mc', topic:'np_empirica', prompt:'El teorema de <b>Glivenko-Cantelli</b> afirma que:',
+      options:[{t:'sup|Fₙ(x) − F(x)| → 0 cuando n → ∞', ok:true},{t:'La media muestral → μ', ok:false},
+        {t:'La suma estandarizada → Normal', ok:false},{t:'La varianza siempre es 0', ok:false}],
+      explain:'Glivenko-Cantelli: la distribución empírica converge <i>uniformemente</i> a la verdadera. (La LGN es sobre la media; el TCL, sobre la suma estandarizada.)', correctText:'sup|Fₙ−F| → 0' },
+    { type:'match', topic:'np_empirica', prompt:'Relaciona cada teorema con su convergencia:',
+      pairs:[{l:'Glivenko-Cantelli', r:'Fₙ → F uniformemente'},{l:'Ley Grandes Números', r:'media muestral → μ'},{l:'Teorema Central del Límite', r:'suma estandarizada → Normal'}],
+      correctText:'GC=Fₙ→F, LGN=media→μ, TCL=→Normal' },
+    { type:'order', topic:'np_empirica', prompt:'Ordena los pasos para construir Fₙ(x):',
+      stepsList:['Ordenar los datos de menor a mayor','Para cada x, contar cuántas observaciones son ≤ x','Dividir ese conteo entre n','Graficar la escalera resultante'],
+      correctText:'Ordenar → contar ≤ x → dividir entre n → graficar' } ]);
+}
+
+/* ============ M3: Kolmogórov-Smirnov y Lilliefors ============ */
+function qKSuniform(){
+  const n = npPick([6,7,8]); const data=[]; for(let i=0;i<n;i++) data.push(peR(npRi(2,98)/100,2));
+  data.sort((a,b)=>a-b); const {D,at}=npKsD(data, x=>x);
+  return { type:'numeric', topic:'np_ks', tol:0.01,
+    prompt:'Prueba KS de bondad de ajuste a <b>U(0,1)</b>. Datos ordenados: {'+data.join(', ')+'}. Con Fₙ(xᵢ)=i/n y F(x)=x, calcula <b>D = máx|Fₙ(xᵢ)−F(xᵢ)|</b>.',
+    answer:D, correctText:peR(D,4).toString(),
+    explain:'Para la Uniforme(0,1), F(xᵢ)=xᵢ. Se calcula |i/n − xᵢ| en cada punto y se toma el máximo.',
+    steps:['En cada xᵢ: |i/n − xᵢ|', 'El máximo ocurre en x = '+at, 'D = '+peR(D,4)] };
+}
+function qKSnormal(){
+  const mu = npPick([50,80,100,18]); const sd = npPick([5,6,10,4]);
+  const n = npPick([6,8]); const data=[]; for(let i=0;i<n;i++) data.push(mu + Math.round((npRi(-18,18)/10)*sd));
+  data.sort((a,b)=>a-b); const {D,at}=npKsD(data, x=>npPhi((x-mu)/sd));
+  return { type:'numeric', topic:'np_ks', tol:0.015,
+    prompt:'Prueba KS de ajuste a <b>N('+mu+','+sd+')</b> (parámetros conocidos). Datos: {'+data.join(', ')+'}. Usa z=(xᵢ−μ)/σ y F(xᵢ)=Φ(z). Calcula <b>D = máx|i/n − F(xᵢ)|</b>.',
+    answer:D, correctText:peR(D,4).toString(),
+    explain:'Con parámetros conocidos se estandariza z=(xᵢ−μ)/σ y se usa la tabla normal para F(xᵢ)=Φ(z); D es la mayor diferencia con i/n.',
+    steps:['Para cada xᵢ: z=(xᵢ−'+mu+')/'+sd+', F(xᵢ)=Φ(z)', 'Diferencia máxima en x = '+at, 'D = '+peR(D,4)] };
+}
+function qZscore(){
+  const known = npPick([true,false]); const mu = npPick([80,50,18]); const sd = npPick([6,4,10]);
+  const xi = mu + npPick([-1,1])*npRi(1,2)*sd/2;
+  const z = (xi-mu)/sd;
+  return { type:'numeric', topic:'np_ks', tol:0.02,
+    prompt:'Para estandarizar en KS'+(known?' (parámetros conocidos)':' (parámetros estimados con x̄ y s)')+', calcula <b>z = (xᵢ − '+(known?'μ':'x̄')+')/'+(known?'σ':'s')+'</b> con xᵢ='+xi+', '+(known?'μ':'x̄')+'='+mu+' y '+(known?'σ':'s')+'='+sd+'.',
+    answer:z, correctText:peR(z,4).toString(),
+    explain:'z=(xᵢ−centro)/dispersión. Con parámetros conocidos se usa μ,σ; si se estiman con la muestra, x̄,s (y la tabla de Lilliefors).',
+    steps:['z = ('+xi+' − '+mu+')/'+sd+' = '+peR(z,4)] };
+}
+function buildNP3(){
+  return npShuffle([ qKSuniform(), qKSuniform(), qKSnormal(), qKSnormal(), qZscore(), qZscore(),
+    { type:'mc', topic:'np_ks', prompt:'Si la media y la desviación se <b>estiman con la propia muestra</b>, ¿qué tabla de valores críticos se usa?',
+      options:[{t:'La de Lilliefors', ok:true},{t:'La de Kolmogórov-Smirnov estándar', ok:false},{t:'La χ² con gl=n', ok:false},{t:'La t de Student', ok:false}],
+      explain:'Al estimar parámetros con la muestra se usa Lilliefors (no la tabla KS estándar).', correctText:'La de Lilliefors' },
+    { type:'order', topic:'np_ks', prompt:'Ordena el procedimiento de la prueba KS:',
+      stepsList:['Plantear H₀ (sigue la distribución) y H₁','Ordenar los datos','Calcular Fₙ(xᵢ)=i/n','Calcular F(xᵢ) teórica','Obtener |Fₙ(xᵢ)−F(xᵢ)| y tomar el máximo D','Comparar D con el valor crítico y concluir'],
+      correctText:'H₀/H₁ → ordenar → Fₙ → F → máx|dif|=D → comparar' },
+    { type:'tf', topic:'np_ks', prompt:'En KS, H₀ afirma que los datos <b>sí</b> provienen de la distribución propuesta.',
+      answer:true, explain:'H₀: los datos siguen la distribución; H₁: no la siguen.', correctText:'Verdadero' } ]);
+}
+
+/* ============ M4: χ² bondad de ajuste ============ */
+function qChiLambda(){
+  const n = npPick([20,24,25,30]); const data=[]; let sum=0;
+  for(let i=0;i<n;i++){ const t=npRi(1,60); data.push(t); sum+=t; }
+  const lam = n/sum;
+  return { type:'numeric', topic:'np_chi', tol:0.0005,
+    prompt:'Para ajustar una <b>exponencial</b> a una muestra de tiempos con n='+n+' y Σtᵢ='+sum+', estima <b>λ̂ = n / Σtᵢ</b>.',
+    answer:lam, correctText:peR(lam,6).toString(),
+    explain:'El estimador de máxima verosimilitud de la exponencial es λ̂ = n/Σtᵢ.',
+    steps:['λ̂ = n/Σtᵢ = '+n+'/'+sum+' = '+peR(lam,6)] };
+}
+function qChiGL(){
+  const k = npPick([4,5,6]); const p = npPick([0,1,2]);
+  const gl = k-p-1;
+  return { type:'numeric', topic:'np_chi', tol:0.001,
+    prompt:'En una prueba χ² de bondad de ajuste con <b>k='+k+'</b> clases y <b>p='+p+'</b> parámetro(s) estimado(s), ¿cuántos <b>grados de libertad</b> hay? (gl = k − p − 1)',
+    answer:gl, correctText:gl.toString(),
+    explain:'gl = k − p − 1.',
+    steps:['gl = k − p − 1 = '+k+' − '+p+' − 1 = '+gl] };
+}
+function qChiStat(){
+  const k = 4; const E = npPick([5,6,8,10]); const O=[]; let rem=E*k;
+  for(let i=0;i<k-1;i++){ const o=Math.max(0,E+npRi(-3,3)); O.push(o); rem-=o; } O.push(Math.max(0,rem));
+  const chi = O.reduce((a,o)=>a+(o-E)*(o-E)/E,0);
+  return { type:'numeric', topic:'np_chi', tol:0.02,
+    prompt:'Con frecuencias esperadas Eᵢ='+E+' en las '+k+' clases y observadas Oᵢ = ['+O.join(', ')+'], calcula <b>χ² = Σ(Oᵢ−Eᵢ)²/Eᵢ</b>.',
+    answer:chi, correctText:peR(chi,4).toString(),
+    explain:'χ² suma, en cada clase, (Oᵢ−Eᵢ)²/Eᵢ.',
+    steps:[O.map(o=>'('+o+'−'+E+')²/'+E).join(' + '), '= '+peR(chi,4)] };
+}
+function buildNP4(){
+  return npShuffle([ qChiLambda(), qChiLambda(), qChiGL(), qChiGL(), qChiStat(), qChiStat(),
+    { type:'match', topic:'np_chi', prompt:'Relaciona los símbolos de la prueba χ²:',
+      pairs:[{l:'Oᵢ', r:'Frecuencia observada'},{l:'Eᵢ', r:'Frecuencia esperada'},{l:'k', r:'Número de clases'},{l:'gl', r:'k − p − 1'}],
+      correctText:'O=observada, E=esperada, k=clases, gl=k−p−1' },
+    { type:'tf', topic:'np_chi', prompt:'Para la exponencial, F(t) = 1 − e^(−λt).',
+      answer:true, explain:'Es la función de distribución de la exponencial.', correctText:'Verdadero' },
+    { type:'order', topic:'np_chi', prompt:'Ordena la prueba χ² de bondad de ajuste:',
+      stepsList:['Proponer una distribución y estimar parámetros si hace falta','Formar clases (aquí, con probabilidades iguales)','Calcular las frecuencias esperadas Eᵢ','Contar las observadas Oᵢ','Sumar χ²=Σ(Oᵢ−Eᵢ)²/Eᵢ','Comparar con el valor crítico y concluir'],
+      correctText:'Proponer → clases → Eᵢ → Oᵢ → χ² → concluir' } ]);
+}
+
+/* ============ M5: Proporciones y binomial exacta ============ */
+function qPropZ(){
+  const n = npPick([80,100,120,150]); const p0 = npPick([0.10,0.20,0.30,0.50]);
+  const x = Math.round(p0*n) + npPick([-1,1])*npRi(2,8); const phat=x/n;
+  const z = (phat-p0)/Math.sqrt(p0*(1-p0)/n);
+  return { type:'numeric', topic:'np_prop', tol:0.02,
+    prompt:'Prueba de proporción: n='+n+', x='+x+' éxitos, H₀: p=p₀='+p0+'. Calcula el estadístico <b>z = (p̂ − p₀) / √[p₀(1−p₀)/n]</b>. (Bajo H₀ se usa p₀ en el error estándar.)',
+    answer:z, correctText:peR(z,4).toString(),
+    explain:'Bajo H₀ el error estándar usa p₀ (no p̂): z = (p̂−p₀)/√[p₀(1−p₀)/n].',
+    steps:['p̂ = x/n = '+x+'/'+n+' = '+peR(phat,4),
+      'EE = √[p₀(1−p₀)/n] = √['+p0+'·'+peR(1-p0,2)+'/'+n+'] = '+peR(Math.sqrt(p0*(1-p0)/n),4),
+      'z = ('+peR(phat,4)+' − '+p0+')/'+peR(Math.sqrt(p0*(1-p0)/n),4)+' = '+peR(z,4)] };
+}
+function qBinExact(){
+  const n = npPick([12,15,18,20]); const p0=0.5; const x = npRi(Math.ceil(n*0.6), n-1);
+  const tail = npBinTailGe(n,x,p0);
+  return { type:'numeric', topic:'np_prop', tol:0.005,
+    prompt:'Muestra pequeña: X ~ Bin('+n+', 0.5). Calcula el valor p de cola derecha <b>P(X ≥ '+x+')</b>.',
+    answer:tail, correctText:peR(tail,4).toString(),
+    explain:'P(X≥x) = Σ_{k=x}^{n} C(n,k) p₀^k (1−p₀)^{n−k}.',
+    steps:['P(X≥'+x+') = Σ desde k='+x+' hasta '+n+' de C('+n+',k)·0.5^'+n,
+      '= '+peR(tail,4)] };
+}
+function qPhat(){
+  const n = npPick([50,80,100,200]); const x = npRi(5,Math.round(n*0.4));
+  return { type:'numeric', topic:'np_prop', tol:0.005,
+    prompt:'En una muestra de n='+n+' con x='+x+' defectuosos, calcula la <b>proporción muestral p̂ = x/n</b>.',
+    answer:x/n, correctText:peR(x/n,4).toString(),
+    explain:'p̂ = X/n.', steps:['p̂ = '+x+'/'+n+' = '+peR(x/n,4)] };
+}
+function buildNP5(){
+  return npShuffle([ qPropZ(), qPropZ(), qBinExact(), qBinExact(), qPhat(),
+    { type:'mc', topic:'np_prop', prompt:'¿Cuándo conviene la <b>prueba binomial exacta</b> en vez de la aproximación normal?',
+      options:[{t:'Con muestras pequeñas', ok:true},{t:'Con muestras muy grandes', ok:false},{t:'Cuando p₀=0', ok:false},{t:'Nunca', ok:false}],
+      explain:'La aproximación normal requiere n grande; con muestras pequeñas se usa la binomial exacta.', correctText:'Con muestras pequeñas' },
+    { type:'tf', topic:'np_prop', prompt:'Bajo H₀, el error estándar de la prueba z de proporción usa p₀ (no p̂).',
+      answer:true, explain:'Como H₀ fija p=p₀, el error estándar se calcula con p₀.', correctText:'Verdadero' },
+    { type:'mc', topic:'np_prop', prompt:'Para una prueba binomial exacta de <b>cola derecha</b>, el valor p es:',
+      options:[{t:'P(X ≥ x_obs)', ok:true},{t:'P(X ≤ x_obs)', ok:false},{t:'P(X = x_obs)', ok:false},{t:'1 − p₀', ok:false}],
+      explain:'Cola derecha: p = P(X ≥ x_obs). Cola izquierda: P(X ≤ x_obs).', correctText:'P(X ≥ x_obs)' } ]);
+}
+
+/* ============ M6: Cuantiles y prueba de los signos ============ */
+function qSignos(){
+  const n0 = npPick([9,10,11]); const med = npPick([20,50,100]);
+  const data=[]; for(let i=0;i<n0;i++){ let v=med+npRi(-6,6); data.push(v); }
+  if(!data.includes(med) && npPick([true,false])) data[npRi(0,n0-1)]=med; // a veces con empate
+  const ties = data.filter(v=>v===med).length;
+  const neff = n0 - ties;
+  const less = data.filter(v=>v<med).length;
+  const more = data.filter(v=>v>med).length;
+  return { type:'numeric', topic:'np_signos', tol:0.001,
+    prompt:'Prueba de los signos para la mediana propuesta '+med+'. Datos: {'+data.join(', ')+'}. Tras <b>eliminar los empates</b> con '+med+', ¿cuál es el <b>tamaño efectivo n</b>?',
+    answer:neff, correctText:neff.toString(),
+    explain:'Se descartan los valores iguales a la mediana propuesta; el tamaño efectivo es n menos los empates.',
+    steps:['Empates con '+med+': '+ties, 'Menores: '+less+' · Mayores: '+more, 'n efectivo = '+n0+' − '+ties+' = '+neff] };
+}
+function qSignBin(){
+  const n = npPick([8,9,10]); const x = npRi(0,2);
+  const tail = npBinTailLe(n,x,0.5);
+  return { type:'numeric', topic:'np_signos', tol:0.005,
+    prompt:'En la prueba de los signos, bajo H₀ el número de signos «+» es X ~ Bin('+n+', 0.5). Calcula <b>P(X ≤ '+x+')</b>.',
+    answer:tail, correctText:peR(tail,4).toString(),
+    explain:'Bajo H₀ (la mediana es la propuesta), cada signo es + o − con probabilidad 0.5.',
+    steps:['P(X ≤ '+x+') = Σ desde k=0 hasta '+x+' de C('+n+',k)·0.5^'+n+' = '+peR(tail,4)] };
+}
+function buildNP6(){
+  return npShuffle([ qSignos(), qSignos(), qSignBin(), qSignBin(),
+    { type:'tf', topic:'np_signos', prompt:'La prueba de los signos usa solo la <b>dirección</b> (signo) de las diferencias, no su magnitud.',
+      answer:true, explain:'Solo importa el signo (+/−); la magnitud se ignora.', correctText:'Verdadero' },
+    { type:'mc', topic:'np_signos', prompt:'En datos pareados antes/después, un empate (diferencia = 0) se debe:',
+      options:[{t:'Eliminar y reducir el tamaño efectivo', ok:true},{t:'Contar como signo +', ok:false},{t:'Contar como signo −', ok:false},{t:'Duplicar', ok:false}],
+      explain:'Los empates se eliminan y n se reduce al tamaño efectivo.', correctText:'Eliminar y reducir n' },
+    { type:'fill', topic:'np_signos', prompt:'Bajo H₀, en la prueba de los signos X ~ Bin(n, ____ ).',
+      accept:['0.5','.5','1/2','0,5'], correctText:'0.5' },
+    { type:'mc', topic:'np_signos', prompt:'El valor que divide la muestra en dos mitades iguales (50% a cada lado) es:',
+      options:[{t:'La mediana', ok:true},{t:'La media', ok:false},{t:'La moda', ok:false},{t:'El rango', ok:false}],
+      explain:'La mediana es el cuantil 0.5.', correctText:'La mediana' } ]);
+}
+
+/* ============ M7: McNemar ============ */
+function qMcNemar(){
+  const A=npRi(100,400), D=npRi(80,300);
+  let B, C;
+  const big = npPick([true,false]);
+  if(big){ B=npRi(5,20); C=npRi(15,35); if(B+C<20){ C+=20; } }        // B+C>=20 → χ² con Yates
+  else { B=npRi(1,8); C=npRi(1,8); if(B+C>=20) C=5; if(B===C) C=B+2; } // B+C<20 → exacta
+  const bc=B+C;
+  if(bc>=20){
+    const chi=Math.pow(Math.abs(B-C)-1,2)/bc;
+    return { type:'numeric', topic:'np_mcnemar', tol:0.02,
+      prompt:'Prueba de McNemar (datos pareados). Tabla 2×2: A='+A+', B='+B+', C='+C+', D='+D+'. Como B+C='+bc+' ≥ 20, usa χ² con <b>corrección de Yates: (|B−C|−1)²/(B+C)</b>.',
+      answer:chi, correctText:peR(chi,4).toString(),
+      explain:'Solo los discordantes B y C aportan evidencia. Yates: (|B−C|−1)²/(B+C), con gl=1.',
+      steps:['|B−C| = |'+B+'−'+C+'| = '+Math.abs(B-C),
+        'χ² = (|B−C|−1)²/(B+C) = ('+Math.abs(B-C)+'−1)²/'+bc+' = '+peR(chi,4)] };
+  } else {
+    const tail=npBinTailLe(bc, Math.min(B,C), 0.5);
+    return { type:'numeric', topic:'np_mcnemar', tol:0.01,
+      prompt:'Prueba de McNemar. Discordantes B='+B+', C='+C+' (B+C='+bc+' < 20 ⇒ método <b>exacto</b>). Con X ~ Bin('+bc+', 0.5), calcula P(X ≤ '+Math.min(B,C)+') (cola con el menor de B y C).',
+      answer:tail, correctText:peR(tail,4).toString(),
+      explain:'Con B+C<20 se usa la binomial exacta sobre los pares discordantes: X ~ Bin(B+C, 0.5).',
+      steps:['menor(B,C) = '+Math.min(B,C), 'P(X ≤ '+Math.min(B,C)+') con Bin('+bc+',0.5) = '+peR(tail,4)] };
+  }
+}
+function buildNP7(){
+  return npShuffle([ qMcNemar(), qMcNemar(), qMcNemar(),
+    { type:'match', topic:'np_mcnemar', prompt:'En la tabla 2×2 de McNemar (antes → después):',
+      pairs:[{l:'A', r:'éxito → éxito'},{l:'B', r:'éxito → fracaso'},{l:'C', r:'fracaso → éxito'},{l:'D', r:'fracaso → fracaso'}],
+      correctText:'A=éxito/éxito, B=éxito/fracaso, C=fracaso/éxito, D=fracaso/fracaso' },
+    { type:'mc', topic:'np_mcnemar', prompt:'¿Qué celdas aportan evidencia sobre el <b>cambio</b> en McNemar?',
+      options:[{t:'Solo B y C (los discordantes)', ok:true},{t:'A y D', ok:false},{t:'Todas por igual', ok:false},{t:'Solo A', ok:false}],
+      explain:'Los pares concordantes (A, D) no informan sobre el cambio; solo B y C.', correctText:'Solo B y C' },
+    { type:'tf', topic:'np_mcnemar', prompt:'Con B+C < 20 se prefiere el método exacto (binomial); con B+C ≥ 20, la χ² (con corrección de Yates).',
+      answer:true, explain:'Esa es la regla de decisión del método.', correctText:'Verdadero' },
+    { type:'fill', topic:'np_mcnemar', prompt:'Los grados de libertad de la χ² de McNemar son ____ .',
+      accept:['1','uno'], correctText:'1' } ]);
+}
+
+/* ============ M8: Cox-Stuart ============ */
+function qCox(){
+  const trend = npPick(['dec','inc']); const m = npPick([5,6]); const N=2*m;
+  const serie=[]; let base=npRi(50,90);
+  for(let i=0;i<N;i++){ base += (trend==='dec'? -npRi(1,5) : npRi(1,5)); serie.push(base); }
+  // parejas (i, i+m); signo de segunda-primera
+  let pos=0, neg=0;
+  for(let i=0;i<m;i++){ const d=serie[i+m]-serie[i]; if(d>0) pos++; else if(d<0) neg++; }
+  const C=pos+neg;
+  const k = trend==='dec'? pos : neg;             // signos a favor de "no tendencia" en la cola
+  const tail = npBinTailLe(C, Math.min(pos,neg), 0.5);
+  return { type:'numeric', topic:'np_cox', tol:0.005,
+    prompt:'Prueba de Cox-Stuart de tendencia. Serie cronológica: {'+serie.join(', ')+'}. Se forman '+m+' parejas (xᵢ, xᵢ₊'+m+'). Con C='+C+' parejas efectivas y T ~ Bin('+C+', 0.5), calcula P(T ≤ '+Math.min(pos,neg)+') (cola del menor número de signos).',
+    answer:tail, correctText:peR(tail,4).toString(),
+    explain:'Se comparan las dos mitades formando parejas; el signo indica aumento/disminución. Bajo H₀ (sin tendencia), T ~ Bin(C, 0.5).',
+    steps:['Signos +: '+pos+' · signos −: '+neg+' · C = '+C, 'menor = '+Math.min(pos,neg), 'P(T ≤ '+Math.min(pos,neg)+') con Bin('+C+',0.5) = '+peR(tail,4)] };
+}
+function buildNP8(){
+  return npShuffle([ qCox(), qCox(),
+    { type:'order', topic:'np_cox', prompt:'Ordena la prueba de Cox-Stuart:',
+      stepsList:['Conservar el orden temporal','Si n es impar, eliminar la observación central','Dividir la serie en dos mitades y formar parejas','Calcular el signo de cada diferencia y eliminar empates','Contar los signos y usar T ~ Bin(C, 0.5)','Construir la región crítica y concluir sobre la tendencia'],
+      correctText:'Orden temporal → quitar central → parejas → signos → Bin(C,0.5) → concluir' },
+    { type:'mc', topic:'np_cox', prompt:'La prueba de Cox-Stuart sirve para detectar:',
+      options:[{t:'Una tendencia creciente o decreciente en el tiempo', ok:true},{t:'Diferencia entre dos grupos independientes', ok:false},{t:'Normalidad', ok:false},{t:'Asociación entre rangos', ok:false}],
+      explain:'Cox-Stuart detecta tendencia en una serie ordenada cronológicamente.', correctText:'Tendencia en el tiempo' },
+    { type:'numeric', topic:'np_cox', tol:0.0001,
+      prompt:'Si las 6 parejas de Cox-Stuart muestran todas disminución (0 signos «+»), el valor p de esa cola es P(T ≤ 0) = (0.5)⁶. Calcula ese valor.',
+      answer:Math.pow(0.5,6), correctText:'0.015625', explain:'(0.5)⁶ = 1/64 = 0.015625.', steps:['(0.5)⁶ = '+Math.pow(0.5,6)] },
+    { type:'tf', topic:'np_cox', prompt:'En Cox-Stuart, si n es impar se elimina la observación <b>central</b> antes de formar las parejas.',
+      answer:true, explain:'Así las dos mitades tienen el mismo tamaño.', correctText:'Verdadero' } ]);
+}
+
+/* ============ M9: Spearman y Mann-Whitney ============ */
+function qSpearman(){
+  const n = npPick([6,7,8]); const X=[], Y=[]; let cx=npRi(1,5), cy=npRi(1,5);
+  for(let i=0;i<n;i++){ cx+=npRi(1,4); X.push(cx); }
+  const desc = npPick([true,false]);
+  const Ys = X.map((_,i)=> desc ? (100-2*i+npRi(-1,1)) : (10+2*i+npRi(-1,1)));
+  const {rho,d2} = npSpearman(X, Ys);
+  return { type:'numeric', topic:'np_rangos', tol:0.02,
+    prompt:'Correlación de Spearman con n='+n+' y Σdᵢ²='+d2+' (dᵢ = Rxᵢ − Ryᵢ). Calcula <b>ρs = 1 − 6Σdᵢ² / [n(n²−1)]</b>.',
+    answer:rho, correctText:peR(rho,4).toString(),
+    explain:'ρs = 1 − 6Σdᵢ²/[n(n²−1)]. Signo + relación creciente, − decreciente.',
+    steps:['n(n²−1) = '+n+'·('+n+'²−1) = '+(n*(n*n-1)),
+      'ρs = 1 − 6·'+d2+'/'+(n*(n*n-1))+' = '+peR(rho,4)] };
+}
+function qSpearmanFormula(){
+  const cases=[{n:8,d2:168},{n:10,d2:196},{n:6,d2:24},{n:7,d2:40}];
+  const c=npPick(cases); const rho=1-6*c.d2/(c.n*(c.n*c.n-1));
+  return { type:'numeric', topic:'np_rangos', tol:0.02,
+    prompt:'Con n='+c.n+' y Σdᵢ²='+c.d2+', aplica <b>ρs = 1 − 6Σdᵢ²/[n(n²−1)]</b>.',
+    answer:rho, correctText:peR(rho,4).toString(),
+    explain:'Sustitución directa en la fórmula de Spearman.',
+    steps:['ρs = 1 − 6('+c.d2+')/['+c.n+'('+c.n+'²−1)] = 1 − '+(6*c.d2)+'/'+(c.n*(c.n*c.n-1))+' = '+peR(rho,4)] };
+}
+function qMannWhitneyU(){
+  const n1=npPick([4,5]), n2=npPick([4,5]);
+  // grupo A menor, grupo B mayor (separables → U extremo, pero variamos)
+  const A=[], B=[]; let base=npRi(8,14);
+  for(let i=0;i<n1;i++){ base+=npRi(1,3); A.push(base); }
+  for(let i=0;i<n2;i++){ base+=npRi(1,3); B.push(base); }
+  const {R1,U1,U2,U}=npMannWhitney(A,B);
+  return { type:'numeric', topic:'np_rangos', tol:0.01,
+    prompt:'Mann-Whitney con Grupo A={'+A.join(', ')+'} (n₁='+n1+') y Grupo B={'+B.join(', ')+'} (n₂='+n2+'). Al ordenar todo, la suma de rangos de A es R₁='+R1+'. Calcula <b>U = mín(U₁, U₂)</b> con U₁=n₁n₂+n₁(n₁+1)/2−R₁ y U₂=n₁n₂−U₁.',
+    answer:U, correctText:U.toString(),
+    explain:'U₁=n₁n₂+n₁(n₁+1)/2−R₁; U₂=n₁n₂−U₁; U=mín(U₁,U₂). Se rechaza H₀ si U ≤ U_crítico.',
+    steps:['U₁ = '+n1+'·'+n2+' + '+n1+'·'+(n1+1)+'/2 − '+R1+' = '+U1,
+      'U₂ = '+n1+'·'+n2+' − '+U1+' = '+U2,
+      'U = mín('+U1+', '+U2+') = '+U] };
+}
+function buildNP9(){
+  return npShuffle([ qSpearmanFormula(), qSpearmanFormula(), qSpearman(), qMannWhitneyU(), qMannWhitneyU(),
+    { type:'mc', topic:'np_rangos', prompt:'Un ρs de Spearman cercano a <b>−1</b> indica:',
+      options:[{t:'Asociación monótona decreciente muy fuerte', ok:true},{t:'Ninguna asociación', ok:false},{t:'Asociación creciente', ok:false},{t:'Datos normales', ok:false}],
+      explain:'ρs≈−1: relación monótona decreciente muy alta; ≈+1 creciente; ≈0 débil/nula.', correctText:'Decreciente muy fuerte' },
+    { type:'mc', topic:'np_rangos', prompt:'La prueba de <b>Mann-Whitney</b> es la alternativa no paramétrica a:',
+      options:[{t:'La t de dos muestras independientes', ok:true},{t:'La χ² de bondad de ajuste', ok:false},{t:'La prueba de los signos', ok:false},{t:'Cox-Stuart', ok:false}],
+      explain:'Mann-Whitney compara dos grupos independientes sin suponer normalidad.', correctText:'t de dos muestras independientes' },
+    { type:'mc', topic:'np_rangos', prompt:'En Mann-Whitney se rechaza H₀ cuando:',
+      options:[{t:'U ≤ U_crítico', ok:true},{t:'U ≥ U_crítico', ok:false},{t:'U = n₁n₂', ok:false},{t:'U > 0', ok:false}],
+      explain:'Se rechaza H₀ si U ≤ U_crítico (tabla de Mann-Whitney).', correctText:'U ≤ U_crítico' } ]);
+}
+
+/* ---- Lecciones ---- */
+const LESSON_NP_FUND = { title:'📊 Fundamentos no paramétricos', html:
+  '<p>Las pruebas <b>no paramétricas</b> requieren <b>menos supuestos</b> sobre la distribución poblacional (no que no tengan ninguno). Son útiles con muestras pequeñas, datos ordinales o nominales, distribuciones asimétricas o presencia de atípicos (mayor <b>robustez</b>).</p>'
+  +'<ul><li><b>H₀</b>: hipótesis nula · <b>H₁</b>: alternativa.</li><li><b>α</b>: nivel de significancia = P(error tipo I).</li>'
+  +'<li><b>Error I</b>: rechazar H₀ verdadera. <b>Error II</b>: no rechazar H₀ falsa.</li>'
+  +'<li><b>Región crítica</b>: valores del estadístico que llevan a rechazar H₀.</li></ul>' };
+const LESSON_NP_EMP = { title:'📈 Función empírica y Glivenko-Cantelli', html:
+  '<p>La <b>función de distribución empírica</b> es Fₙ(x) = (1/n)·Σ I(Xᵢ ≤ x): se ordenan los datos, se cuenta cuántos son ≤ x y se divide entre n. Para 3,5,7,8: Fₙ(6)=2/4=0.5 (50% de los datos ≤ 6).</p>'
+  +'<p><b>Glivenko-Cantelli</b>: sup|Fₙ(x)−F(x)| → 0 cuando n → ∞ (la empírica converge uniformemente a la verdadera). Se distingue de la LGN (media→μ) y del TCL (suma estandarizada→Normal).</p>' };
+const LESSON_NP_KS = { title:'📉 Kolmogórov-Smirnov y Lilliefors', html:
+  '<p>Comprueban si una muestra proviene de una distribución propuesta. H₀: los datos siguen la distribución; H₁: no.</p>'
+  +'<p style="text-align:center"><b>D = máx|Fₙ(xᵢ) − F(xᵢ)|</b> con Fₙ(xᵢ)=i/n.</p>'
+  +'<ul><li>Parámetros <b>conocidos</b>: z=(xᵢ−μ)/σ, tabla KS.</li>'
+  +'<li>Parámetros <b>estimados</b> con la muestra: z=(xᵢ−x̄)/s, tabla de <b>Lilliefors</b>.</li></ul>'
+  +'<p>Se compara D con D_crítico: si D &gt; D_crítico se rechaza H₀.</p>' };
+const LESSON_NP_RANK = { title:'🔢 Spearman y Mann-Whitney', html:
+  '<p><b>Spearman</b> mide asociación monótona con rangos: ρs = 1 − 6Σdᵢ²/[n(n²−1)], con dᵢ=Rxᵢ−Ryᵢ. Escala de |ρs|: 0–0.1 ninguna · 0.1–0.3 baja · 0.3–0.5 media · 0.5–0.7 alta · 0.7–1 muy alta.</p>'
+  +'<p><b>Mann-Whitney</b> compara dos grupos independientes: U₁=n₁n₂+n₁(n₁+1)/2−R₁, U₂=n₁n₂−U₁, U=mín(U₁,U₂). Se rechaza H₀ si U ≤ U_crítico.</p>' };
+
+/* ---- Módulos ---- */
+const MODULES_NP = [
+  {id:0, icon:'⚖️', name:'Fundamentos no paramétricos', desc:'Paramétrico vs. no paramétrico, tipos de dato, H₀/H₁, errores I y II.', kind:'Quiz mixto', lesson:LESSON_NP_FUND, build:buildNP1},
+  {id:1, icon:'📶', name:'Función empírica y Glivenko-Cantelli', desc:'Fₙ(x)=(1/n)ΣI(Xᵢ≤x) y convergencia uniforme.', kind:'Quiz + cálculo', lesson:LESSON_NP_EMP, build:buildNP2},
+  {id:2, icon:'📉', name:'Kolmogórov-Smirnov y Lilliefors', desc:'D=máx|Fₙ−F|, parámetros conocidos vs. estimados.', kind:'Ejercicios ilimitados', lesson:LESSON_NP_KS, build:buildNP3},
+  {id:3, icon:'🎲', name:'Bondad de ajuste χ²', desc:'χ²=Σ(Oᵢ−Eᵢ)²/Eᵢ, gl=k−p−1, ajuste exponencial.', kind:'Ejercicios ilimitados', build:buildNP4},
+  {id:4, icon:'📊', name:'Proporciones y binomial exacta', desc:'z de proporción (con p₀) y prueba binomial exacta.', kind:'Ejercicios ilimitados', build:buildNP5},
+  {id:5, icon:'➕', name:'Cuantiles y prueba de los signos', desc:'Mediana, empates, tamaño efectivo y X~Bin(n,0.5).', kind:'Ejercicios ilimitados', build:buildNP6},
+  {id:6, icon:'🔀', name:'Prueba de McNemar', desc:'Tabla 2×2 pareada, discordantes B/C, Yates o exacta.', kind:'Ejercicios + tabla', build:buildNP7},
+  {id:7, icon:'📈', name:'Prueba de Cox-Stuart', desc:'Tendencia temporal formando parejas y T~Bin(C,0.5).', kind:'Ejercicios + serie', build:buildNP8},
+  {id:8, icon:'🏅', name:'Rangos: Spearman y Mann-Whitney', desc:'ρs de asociación monótona y U de dos grupos.', kind:'Ejercicios + caso', lesson:LESSON_NP_RANK, build:buildNP9}
+];
+const TOPIC_NAMES_NP = {
+  np_fund:'Fundamentos', np_empirica:'Función empírica', np_ks:'KS / Lilliefors', np_chi:'Bondad de ajuste χ²',
+  np_prop:'Proporciones / binomial', np_signos:'Cuantiles y signos', np_mcnemar:'McNemar', np_cox:'Cox-Stuart', np_rangos:'Rangos (Spearman/MW)'
+};
+function buildExamNP(){
+  const pool=[]; MODULES_NP.forEach(m=>{ if(m.build){ try{ pool.push(...m.build()); }catch(e){} } });
+  return npShuffle(pool).slice(0,12);
+}
+Object.assign(TOPIC_NAMES, TOPIC_NAMES_NP);
+/* Añadir la materia a la estructura reservada de repaso de examen */
+EXAM_REVIEWS_BY_SUBJECT['estadistica-no-parametrica'] = { pending:true, subject:'estadistica-no-parametrica', originals:[] };
+
+/* ---- Laboratorio No Paramétrico: selector de prueba ---- */
+const NP_TESTS = [
+  {id:'ks', name:'Kolmogórov-Smirnov'}, {id:'lillie', name:'Lilliefors'}, {id:'chi', name:'Chi cuadrada de bondad de ajuste'},
+  {id:'prop', name:'Prueba de proporciones (z)'}, {id:'binom', name:'Binomial exacta'}, {id:'cuantil', name:'Prueba de cuantiles'},
+  {id:'signos', name:'Prueba de los signos'}, {id:'mcnemar', name:'McNemar'}, {id:'cox', name:'Cox-Stuart'},
+  {id:'spearman', name:'Spearman'}, {id:'mw', name:'Mann-Whitney'}
+];
+const NP_SCENARIOS = [
+  {m:'ks', s:'Quieres comprobar si una muestra proviene de una N(80,6) con media y desviación <b>conocidas</b>.'},
+  {m:'lillie', s:'Quieres comprobar normalidad pero <b>estimas</b> μ y σ con la propia muestra.'},
+  {m:'chi', s:'Tienes datos agrupados en clases y comparas frecuencias observadas contra las esperadas de una distribución propuesta.'},
+  {m:'prop', s:'En una muestra grande (n=100) pruebas si la proporción de defectuosos es 0.10.'},
+  {m:'binom', s:'Con una muestra pequeña (n=20) pruebas si una proporción es 0.5 usando probabilidades exactas.'},
+  {m:'cuantil', s:'Quieres probar una afirmación sobre un cuantil poblacional contando cuántos datos quedan por debajo.'},
+  {m:'signos', s:'Comparas mediciones antes/después en los mismos sujetos usando solo el signo de la diferencia.'},
+  {m:'mcnemar', s:'Datos pareados con respuesta dicotómica (sí/no) antes y después: ¿cambió la proporción?'},
+  {m:'cox', s:'Una serie de robos mensuales ordenada en el tiempo: ¿hay tendencia creciente o decreciente?'},
+  {m:'spearman', s:'Mides la asociación monótona entre dos variables ordinales mediante sus rangos.'},
+  {m:'mw', s:'Comparas dos grupos independientes de asegurados sin suponer normalidad.'}
+];
+function npLabQuestion(){
+  const sc = npPick(NP_SCENARIOS);
+  const correct = NP_TESTS.find(t=>t.id===sc.m);
+  let distract = npShuffle(NP_TESTS.filter(t=>t.id!==sc.m)).slice(0,3);
+  const options = npShuffle([{t:correct.name, ok:true}, ...distract.map(t=>({t:t.name, ok:false}))]);
+  return { type:'mc', topic:'np_fund', stage:'lab',
+    prompt:'<b>🧪 Laboratorio No Paramétrico.</b> '+sc.s+'<br>¿Qué prueba usarías?',
+    options, explain:'La prueba adecuada es: <b>'+correct.name+'</b>.', correctText:correct.name };
+}
+function startNPLab(){
+  if(S.activeSubject!=='estadistica-no-parametrica'){ toast('🧪 El Laboratorio No Paramétrico está en Estadística No Paramétrica.'); sfx('bad'); return; }
+  const qs = []; for(let i=0;i<10;i++) qs.push(npLabQuestion());
+  startMode({ id:'nplab', title:'🧪 Laboratorio No Paramétrico', icon:'🧪', qs,
+    introToast:'🧪 Identifica la prueba correcta para cada escenario.' });
+}
+
+const MODULES_BY_SUBJECT = { ca3: MODULES_CA3, 'modelos-regresion': MODULES_REG, 'estadistica-no-parametrica': MODULES_NP, stoch: MODULES_STOCH, fin: [] };
 /* MODULES siempre apunta a los módulos de la materia activa */
 let MODULES = MODULES_BY_SUBJECT[S.activeSubject] || [];
 /* ==================== Modal ==================== */
@@ -4690,6 +5147,7 @@ const GAME_MODES = [
   {id:'parcial', cat:'Exámenes',    ico:'📖', name:'Modo parcial',            desc:'Simula un examen por parcial.',                run:startParcial,     needs:'content'},
   {id:'final',   cat:'Exámenes',    ico:'🏆', name:'Examen final',            desc:'Mezcla todos los temas de la materia.',        run:startFinalExam,   needs:'content'},
   {id:'repasoex', cat:'Exámenes',    ico:'🎓', name:'Repaso Examen',            desc:'Prepárate por parcial: estudio o simulación.', run:startRepasoExamen, needs:'repaso'},
+  {id:'nplab',    cat:'Juegos',      ico:'🧪', name:'Laboratorio No Paramétrico',desc:'Elige la prueba correcta para cada escenario.', run:startNPLab, needs:'nplab'},
   {id:'blitz',   cat:'Rapidez',     ico:'⚡', name:'Examen contrarreloj',     desc:'+5 s por acierto; cada falla resta más tiempo.', run:()=>{touchStreak();startBlitz();}, needs:'content'},
   {id:'vf',      cat:'Rapidez',     ico:'⚖️', name:'Verdadero / Falso rápido',desc:'12 afirmaciones a toda velocidad.',            run:startVF,          needs:'content'},
   {id:'carrera', cat:'Rapidez',     ico:'🏁', name:'Carrera de XP',           desc:'Llega a 100 XP lo antes posible.',             run:startCarrera,     needs:'content'},
@@ -4712,6 +5170,7 @@ const GAME_MODES = [
 function modeAvailable(m){
   if(m.needs==='ca3') return S.activeSubject==='ca3';
   if(m.needs==='repaso') return !!PARCIALES_BY_SUBJECT[S.activeSubject] || !!EXAM_REVIEWS_BY_SUBJECT[S.activeSubject];
+  if(m.needs==='nplab') return S.activeSubject==='estadistica-no-parametrica';
   if(m.needs==='content') return MODULES.length>0;
   return true;
 }
@@ -5004,7 +5463,7 @@ $('#btnBoard').addEventListener('click', () => { sfx('click'); renderBoard(); sh
    SEED_TASKS / SEED_CALENDAR: el administrador puede editarlos directamente
    aquí en el HTML (y publicar) o desde su panel dentro de la vista 📋.
    Formato de tarea:
-   {id, title, subject:'ca3'|'modelos-regresion'|'nopar'|'stoch'|'fin'|'all', partial:1|2|3|'final',
+   {id, title, subject:'ca3'|'modelos-regresion'|'estadistica-no-parametrica'|'stoch'|'fin'|'all', partial:1|2|3|'final',
     due:'YYYY-MM-DD', priority:'alta'|'media'|'baja', desc, steps:[], materials:[],
     notes, published:'YYYY-MM-DD'} */
 const SEED_TASKS = [];   // sin tareas fijas: las publica el admin vía tasks.json
@@ -5013,7 +5472,7 @@ const SEED_TASKS = [];   // sin tareas fijas: las publica el admin vía tasks.js
 const SEED_CALENDAR = {
   ca3:   {p1:'2026-06-10', p2:'2026-07-08', p3:'2026-08-12', final:'2026-08-12'},
   'modelos-regresion': {p1:'2026-06-08', p2:'2026-07-06', p3:'2026-08-10', final:'2026-08-10'},
-  nopar: {p1:'2026-06-09', p2:'2026-07-07', p3:'2026-08-11', final:'2026-08-11'},
+  'estadistica-no-parametrica': {p1:'2026-06-09', p2:'2026-07-07', p3:'2026-08-11', final:'2026-08-11'},
   stoch: {p1:'2026-06-11', p2:'2026-07-10', p3:'2026-08-13', final:'2026-08-13'},
   fin:   {p1:'2026-06-12', p2:'2026-07-10', p3:'2026-08-14', final:'2026-08-14'}
 };
@@ -5717,7 +6176,7 @@ $('#btnPrint').addEventListener('click', () => {
 /* ==================== Examen diario ==================== */
 /* Los exámenes son POR MATERIA: cada materia registra su generador aquí.
    Los temas no se mezclan entre materias. */
-const EXAM_BUILDERS_BY_SUBJECT = { ca3: buildExam, stoch: buildExamStoch, 'modelos-regresion': buildExamReg };
+const EXAM_BUILDERS_BY_SUBJECT = { ca3: buildExam, stoch: buildExamStoch, 'modelos-regresion': buildExamReg, 'estadistica-no-parametrica': buildExamNP };
 function buildExam(){
   const usedTF = new Set(), usedF = new Set(), usedP = new Set();
   return shuffle([
