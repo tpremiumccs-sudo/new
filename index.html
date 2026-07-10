@@ -448,7 +448,7 @@ header.top{
 .av-stack .av-base .av-emoji{line-height:1}
 .av-stack .av-frame{position:absolute; inset:0; border-radius:50%; z-index:4; pointer-events:none}
 .av-stack .av-acc{position:absolute; z-index:5; pointer-events:none; line-height:1}
-.av-sticker{display:inline-block; color:#fff; font-weight:800; padding:2px 6px; border-radius:7px; box-shadow:0 1px 3px rgba(0,0,0,.3); white-space:nowrap}
+.av-sticker{display:inline-block; color:#fff; font-weight:800; padding:2px 6px; border-radius:7px; box-shadow:0 1px 3px rgba(0,0,0,.35); white-space:nowrap; border:1.5px solid rgba(255,255,255,.92); box-sizing:border-box}
 @keyframes av-spin{to{transform:rotate(360deg)}}
 /* ---- Efectos del MARCO: solo decoran el anillo/borde (sin emojis) ---- */
 .av-stack .av-ring{position:absolute; inset:-5px; border-radius:50%; z-index:3; pointer-events:none}
@@ -5634,8 +5634,39 @@ function lbSyncSelf(){
   ent.streak = S.streak; ent.avg = selfAvg();
   ensureEquip(); ent.frame = S.equip.frame || null; ent.title = currentTitle();
   ent.badge = S.equip.badge || null; ent.acc = S.equip.acc || []; ent.bg = S.equip.bg || null; ent.updated = Date.now();
+  lbDedupeByName(b);   // colapsa duplicados por nombre (p. ej. un "Oliver" viejo con otro pid) antes de mostrar
   lbSave(b);
   return b;
+}
+/* Elige la fila ganadora entre dos con el mismo nombre: mi fila real siempre
+   gana (refleja mi progreso verdadero); si no, la de más XP (empate → la más
+   reciente). */
+function lbBetterRow(a, c){
+  if(a.pid === PROFILES.active) return a;
+  if(c.pid === PROFILES.active) return c;
+  const ax = +a.xp||0, cx = +c.xp||0;
+  if(cx !== ax) return cx > ax ? c : a;
+  return (c.updated||0) > (a.updated||0) ? c : a;
+}
+/* Colapsa filas con el mismo nombre (sin distinguir mayúsculas/espacios).
+   Elimina duplicados heredados de un leaderboard.json antiguo, donde el mismo
+   nombre quedó guardado con otro pid además de tu fila actual. */
+function lbDedupeByName(b){
+  const byName = new Map();
+  const keep = [];
+  b.students.forEach(s => {
+    const key = (s.name||'').trim().toLowerCase();
+    if(!key){ keep.push(s); return; }          // sin nombre: no se agrupa
+    const prev = byName.get(key);
+    if(!prev){ byName.set(key, s); keep.push(s); return; }
+    if(lbBetterRow(prev, s) === s){            // la nueva gana: reemplaza a la anterior
+      const i = keep.indexOf(prev); if(i>=0) keep[i] = s;
+      byName.set(key, s);
+    }                                          // la perdedora no se conserva
+  });
+  const removed = b.students.length - keep.length;
+  if(removed) b.students = keep;
+  return removed;
 }
 const LB_SORTKEY = {xp:'xp', lvl:'lvl', streak:'streak', avg:'avg'};
 function lbSorted(b, key){ const k = LB_SORTKEY[key] || 'xp'; return [...b.students].sort((a,x)=>(x[k]||0)-(a[k]||0)); }
@@ -5682,11 +5713,14 @@ function lbMergeStudents(inc, newerWins){
     } else {
       b.students.push({pid: x.pid || ('m'+Date.now().toString(36)+Math.random().toString(36).slice(2,6)),
         name:String(x.name).slice(0,24), avatar:x.avatar||'🎓', photo:x.photo||null, frame:x.frame||null, title:x.title||'',
+        // el avatar completo (modo 3D/foto, accesorios, stickers, fondo e insignia) viaja para que la fila se vea igual que en el perfil de cada quien
+        avatarMode:x.avatarMode||null, custom:x.custom||null, acc:Array.isArray(x.acc)?x.acc:(x.acc?[x.acc]:[]), bg:x.bg||null, badge:x.badge||null,
         xp:+x.xp||0, lvl:levelOf(+x.xp||0), mods:+x.mods||0, streak:+x.streak||0, avg:+x.avg||0, updated:x.updated||Date.now()});
       changed++;
     }
   });
-  if(changed) lbSave(b);
+  const deduped = lbDedupeByName(b);   // tras fusionar, colapsa cualquier duplicado por nombre
+  if(changed || deduped) lbSave(b);
   return changed;
 }
 async function lbFetchRemote(){
@@ -6930,10 +6964,10 @@ const ACCESSORIES = [
   {id:'acc-sword',   type:'acc', slot:'hand', rarity:'legendary', secret:true, name:'Espada', ico:'🗡️', test:()=>subjStats('ca3').done>=12, cond:'???', hint:'Domina toda una materia', emoji:'🗡️', scale:0.5, x:78, y:66, rot:-42, desc:'Cortas exámenes como mantequilla.'},
   {id:'acc-bomb',    type:'acc', slot:'hand', rarity:'legendary', secret:true, name:'Bomba', ico:'💣', test:()=>{const h=S.examHistory||[]; return h.some(e=>e.score<40);}, cond:'???', hint:'A veces un examen sale realmente mal…', emoji:'💣', scale:0.4, x:78, y:83, desc:'Ese examen explotó.'},
   // — Stickers (etiqueta en una esquina; solo uno a la vez) —
-  {id:'acc-aprobe',  type:'acc', slot:'sticker', rarity:'rare', name:'Sticker “Aprobé”', ico:'✅', test:()=>(S.examHistory||[]).some(e=>e.score>=80), cond:'Aprueba un examen diario (≥80%)', sticker:'✅ Aprobé', stickerBg:'#0ca30c', rot:-10, x:27, y:85, desc:'La prueba de que sí se pudo.'},
-  {id:'acc-noc',     type:'acc', slot:'sticker', rarity:'common', name:'Sticker “No era la C”', ico:'🅲', xp:1500, sticker:'No era la C', stickerBg:'#e34948', rot:-10, x:28, y:85, desc:'Todos hemos estado ahí.'},
-  {id:'acc-100',     type:'acc', slot:'sticker', rarity:'epic', name:'Sticker “100”', ico:'💯', test:()=>Object.values(S.modules).some(m=>m.best>=100), cond:'Saca 100% en un módulo', sticker:'💯 Perfecto', stickerBg:'#eda100', rot:-10, x:27, y:85, desc:'Puntuación perfecta.'},
-  {id:'acc-flag',    type:'acc', slot:'sticker', rarity:'rare', name:'Bandera “Sobreviví”', ico:'🏁', test:()=>(S.examHistory||[]).length>=3, cond:'Presenta 3 exámenes diarios', sticker:'🏁 Sobreviví', stickerBg:'#4a3aa7', rot:-10, x:28, y:85, desc:'Un cuatrimestre más.'}
+  {id:'acc-aprobe',  type:'acc', slot:'sticker', rarity:'rare', name:'Sticker “Aprobé”', ico:'✅', test:()=>(S.examHistory||[]).some(e=>e.score>=80), cond:'Aprueba un examen diario (≥80%)', sticker:'✅ Aprobé', stickerBg:'#0ca30c', rot:-8, x:50, y:68, desc:'La prueba de que sí se pudo.'},
+  {id:'acc-noc',     type:'acc', slot:'sticker', rarity:'common', name:'Sticker “No era la C”', ico:'🅲', xp:1500, sticker:'No era la C', stickerBg:'#e34948', rot:-8, x:50, y:68, desc:'Todos hemos estado ahí.'},
+  {id:'acc-100',     type:'acc', slot:'sticker', rarity:'epic', name:'Sticker “100”', ico:'💯', test:()=>Object.values(S.modules).some(m=>m.best>=100), cond:'Saca 100% en un módulo', sticker:'💯 Perfecto', stickerBg:'#eda100', rot:-8, x:50, y:68, desc:'Puntuación perfecta.'},
+  {id:'acc-flag',    type:'acc', slot:'sticker', rarity:'rare', name:'Bandera “Sobreviví”', ico:'🏁', test:()=>(S.examHistory||[]).length>=3, cond:'Presenta 3 exámenes diarios', sticker:'🏁 Sobreviví', stickerBg:'#4a3aa7', rot:-8, x:50, y:68, desc:'Un cuatrimestre más.'}
 ];
 const accSlot = id => { const a = ACCESSORIES.find(x=>x.id===id); return a ? a.slot : null; };
 /* ---- Efectos del MARCO: solo decoran el anillo/borde de la foto (sin emojis
@@ -7122,7 +7156,11 @@ function avatarBase(p, size){
 function accHTML(a, size){
   let content;
   if(a.svg) content = a.svg(size, a.w);
-  else if(a.sticker) content = '<span class="av-sticker" style="background:'+(a.stickerBg||'#333')+';font-size:'+Math.max(7,Math.round(size*0.12))+'px">'+esc(a.sticker)+'</span>';
+  else if(a.sticker){
+    const fs = Math.max(6, Math.round(size*0.105));                // el texto escala con el avatar
+    const pv = Math.max(1, Math.round(size*0.016)), ph = Math.max(2, Math.round(size*0.045)); // el relleno también, así el sticker no crece de más
+    content = '<span class="av-sticker" style="background:'+(a.stickerBg||'#333')+';font-size:'+fs+'px;padding:'+pv+'px '+ph+'px">'+esc(a.sticker)+'</span>';
+  }
   else content = '<span style="font-size:'+Math.round(size*(a.scale||0.4))+'px">'+a.emoji+'</span>';
   const rot = a.rot ? ' rotate('+a.rot+'deg)' : '';
   return '<span class="av-acc" style="left:'+a.x+'%;top:'+a.y+'%;transform:translate(-50%,-50%)'+rot+'">'+content+'</span>';
