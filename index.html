@@ -5718,11 +5718,18 @@ async function lbFetchRemote(){
 }
 /* Sube la fila propia al servidor de sincronización (todos los alumnos).
    No incluye la foto (base64) para mantener el JSON compartido pequeño; el
-   avatar emoji, marco, título e insignia sí viajan. */
+   avatar emoji, marco, título e insignia sí viajan. Anti-suplantación: si ya
+   existe ese nombre con MÁS XP, el servidor rechaza (y la app también avisa
+   antes de enviar) para que nadie pise las stats de otro con un nombre ajeno. */
 async function lbUploadSelf(){
   if(!LB_SYNC_URL){ toast('🔧 La sincronización en vivo aún no está configurada.'); sfx('bad'); return; }
   const b = lbSyncSelf();
   const me = b.students.find(s => s.pid === PROFILES.active); if(!me) return;
+  // pre-chequeo local: ¿ya hay otra fila con mi mismo nombre y más XP?
+  const rival = b.students.find(s => s.pid !== PROFILES.active
+    && (s.name||'').trim().toLowerCase() === (me.name||'').trim().toLowerCase()
+    && (s.xp||0) > (me.xp||0));
+  if(rival){ toast('🚫 Alguien más ya tiene mejores stats con ese nombre.'); sfx('bad'); return; }
   const row = { name:me.name, xp:me.xp, lvl:me.lvl, mods:me.mods, streak:me.streak, avg:me.avg,
     avatar:me.avatar, avatarMode:(me.avatarMode==='custom'?'custom':'emoji'), custom:me.custom||null,
     frame:me.frame||null, title:me.title||'', badge:me.badge||null, acc:me.acc||[], bg:me.bg||null, updated:Date.now() };
@@ -5730,6 +5737,12 @@ async function lbUploadSelf(){
     toast('⬆️ Subiendo tus stats…');
     const res = await fetch(LB_SYNC_URL, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify(row) });
     if(!res.ok) throw new Error('http '+res.status);
+    let data = null; try{ data = await res.json(); }catch(e){}
+    if(data && data.error === 'lower'){
+      toast('🚫 '+(data.message || 'Alguien más ya tiene mejores stats con ese nombre.')); sfx('bad');
+      lbFetchedAt = 0; lbMaybeFetch(true);           // refresca para mostrar las stats reales
+      return;
+    }
     toast('✅ ¡Stats subidas! El grupo ya te ve.'); sfx('unlock');
     lbFetchedAt = 0; lbMaybeFetch(true);
   }catch(e){ toast('❌ No se pudo subir. Revisa tu conexión o la URL de sincronización.'); sfx('bad'); }
