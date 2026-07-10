@@ -1451,7 +1451,7 @@ function renderHome(){
     tile('🏆','Avance en '+subj.short, Math.round(o.progress*100), '%', hasContent ? o.done+' de '+o.total+' módulos' : 'contenido en preparación') +
     tile('🎯','Precisión', Math.round(o.acc*100), '%', o.answered+' respuestas en esta materia') +
     tile('📈','Promedio', Math.round(o.avg), '%', S.history.length+' actividades') +
-    tile('⚡','XP total', S.xp, '', 'Nivel '+levelInfo().lvl+' · '+currentTitle()) +
+    tile('⚡','XP total', S.xp, '', 'Nivel '+levelInfo().lvl+' · '+titleIco()+' '+currentTitle()) +
     tile('📅','Objetivo de hoy', dayXp+'<span class="unit">/'+goal+' XP</span>', '', dayXp>=goal ? '¡Cumplido! ✅' : 'ajústalo en tu perfil') +
     tile('🔥','Racha diaria', S.streak, S.streak===1?' día':' días', S.lastDay===todayKey() ? '¡Ya estudiaste hoy! ✅' : '⚠️ Estudia hoy para mantenerla') +
     tile('📋','Tareas pendientes', pend, '', pend ? 'revísalas en 📋 Tareas' : 'todo al día 🎉');
@@ -5663,6 +5663,12 @@ async function lbCheckPass(pass){
    nunca se pisa porque sale de tu progreso real). El admin publica subiendo
    el JSON exportado al repositorio. */
 let lbFetchedAt = 0;
+/* URL de sincronización en vivo (opcional). Se toma del campo "syncUrl" de
+   leaderboard.json, así el admin la configura una sola vez y llega a todos.
+   Si está definida, el leaderboard se lee y actualiza en vivo: cada alumno
+   sube su fila con “⬆️ Subir mis stats” y el servidor la fusiona por nombre
+   (el admin ya no tiene que actualizar el JSON a mano). */
+let LB_SYNC_URL = null;
 function lbMergeStudents(inc, newerWins){
   const b = lbLoad();
   let changed = 0;
@@ -5684,14 +5690,49 @@ function lbMergeStudents(inc, newerWins){
   return changed;
 }
 async function lbFetchRemote(){
+  let changed = 0, ok = false;
+  // 1) archivo publicado leaderboard.json (semilla + configuración syncUrl)
   try{
     const res = await fetch('leaderboard.json?t='+Date.now(), {cache:'no-store'});
-    if(!res.ok) return -1;
-    const payload = await res.json();
-    const inc = (payload && Array.isArray(payload.students)) ? payload.students : (Array.isArray(payload) ? payload : []);
-    if(!inc.length) return 0;
-    return lbMergeStudents(inc, true);
-  }catch(e){ return -1; }
+    if(res.ok){
+      ok = true;
+      const payload = await res.json();
+      if(payload && typeof payload.syncUrl === 'string' && /^https?:\/\//.test(payload.syncUrl)) LB_SYNC_URL = payload.syncUrl;
+      const inc = (payload && Array.isArray(payload.students)) ? payload.students : (Array.isArray(payload) ? payload : []);
+      if(inc.length) changed += lbMergeStudents(inc, true);
+    }
+  }catch(e){}
+  // 2) tabla en vivo del servidor de sincronización (si está configurado)
+  if(LB_SYNC_URL){
+    try{
+      const r2 = await fetch(LB_SYNC_URL + (LB_SYNC_URL.includes('?')?'&':'?') + 't='+Date.now(), {cache:'no-store'});
+      if(r2.ok){
+        ok = true;
+        const live = await r2.json();
+        const arr = Array.isArray(live) ? live : (live && Array.isArray(live.students) ? live.students : []);
+        if(arr.length) changed += lbMergeStudents(arr, true);
+      }
+    }catch(e){}
+  }
+  return ok ? changed : -1;
+}
+/* Sube la fila propia al servidor de sincronización (todos los alumnos).
+   No incluye la foto (base64) para mantener el JSON compartido pequeño; el
+   avatar emoji, marco, título e insignia sí viajan. */
+async function lbUploadSelf(){
+  if(!LB_SYNC_URL){ toast('🔧 La sincronización en vivo aún no está configurada.'); sfx('bad'); return; }
+  const b = lbSyncSelf();
+  const me = b.students.find(s => s.pid === PROFILES.active); if(!me) return;
+  const row = { name:me.name, xp:me.xp, lvl:me.lvl, mods:me.mods, streak:me.streak, avg:me.avg,
+    avatar:me.avatar, avatarMode:(me.avatarMode==='custom'?'custom':'emoji'), custom:me.custom||null,
+    frame:me.frame||null, title:me.title||'', badge:me.badge||null, acc:me.acc||[], bg:me.bg||null, updated:Date.now() };
+  try{
+    toast('⬆️ Subiendo tus stats…');
+    const res = await fetch(LB_SYNC_URL, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify(row) });
+    if(!res.ok) throw new Error('http '+res.status);
+    toast('✅ ¡Stats subidas! El grupo ya te ve.'); sfx('unlock');
+    lbFetchedAt = 0; lbMaybeFetch(true);
+  }catch(e){ toast('❌ No se pudo subir. Revisa tu conexión o la URL de sincronización.'); sfx('bad'); }
 }
 function lbMaybeFetch(force){
   if(!force && Date.now() - lbFetchedAt < 60000) return;
@@ -5714,6 +5755,7 @@ function lbRowHTML(s, i){
   const isMe = s.pid===PROFILES.active;
   const eqOv = isMe ? ensureEquip() : {frame:s.frame||null, acc:s.acc||[], bg:s.bg||null, effect:null};
   const title = isMe ? currentTitle() : (s.title||'');
+  const tIco = isMe ? titleIco() : titleIcoByName(title);
   const badgeId = isMe ? S.equip.badge : s.badge;
   const bd = badgeId ? BADGES.find(b=>b.id===badgeId) : null;
   const avp = {avatar:s.avatar, photo:s.photo, avatarMode:s.avatarMode, custom:s.custom};
@@ -5721,7 +5763,7 @@ function lbRowHTML(s, i){
     + '<td>'+(i+1)+' <span class="lb-medal">'+medal+'</span></td>'
     + '<td>'+avatarStack(avp, 32, eqOv)+'</td>'
     + '<td><b>'+esc(s.name||'—')+'</b>'+(bd?' <span title="'+esc(bd.name)+'">'+bd.ico+'</span>':'')
-      + (title?'<br><small style="color:var(--accent)">🏷️ '+esc(title)+'</small>':'')+'</td>'
+      + (title?'<br><small style="color:var(--accent)">'+tIco+' '+esc(title)+'</small>':'')+'</td>'
     + '<td class="num"><b>'+(s.xp||0).toLocaleString()+'</b></td>'
     + '<td class="num">'+(s.lvl||1)+'</td>'
     + '<td class="num">'+(s.avg!=null?s.avg+'%':'—')+'</td>'
@@ -5743,12 +5785,15 @@ function lbBoardPanelHTML(visible, myPos, total){
     + '</table>'
     + '<p class="lb-motiv">'+lbMotivation(myPos, total)+'</p>'
     + '<div class="q-actions" style="justify-content:flex-start;flex-wrap:wrap;margin-top:12px">'
+    + (LB_SYNC_URL ? '<button class="btn small" id="lbUpload">⬆️ Subir mis stats al grupo</button>' : '')
     + '<button class="btn ghost small" id="lbRefresh">🔄 Actualizar</button>'
     + '<button class="btn ghost small" id="lbExport">⬇️ Exportar JSON</button>'
     + '<button class="btn ghost small" id="lbImport">⬆️ Importar JSON</button>'
     + '<input type="file" id="lbImportFile" accept=".json,application/json" class="hidden">'
     + '</div>'
-    + '<p class="q-help">🌐 La tabla se sincroniza con el archivo <code>leaderboard.json</code> publicado junto a la página cada vez que abres esta pantalla (o al tocar Actualizar).</p>'
+    + (LB_SYNC_URL
+        ? '<p class="q-help">🌐 <b>Sincronización en vivo activada.</b> Toca “⬆️ Subir mis stats” para aparecer en la tabla de todos; se actualiza por nombre.</p>'
+        : '<p class="q-help">🌐 La tabla se sincroniza con el archivo <code>leaderboard.json</code> publicado junto a la página cada vez que abres esta pantalla (o al tocar Actualizar).</p>')
     + '</div>';
 }
 /* — Leaderboard: panel de administrador (solo perfil "Oliver") — */
@@ -5776,6 +5821,7 @@ function lbAdminPanelHTML(b){
         + '</div>'
         + '<p class="q-help">El nivel se calcula solo a partir del XP. Usa ✏️ y 🗑️ en cada fila para editar o eliminar.</p>'
         + '<p class="q-help">🌐 <b>Para publicar la tabla a todo el grupo:</b> toca “⬇️ Exportar JSON” (descarga <code>leaderboard.json</code>) y súbelo al repositorio de GitHub reemplazando el archivo <code>leaderboard.json</code> (Add file → Upload files). Al desplegarse, todos verán la tabla actualizada al abrir la página.</p>'
+        + '<p class="q-help">⚡ <b>Sincronización en vivo (opcional):</b> agrega un campo <code>"syncUrl": "…"</code> en <code>leaderboard.json</code> apuntando a tu servicio (p. ej. una Google Apps Script Web App). Con eso, cada alumno usa “⬆️ Subir mis stats” y la tabla se actualiza sola por nombre, sin que subas el JSON cada vez. '+(LB_SYNC_URL?'<b>Estado: activada ✅</b>':'<b>Estado: no configurada</b>')+'</p>'
         : '<p class="q-help">Escribe la contraseña y toca el botón para activar el modo administrador.</p>')
       + '</div>';
 }
@@ -5796,6 +5842,7 @@ function renderBoard(){
 function bindBoardEvents(){
   $('#lbSearch').addEventListener('input', e => { lbFilterQ = e.target.value; renderBoard(); const el=$('#lbSearch'); el.focus(); el.setSelectionRange(el.value.length,el.value.length); });
   $('#lbSortSel').addEventListener('change', e => { lbSort = e.target.value; renderBoard(); });
+  const lbUp = $('#lbUpload'); if(lbUp) lbUp.addEventListener('click', () => { sfx('click'); lbUploadSelf(); });
   $('#lbRefresh').addEventListener('click', () => { sfx('click'); lbMaybeFetch(true); });
   $('#lbExport').addEventListener('click', () => {
     downloadJSON('leaderboard.json', {app:'actuariq-board', version:1, exported:new Date().toISOString(), students:lbRanked(lbLoad())});
@@ -6366,7 +6413,7 @@ function statsPlayerCardHTML(o, myPos){
   return '<div class="panel"><h3>👤 Mi tarjeta</h3>'
     + '<div style="text-align:center">'+avatarStack(p, 84)
     + '<div style="font-weight:800;margin-top:6px">'+esc(p.name)+'</div>'
-    + '<div style="font-size:.82rem;color:var(--ink2)">🏷️ '+currentTitle()+'</div></div>'
+    + '<div style="font-size:.82rem;color:var(--ink2)">'+titleIco()+' '+esc(currentTitle())+'</div></div>'
     + '<div class="qprog" style="margin:12px 0 4px"><i style="width:'+Math.round(li.frac*100)+'%"></i></div>'
     + '<p class="q-help" style="margin:0 0 10px">Nivel '+li.lvl+' · '+S.xp+' XP · faltan '+li.toNext+' para subir</p>'
     + '<div class="tag-list">'
@@ -6733,6 +6780,20 @@ function currentTitle(){
   const lvl = levelInfo().lvl;
   LEVEL_REWARDS.forEach(r => { if(r.title && lvl >= r.lvl) t = r.title; });
   return t;
+}
+/* Emoji del título activo del perfil (los títulos de la tienda traen su propio
+   icono; los rangos de nivel usan el 🏷️ genérico). */
+function titleIco(){
+  if(S.equip && S.equip.title){
+    const chosen = REWARDS.find(r => r.id===S.equip.title && r.type==='title');
+    if(chosen) return chosen.ico || '🏷️';
+  }
+  return '🏷️';
+}
+/* Emoji de un título por su nombre (para filas de otros en el leaderboard). */
+function titleIcoByName(name){
+  const r = REWARDS.find(x => x.type==='title' && x.name===name);
+  return (r && r.ico) || '🏷️';
 }
 
 /* ==================== Tienda de recompensas ==================== */
@@ -7133,7 +7194,7 @@ function renderLevels(){
   const li = levelInfo();
   let html = '<div class="result-card" style="margin-top:0;max-width:640px">'
     + '<div class="big-ico">⬆️</div><h2>Nivel '+li.lvl+'</h2>'
-    + '<div class="r-sub">🏷️ '+currentTitle()+'</div>'
+    + '<div class="r-sub">'+titleIco()+' '+esc(currentTitle())+'</div>'
     + '<div class="qprog" style="max-width:340px;margin:16px auto 8px"><i style="width:'+Math.round(li.frac*100)+'%"></i></div>'
     + '<p style="font-size:.9rem;color:var(--ink2)"><b>'+S.xp+' XP</b> acumulados · faltan <b>'+li.toNext+' XP</b> para el nivel '+(li.lvl+1)+'</p>'
     + '<p class="q-help">Gana XP con los módulos, el examen diario, el memorama, el escape room y los retos contrarreloj.</p></div>';
@@ -7215,7 +7276,7 @@ function avatarEditorHTML(p, fb){
   const preview = '<div class="dresser-preview">'
     + '<div class="dp-av">'+avatarStack(p, 132)+'</div>'
     + '<div class="dp-id"><b>'+esc(p.name)+'</b>'+(fb ? ' <span title="'+esc(fb.name)+'">'+fb.ico+'</span>' : '')
-      + '<br><small>🏷️ '+esc(currentTitle())+'</small></div>'
+      + '<br><small>'+titleIco()+' '+esc(currentTitle())+'</small></div>'
     + '<div class="tag-list dp-tags">'
       + '<span class="tag neutral">'+subjectById(S.activeSubject).icon+' '+esc(subjectById(S.activeSubject).short)+'</span>'
       + '<span class="tag neutral">🔥 '+S.streak+'</span>'
