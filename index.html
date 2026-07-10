@@ -5805,7 +5805,12 @@ function lbRowHTML(s, i){
   const tIco = isMe ? titleIco() : titleIcoByName(title);
   const badgeId = isMe ? S.equip.badge : s.badge;
   const bd = badgeId ? BADGES.find(b=>b.id===badgeId) : null;
-  const avp = {avatar:s.avatar, photo:s.photo, avatarMode:s.avatarMode, custom:s.custom};
+  // El leaderboard siempre dibuja el avatar 3D (nunca el emoji suelto): si la
+  // fila trae foto se respeta; en cualquier otro caso se usa el muñeco 3D (con
+  // la personalización del alumno si viajó, o el 3D por defecto para filas
+  // antiguas que aún no re-suben su avatar completo).
+  const lbMode = (s.avatarMode === 'photo' && s.photo) ? 'photo' : 'custom';
+  const avp = {avatar:s.avatar, photo:s.photo, avatarMode:lbMode, custom:s.custom};
   return '<tr class="'+(i===0?'first ':'')+(isMe?'me':'')+'">'
     + '<td>'+(i+1)+' <span class="lb-medal">'+medal+'</span></td>'
     + '<td>'+avatarStack(avp, 32, eqOv)+'</td>'
@@ -6939,7 +6944,7 @@ const ACCESSORIES = [
   {id:'acc-brain',   type:'acc', slot:'head', rarity:'legendary', secret:true, name:'Cerebro expuesto', ico:'🧠', test:()=>(S.totalAnswered||0)>=200, cond:'???', hint:'Responde muchísimas preguntas', emoji:'🧠', scale:0.5, x:50, y:12, desc:'Demasiada sabiduría acumulada.'},
   // — Boca / bajo la nariz —
   {id:'acc-mustache', type:'acc', slot:'mouth', rarity:'rare', name:'Bigote falso', ico:'👨', xp:1100, svg:svgMustache, w:0.42, x:50, y:56, desc:'Un disfraz muy serio.'},
-  {id:'acc-cig',     type:'acc', slot:'mouth', rarity:'rare', name:'Cigarro', ico:'🚬', xp:1300, emoji:'🚬', scale:0.32, x:63, y:61, rot:6, desc:'El estrés del cuatrimestre.'},
+  {id:'acc-cig',     type:'acc', slot:'mouth', rarity:'rare', name:'Cigarro', ico:'🚬', xp:1300, emoji:'🚬', scale:0.27, x:55, y:27, rot:8, desc:'El estrés del cuatrimestre.'},
   {id:'acc-lollipop', type:'acc', slot:'mouth', rarity:'common', name:'Paleta', ico:'🍭', xp:700, emoji:'🍭', scale:0.36, x:63, y:63, rot:18, desc:'Dulce recompensa.'},
   {id:'acc-rose',    type:'acc', slot:'mouth', rarity:'epic', name:'Rosa en la boca', ico:'🌹', xp:2600, emoji:'🌹', scale:0.36, x:56, y:61, rot:72, desc:'Puro romance… con las integrales.'},
   {id:'acc-tear',    type:'acc', slot:'mouth', rarity:'common', name:'Lágrima de parcial', ico:'💧', xp:500,  emoji:'💧', scale:0.2, x:59, y:55, desc:'El parcial estuvo difícil.'},
