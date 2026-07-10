@@ -22,10 +22,33 @@ globales. Cambia de materia desde el chip del encabezado.
 | Materia | Estado |
 |---------|--------|
 | 🛡️ Cálculo Actuarial III | 12 módulos con contenido completo |
+| 🎲 Procesos Estocásticos | 12 módulos (Parcial 1 y 2) + modo Repaso Examen |
 | 📉 Modelos de Regresión | En preparación (tareas y calendario disponibles) |
 | 📊 Análisis Estadístico No Paramétrico | En preparación |
-| 🎲 Procesos Estocásticos | En preparación |
 | 💼 Administración Financiera | En preparación |
+
+### 🎲 Procesos Estocásticos
+
+Materia con la misma infraestructura que Cálculo III (progreso, estrellas,
+XP global, estadísticas por materia, examen diario, blitz, flashcards…). Sus
+12 módulos siguen los apuntes del profesor:
+
+- **Parcial 1:** fundamentos (Ω×T→S, trayectorias), tipos de proceso
+  (i.i.d./Markov/incrementos), caminata aleatoria (E[Xₙ]=n(p−q),
+  Var=4npq, posición), regreso al origen (pₙ vs. fₙ), cadenas de Markov,
+  diagramas y matrices de transición (P², vₙ=v₀Pⁿ).
+- **Parcial 2:** proceso de Poisson (P(N(t)=k)=e^(−λt)(λt)^k/k!),
+  exponencial (P(X>t)=e^(−λt), despejes, E=1/λ), pérdida de memoria,
+  Erlang/Gamma (Sₙ, n/λ, n/λ²) y propiedades integradoras
+  (adelgazamiento λp, superposición, Binomial(n,s/t) condicional, compuesto).
+
+Incluye el modo **🎓 Repaso Examen**: eliges parcial (1.º y 2.º disponibles;
+3.º «Próximamente» y Final bloqueado hasta tener los tres) y modalidad
+**Estudio** (retroalimentación, fórmula y procedimiento) o **Simulación**
+(preguntas mezcladas, calificación y revisión al final), con etapa
+«reconoce el modelo» y un caso final de varios incisos. Los ejercicios se
+generan con funciones (valores aleatorios válidos, distractores por errores
+comunes) y muestran solución paso a paso.
 
 ## 📋 Tareas y calendario de exámenes
 

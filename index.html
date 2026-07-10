@@ -419,6 +419,9 @@ header.top{
 .pbar{flex:1; height:7px; border-radius:99px; background:var(--surface3); overflow:hidden}
 .pbar i{display:block; height:100%; background:var(--accent); border-radius:99px; transition:width .5s}
 .reward-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(118px,1fr)); gap:10px}
+.repaso-grid{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:6px 0}
+.repaso-card{width:100%; padding:14px}
+@media(max-width:520px){ .repaso-grid{grid-template-columns:1fr} }
 .reward-card{position:relative; background:var(--surface2); border:1px solid var(--line); border-top:3px solid var(--rar,var(--line)); border-radius:var(--radius-s); padding:12px 8px; text-align:center; display:flex; flex-direction:column; align-items:center; gap:6px}
 .reward-card.unlocked{border-color:var(--accent); border-top-color:var(--rar,var(--accent))}
 .rw-rar{position:absolute; top:6px; left:8px; font-size:.55rem; font-weight:800; text-transform:uppercase; letter-spacing:.04em}
@@ -980,7 +983,7 @@ const SUBJECTS = [
   {id:'ca3',   icon:'🛡️', name:'Cálculo Actuarial III',              short:'Cálculo III',       wm:'🛡️📐'},
   {id:'reg',   icon:'📉', name:'Modelos de Regresión',                short:'Regresión',        wm:'📉📈', soon:true},
   {id:'nopar', icon:'📊', name:'Análisis Estadístico No Paramétrico', short:'No Paramétrico',   wm:'📊🎯', soon:true},
-  {id:'stoch', icon:'🎲', name:'Procesos Estocásticos',               short:'Estocásticos',     wm:'🎲🔀', soon:true},
+  {id:'stoch', icon:'🎲', name:'Procesos Estocásticos',               short:'Estocásticos',     wm:'🎲🔀'},
   {id:'fin',   icon:'💼', name:'Administración Financiera',           short:'Admin. Financiera', wm:'💼💰', soon:true}
 ];
 const subjectById = id => SUBJECTS.find(s=>s.id===id) || SUBJECTS[0];
@@ -2782,10 +2785,528 @@ const MODULES_CA3 = [
   {id:10, icon:'🔐', name:'Escape Room actuarial', desc:'Resuelve 4 acertijos, gana las llaves y abre la caja fuerte con los códigos.', kind:'Escape room', special:'escape'},
   {id:11, icon:'📋', name:'Casos reales', desc:'Analiza una cartera completa: cálculo e interpretación de resultados.', kind:'Caso integrador', build:buildM12}
 ];
+
+/* ==================== Procesos Estocásticos (materia "stoch") ====================
+   Contenido fiel a los apuntes/pizarrón del profesor (Parcial 1: procesos,
+   caminata aleatoria, cadenas de Markov, matrices de transición, distribución
+   límite; Parcial 2: proceso de Poisson, exponencial, pérdida de memoria,
+   Erlang, adelgazamiento/superposición, Binomial condicional, Poisson compuesto).
+   No se agrega teoría externa avanzada. */
+
+/* Alias a los helpers globales de azar (ri/pick/shuffle) para legibilidad local */
+const peRi = ri, pePick = pick, peShuffle = shuffle;
+/* — Helpers numéricos locales (probabilidades con más precisión que r2) — */
+const peFact = n => { let r = 1; for(let i=2;i<=n;i++) r*=i; return r; };
+const peComb = (n,k) => (k<0||k>n) ? 0 : peFact(n)/(peFact(k)*peFact(n-k));
+const pePmf = (m,k) => Math.exp(-m)*Math.pow(m,k)/peFact(k);           // Poisson P(N=k), m=λt
+const peCdf = (m,k) => { let s=0; for(let i=0;i<=k;i++) s+=pePmf(m,i); return s; }; // P(N≤k)
+const peR = (x,d=4) => { const f=Math.pow(10,d); return Math.round(x*f)/f; };
+
+/* ================= PARCIAL 1 ================= */
+
+/* — M1: Fundamentos — */
+function buildPE1(){
+  return peShuffle([
+    { type:'mc', topic:'pe_fund', prompt:'¿Qué es un <b>proceso estocástico</b>?',
+      options:[ {t:'Una colección de variables aleatorias indexadas por el tiempo: {X<sub>t</sub> : t ∈ T}', ok:true},
+        {t:'Una sola variable aleatoria constante en el tiempo', ok:false},
+        {t:'Una función determinista del tiempo sin azar', ok:false},
+        {t:'Un promedio de datos históricos', ok:false} ],
+      explain:'Un proceso estocástico es una familia de variables aleatorias {X<sub>t</sub>} indexada por un conjunto de tiempos T.', correctText:'Colección de v.a. indexadas por el tiempo' },
+    { type:'match', topic:'pe_fund', prompt:'Relaciona cada elemento de X: Ω × T → S con su significado:',
+      pairs:[ {l:'Ω', r:'Espacio muestral (resultados del azar)'}, {l:'T', r:'Espacio temporal (índice)'},
+        {l:'S', r:'Espacio de estados (valores posibles)'}, {l:'X(ω,t)', r:'Valor del proceso'} ],
+      correctText:'Ω=muestral, T=tiempo, S=estados' },
+    { type:'tf', topic:'pe_fund', prompt:'Si <b>fijamos ω</b> (un resultado del azar) y variamos t, obtenemos una <b>trayectoria</b> o realización del proceso.',
+      answer:true, explain:'Fijar ω da una trayectoria (función del tiempo); fijar t da una variable aleatoria X<sub>t</sub>.', correctText:'Verdadero' },
+    { type:'tf', topic:'pe_fund', prompt:'Si <b>fijamos t</b> y dejamos variar ω, obtenemos una trayectoria completa.',
+      answer:false, explain:'Al fijar t obtenemos una variable aleatoria X<sub>t</sub>, no una trayectoria. La trayectoria surge al fijar ω.', correctText:'Falso' },
+    { type:'mc', topic:'pe_fund', prompt:'En un proceso a <b>tiempo discreto</b>, el conjunto T es típicamente:',
+      options:[ {t:'{0, 1, 2, 3, …}', ok:true}, {t:'Un intervalo [0, ∞)', ok:false}, {t:'Los números reales ℝ', ok:false}, {t:'Un único punto', ok:false} ],
+      explain:'Tiempo discreto ⇒ T = {0,1,2,…}. Tiempo continuo ⇒ T = [0,∞).', correctText:'{0,1,2,3,…}' },
+    { type:'fill', topic:'pe_fund', prompt:'El conjunto de todos los valores que puede tomar el proceso se llama espacio de ______.',
+      accept:['estados','estado'], correctText:'estados' }
+  ]);
+}
+
+/* — M2: Tipos y propiedades — */
+function buildPE2(){
+  const scen = peShuffle([
+    {t:'El resultado de lanzar un dado en cada tiro, sin relación entre tiros', a:'iid'},
+    {t:'El clima de mañana depende solo del clima de hoy, no del de días previos', a:'markov'},
+    {t:'El número acumulado de llamadas donde cada intervalo aporta llamadas independientes', a:'incind'},
+    {t:'La distribución del proceso no cambia si desplazamos el origen del tiempo', a:'estac'}
+  ]);
+  const names = {iid:'Ensayos i.i.d.', markov:'Propiedad de Markov', incind:'Incrementos independientes', estac:'Estacionariedad'};
+  const first = scen[0];
+  return peShuffle([
+    { type:'mc', topic:'pe_tipos', prompt:'Clasifica: «'+first.t+'».',
+      options: peShuffle(Object.entries(names).map(([k,v])=>({t:v, ok:k===first.a}))),
+      explain:'Corresponde a: '+names[first.a]+'.', correctText:names[first.a] },
+    { type:'tf', topic:'pe_tipos', prompt:'La <b>propiedad de Markov</b> dice que el futuro depende del presente y no de los estados anteriores.',
+      answer:true, explain:'Markov: dado el presente, el futuro es independiente del pasado.', correctText:'Verdadero' },
+    { type:'tf', topic:'pe_tipos', prompt:'Variables <b>i.i.d.</b> significa independientes y con la misma distribución.',
+      answer:true, explain:'i.i.d. = independientes e idénticamente distribuidas.', correctText:'Verdadero' },
+    { type:'mc', topic:'pe_tipos', prompt:'Que un proceso tenga <b>incrementos independientes</b> significa que:',
+      options:[ {t:'Los cambios en intervalos de tiempo disjuntos son independientes entre sí', ok:true},
+        {t:'El proceso nunca cambia de valor', ok:false},
+        {t:'Todos los estados son igualmente probables', ok:false},
+        {t:'El futuro depende de todo el pasado', ok:false} ],
+      explain:'Incrementos independientes: lo que ocurre en intervalos que no se traslapan es independiente.', correctText:'Cambios en intervalos disjuntos son independientes' }
+  ]);
+}
+
+/* — M3: Caminata aleatoria — */
+/* X0=0, Xn = Xn-1 + εn, ε=+1 con prob p, −1 con prob q=1−p.
+   E[Xn]=n(p−q), Var[Xn]=n·(1−(p−q)²)=4npq. P(Xn=k): r=(n+k)/2 pasos +1 ⇒ C(n,r)p^r q^(n−r). */
+function qCaminataE(){
+  const n = peRi(3,10), pPct = pePick([40,50,60,30,70]); const p = pPct/100, q = 1-p;
+  const E = n*(p-q);
+  return { type:'numeric', topic:'pe_caminata', tol:0.01,
+    prompt:'Caminata aleatoria con X<sub>0</sub>=0 y pasos ε=+1 (prob p) o −1 (prob q). Con <b>p='+p+'</b>, q='+peR(q,2)+' y <b>n='+n+'</b> pasos, ¿cuánto vale <b>E[X<sub>'+n+'</sub>]</b>?',
+    answer:E, correctText:E.toString(),
+    explain:'E[X<sub>n</sub>] = n·(p − q).',
+    steps:['Cada paso: E[ε] = (+1)·p + (−1)·q = p − q = '+p+' − '+peR(q,2)+' = '+peR(p-q,2),
+      'E[X<sub>n</sub>] = n·(p − q) = '+n+'·('+peR(p-q,2)+') = '+peR(E,2)] };
+}
+function qCaminataVar(){
+  const n = peRi(3,10), pPct = pePick([40,50,60,30,70]); const p = pPct/100, q = 1-p;
+  const V = n*4*p*q;
+  return { type:'numeric', topic:'pe_caminata', tol:0.01,
+    prompt:'Caminata aleatoria (pasos ±1). Con <b>p='+p+'</b>, q='+peR(q,2)+' y <b>n='+n+'</b>, ¿cuánto vale <b>Var[X<sub>'+n+'</sub>]</b>?',
+    answer:V, correctText:peR(V,4).toString(),
+    explain:'Var[X<sub>n</sub>] = n·(1 − (p−q)²) = 4·n·p·q.',
+    steps:['Var(ε) = 1 − (p − q)² = 4pq = 4·'+p+'·'+peR(q,2)+' = '+peR(4*p*q,3),
+      'Var[X<sub>n</sub>] = n·4pq = '+n+'·'+peR(4*p*q,3)+' = '+peR(V,3)] };
+}
+function qCaminataPos(){
+  const n = pePick([4,6,8]); const kAbs = peRi(0, n/2)*2 - (n%2); // misma paridad que n
+  let k = pePick([1,-1])*Math.abs(kAbs); if(Math.abs(k)>n) k = 0;
+  if((n+k)%2!==0) k = k+1;                        // asegurar paridad
+  const r = (n+k)/2; const pPct = pePick([50,60,40]); const p=pPct/100, q=1-p;
+  const prob = peComb(n,r)*Math.pow(p,r)*Math.pow(q,n-r);
+  return { type:'numeric', topic:'pe_caminata', tol:0.01,
+    prompt:'Caminata con p='+p+'. Tras <b>n='+n+'</b> pasos, ¿cuál es <b>P(X<sub>'+n+'</sub> = '+k+')</b>?',
+    answer:prob, correctText:peR(prob,4).toString(),
+    explain:'Para llegar a k en n pasos se necesitan r = (n+k)/2 pasos «+1»: P = C(n,r)·p<sup>r</sup>·q<sup>n−r</sup>.',
+    steps:['r = (n + k)/2 = ('+n+' + ('+k+'))/2 = '+r+' pasos hacia +1',
+      'P = C('+n+','+r+')·'+p+'<sup>'+r+'</sup>·'+peR(q,2)+'<sup>'+(n-r)+'</sup>',
+      'P = '+peComb(n,r)+'·'+peR(Math.pow(p,r),4)+'·'+peR(Math.pow(q,n-r),4)+' = '+peR(prob,4)] };
+}
+function buildPE3(){
+  return peShuffle([ qCaminataE(), qCaminataE(), qCaminataVar(), qCaminataVar(), qCaminataPos(), qCaminataPos(),
+    { type:'fill', topic:'pe_caminata', prompt:'En la caminata aleatoria simétrica, q = 1 − ____ .', accept:['p'], correctText:'p' },
+    { type:'tf', topic:'pe_caminata', prompt:'Después de n pasos, X<sub>n</sub> solo puede tomar valores con la misma paridad que n.',
+      answer:true, explain:'Cada paso cambia la posición en ±1, así que X<sub>n</sub> y n tienen la misma paridad.', correctText:'Verdadero' } ]);
+}
+
+/* — M4: Regreso al origen — */
+function qRegreso2(){
+  const pPct = pePick([50,60,40]); const p=pPct/100, q=1-p;
+  const prob = 2*p*q; // P(X2=0)=P(+,-)+P(-,+)=2pq
+  return { type:'numeric', topic:'pe_regreso', tol:0.005,
+    prompt:'Caminata con p='+p+'. ¿Cuál es la probabilidad de <b>estar en el origen en el tiempo n=2</b>, P(X<sub>2</sub>=0)?',
+    answer:prob, correctText:peR(prob,4).toString(),
+    explain:'Para volver a 0 en 2 pasos: subir y bajar (o bajar y subir): 2pq.',
+    steps:['Caminos que regresan a 0 en 2 pasos: (+1,−1) y (−1,+1)',
+      'P = pq + qp = 2pq = 2·'+p+'·'+peR(q,2)+' = '+peR(prob,4)] };
+}
+function buildPE4(){
+  return peShuffle([ qRegreso2(), qRegreso2(),
+    { type:'mc', topic:'pe_regreso', prompt:'¿Cuál es la diferencia entre <b>regresar al origen</b> y <b>regresar por primera vez</b>?',
+      options:[ {t:'p<sub>n</sub> = prob. de estar en 0 al tiempo n (aunque ya hubiera pasado antes); f<sub>n</sub> = prob. del <i>primer</i> regreso en n', ok:true},
+        {t:'Son exactamente lo mismo', ok:false},
+        {t:'f<sub>n</sub> siempre es mayor que p<sub>n</sub>', ok:false},
+        {t:'p<sub>n</sub> solo aplica a n impar', ok:false} ],
+      explain:'p<sub>n</sub>: estar en 0 en el paso n. f<sub>n</sub>: que ese sea el primer regreso al 0.', correctText:'p_n = estar en 0; f_n = primer regreso' },
+    { type:'tf', topic:'pe_regreso', prompt:'El regreso al origen solo puede ocurrir en un número <b>par</b> de pasos.',
+      answer:true, explain:'Para volver a 0 hacen falta igual número de pasos +1 y −1, así que n debe ser par.', correctText:'Verdadero' },
+    { type:'order', topic:'pe_regreso', prompt:'Ordena el análisis del primer regreso al origen:',
+      stepsList:['Salir del origen en el primer paso','Observar la trayectoria sin tocar el 0','Registrar el primer instante n en que X<sub>n</sub>=0','Ese n define el primer regreso f<sub>n</sub>'],
+      correctText:'Salir → no tocar 0 → primer instante en 0 → f_n' } ]);
+}
+
+/* — M5: Cadenas de Markov — */
+function buildPE5(){
+  return peShuffle([
+    { type:'mc', topic:'pe_markov', prompt:'La <b>propiedad de Markov</b> se expresa como:',
+      options:[ {t:'P(X<sub>n+1</sub>=j | X<sub>n</sub>=i, …, X<sub>0</sub>) = P(X<sub>n+1</sub>=j | X<sub>n</sub>=i)', ok:true},
+        {t:'P(X<sub>n+1</sub>=j) = P(X<sub>n+1</sub>=j | todo el pasado)', ok:false},
+        {t:'Todos los estados tienen la misma probabilidad', ok:false},
+        {t:'X<sub>n+1</sub> es independiente de X<sub>n</sub>', ok:false} ],
+      explain:'Dado el estado presente X<sub>n</sub>, el futuro no depende del pasado.', correctText:'El futuro depende solo del presente' },
+    { type:'tf', topic:'pe_markov', prompt:'En una cadena de Markov, para predecir el siguiente estado basta conocer el estado actual.',
+      answer:true, explain:'Esa es justamente la propiedad de Markov.', correctText:'Verdadero' },
+    { type:'mc', topic:'pe_markov', prompt:'«El clima de mañana depende solo del de hoy». Los <b>estados</b> podrían ser:',
+      options:[ {t:'{Soleado, Nublado, Lluvioso}', ok:true}, {t:'{1 día, 2 días, 3 días}', ok:false},
+        {t:'{−1, 0, +1}', ok:false}, {t:'La temperatura exacta con infinitos decimales', ok:false} ],
+      explain:'El espacio de estados es el conjunto de situaciones posibles del sistema.', correctText:'{Soleado, Nublado, Lluvioso}' },
+    { type:'fill', topic:'pe_markov', prompt:'En una cadena de Markov, el futuro depende del ______ y no del pasado.',
+      accept:['presente','estado presente','estado actual','actual'], correctText:'presente' }
+  ]);
+}
+
+/* — M6: Diagramas de transición — */
+function buildPE6(){
+  return peShuffle([
+    { type:'mc', topic:'pe_diagrama', prompt:'En un <b>diagrama de transición</b>, las <b>flechas</b> representan:',
+      options:[ {t:'Las probabilidades de pasar de un estado a otro', ok:true}, {t:'El número de estados', ok:false},
+        {t:'El tiempo total', ok:false}, {t:'La media del proceso', ok:false} ],
+      explain:'Nodos = estados; flechas = transiciones con su probabilidad.', correctText:'Probabilidades de transición' },
+    { type:'tf', topic:'pe_diagrama', prompt:'La suma de las probabilidades de las flechas que <b>salen</b> de un estado debe ser 1.',
+      answer:true, explain:'Desde un estado, algo tiene que ocurrir: las salidas suman 1.', correctText:'Verdadero' },
+    { type:'mc', topic:'pe_diagrama', prompt:'Un <b>lazo</b> (flecha de un estado hacia sí mismo) representa:',
+      options:[ {t:'La probabilidad de permanecer en ese estado', ok:true}, {t:'Un error en el diagrama', ok:false},
+        {t:'Que el estado es absorbente siempre', ok:false}, {t:'Una transición imposible', ok:false} ],
+      explain:'El lazo es la probabilidad de quedarse en el mismo estado (p<sub>ii</sub>).', correctText:'Permanecer en el estado' },
+    { type:'numeric', topic:'pe_diagrama', tol:0.001,
+      prompt:'De un estado salen dos flechas: una con probabilidad 0.3 hacia otro estado y un lazo hacia sí mismo. ¿Qué probabilidad tiene el <b>lazo</b>?',
+      answer:0.7, correctText:'0.7', explain:'Las salidas suman 1: lazo = 1 − 0.3 = 0.7.',
+      steps:['Suma de salidas = 1','Lazo = 1 − 0.3 = 0.7'] }
+  ]);
+}
+
+/* — M7: Matrices de transición — */
+/* P²: multiplicación de matrices 2×2 fila·columna; vₙ = v₀·Pⁿ (vector fila × matriz). */
+function qMatrizFila(){
+  const a = peRi(1,8)/10; const rest = peR(1-a,2);
+  return { type:'numeric', topic:'pe_matriz', tol:0.001,
+    prompt:'En una matriz de transición, la primera fila es [ '+a+' , ? ]. Como cada fila debe <b>sumar 1</b>, ¿cuál es el valor que falta?',
+    answer:rest, correctText:rest.toString(), explain:'Cada fila de P suma 1: el faltante es 1 − '+a+'.',
+    steps:['Cada fila suma 1','Faltante = 1 − '+a+' = '+rest] };
+}
+function qMatrizP2(){
+  // P 2x2 = [[a,1-a],[1-b,b]] ; (P²)_00 = a·a + (1-a)·(1-b)
+  const a = peRi(2,8)/10, b = peRi(2,8)/10;
+  const p2_00 = a*a + (1-a)*(1-b);
+  return { type:'numeric', topic:'pe_matriz', tol:0.005,
+    prompt:'Sea P = [ ['+a+', '+peR(1-a,2)+'] , ['+peR(1-b,2)+', '+b+'] ]. Calcula la entrada <b>(P²)<sub>11</sub></b> (fila 1, columna 1, empezando en 1).',
+    answer:p2_00, correctText:peR(p2_00,4).toString(),
+    explain:'(P²)<sub>11</sub> = fila 1 · columna 1 = P<sub>11</sub>·P<sub>11</sub> + P<sub>12</sub>·P<sub>21</sub>.',
+    steps:['(P²)<sub>11</sub> = '+a+'·'+a+' + '+peR(1-a,2)+'·'+peR(1-b,2),
+      '= '+peR(a*a,3)+' + '+peR((1-a)*(1-b),3)+' = '+peR(p2_00,4)] };
+}
+function qMatrizVector(){
+  // v0 = [1,0] (empieza en estado 0). v1 = v0·P → primera fila de P.
+  const a = peRi(2,8)/10;
+  return { type:'numeric', topic:'pe_matriz', tol:0.005,
+    prompt:'El vector inicial es v<sub>0</sub> = [1, 0] (empezamos seguro en el estado 0). Con P<sub>11</sub>='+a+' y P<sub>12</sub>='+peR(1-a,2)+', ¿cuál es la probabilidad de estar en el <b>estado 0</b> tras un paso (primera entrada de v<sub>1</sub> = v<sub>0</sub>P)?',
+    answer:a, correctText:a.toString(),
+    explain:'v<sub>1</sub> = v<sub>0</sub>·P. Como v<sub>0</sub>=[1,0], v<sub>1</sub> es la primera fila de P.',
+    steps:['v<sub>1</sub> = [1,0]·P = primera fila de P',
+      'Probabilidad de estado 0 = P<sub>11</sub> = '+a] };
+}
+function buildPE7(){
+  return peShuffle([ qMatrizFila(), qMatrizFila(), qMatrizP2(), qMatrizP2(), qMatrizVector(), qMatrizVector(),
+    { type:'tf', topic:'pe_matriz', prompt:'En P, la entrada p<sub>ij</sub> es la probabilidad de pasar del estado i al estado j en un paso.',
+      answer:true, explain:'p<sub>ij</sub> = P(X<sub>n+1</sub>=j | X<sub>n</sub>=i).', correctText:'Verdadero' },
+    { type:'tf', topic:'pe_matriz', prompt:'Para obtener las probabilidades en n pasos se usa P<sup>n</sup> (la matriz P elevada a la n).',
+      answer:true, explain:'(P<sup>n</sup>)<sub>ij</sub> = P(X<sub>n</sub>=j | X<sub>0</sub>=i).', correctText:'Verdadero' } ]);
+}
+
+/* ================= PARCIAL 2 ================= */
+
+/* — M8: Proceso de Poisson — */
+function qPoisExact(){
+  const lam = pePick([1.5,2,2.5,3,1.7,4]); const t = pePick([1,2,3]); const m = lam*t;
+  const k = peRi(0, Math.max(2, Math.round(m)+1));
+  const prob = pePmf(m,k);
+  return { type:'numeric', topic:'pe_poisson', tol:0.01,
+    prompt:'Un proceso de Poisson tiene tasa λ='+lam+' por unidad de tiempo. ¿Cuál es <b>P(N('+t+')='+k+')</b>?',
+    answer:prob, correctText:peR(prob,4).toString(),
+    explain:'P(N(t)=k) = e<sup>−λt</sup>(λt)<sup>k</sup> / k!.',
+    steps:['λt = '+lam+'·'+t+' = '+peR(m,2),
+      'P(N('+t+')='+k+') = e<sup>−'+peR(m,2)+'</sup>·('+peR(m,2)+')<sup>'+k+'</sup> / '+k+'!',
+      '= '+peR(prob,4)] };
+}
+function qPoisNone(){
+  const lam = pePick([1.7,2,1.5,2.5,3]); const t = pePick([1,2]); const m = lam*t;
+  const prob = pePmf(m,0);
+  return { type:'numeric', topic:'pe_poisson', tol:0.01,
+    prompt:'Proceso de Poisson con λ='+lam+' por unidad. ¿Cuál es la probabilidad de que <b>no ocurra ningún evento</b> en '+t+' unidad(es), P(N('+t+')=0)?',
+    answer:prob, correctText:peR(prob,4).toString(),
+    explain:'P(N(t)=0) = e<sup>−λt</sup>.',
+    steps:['λt = '+lam+'·'+t+' = '+peR(m,2), 'P(N=0) = e<sup>−'+peR(m,2)+'</sup> = '+peR(prob,4)] };
+}
+function qPoisAtLeast(){
+  const lam = pePick([1.5,2,1.7,2.5,3]); const t = pePick([1,2]); const m = lam*t;
+  const prob = 1 - peCdf(m,1); // P(N≥2)
+  return { type:'numeric', topic:'pe_poisson', tol:0.01,
+    prompt:'Proceso de Poisson con λ='+lam+', t='+t+'. ¿Cuál es <b>P(N('+t+') ≥ 2)</b>? (usa el complemento)',
+    answer:prob, correctText:peR(prob,4).toString(),
+    explain:'P(N≥2) = 1 − P(N=0) − P(N=1).',
+    steps:['λt = '+peR(m,2),
+      'P(N=0) = e<sup>−'+peR(m,2)+'</sup> = '+peR(pePmf(m,0),4)+'; P(N=1) = e<sup>−'+peR(m,2)+'</sup>·'+peR(m,2)+' = '+peR(pePmf(m,1),4),
+      'P(N≥2) = 1 − '+peR(pePmf(m,0),4)+' − '+peR(pePmf(m,1),4)+' = '+peR(prob,4)] };
+}
+function qPoisAtMost(){
+  const lam = pePick([1.5,2,2.5]); const t = pePick([1,2]); const m = lam*t; const k = peRi(1,2);
+  const prob = peCdf(m,k);
+  return { type:'numeric', topic:'pe_poisson', tol:0.01,
+    prompt:'Proceso de Poisson con λ='+lam+', t='+t+'. ¿Cuál es <b>P(N('+t+') ≤ '+k+')</b>?',
+    answer:prob, correctText:peR(prob,4).toString(),
+    explain:'P(N≤k) = Σ<sub>i=0</sub><sup>k</sup> e<sup>−λt</sup>(λt)<sup>i</sup>/i!.',
+    steps:['λt = '+peR(m,2),
+      'Suma P(N=0..'+k+') = '+peR(prob,4)] };
+}
+function qPoisUnit(){
+  // tasa por hora, tiempo en minutos → convertir
+  const perHour = pePick([6,12,3,4,10]); const mins = pePick([10,15,20,30]);
+  const lamMin = perHour/60; const m = lamMin*mins; const k = peRi(0,2);
+  const prob = pePmf(m,k);
+  return { type:'numeric', topic:'pe_poisson', tol:0.01,
+    prompt:'Llegan en promedio <b>'+perHour+' clientes por hora</b> (Poisson). ¿Cuál es la probabilidad de que lleguen exactamente <b>'+k+'</b> en <b>'+mins+' minutos</b>?',
+    answer:prob, correctText:peR(prob,4).toString(),
+    explain:'Hay que ajustar la tasa a la unidad del tiempo: λt = ('+perHour+'/60)·'+mins+'.',
+    steps:['λ por minuto = '+perHour+'/60 = '+peR(lamMin,4),
+      'λt = '+peR(lamMin,4)+'·'+mins+' = '+peR(m,3),
+      'P(N='+k+') = e<sup>−'+peR(m,3)+'</sup>·('+peR(m,3)+')<sup>'+k+'</sup>/'+k+'! = '+peR(prob,4)] };
+}
+function buildPE8(){
+  return peShuffle([ qPoisExact(), qPoisExact(), qPoisNone(), qPoisAtLeast(), qPoisAtMost(), qPoisUnit(), qPoisUnit(),
+    { type:'tf', topic:'pe_poisson', prompt:'En un proceso de Poisson, E[N(t)] = Var[N(t)] = λt.',
+      answer:true, explain:'La Poisson tiene media y varianza iguales a λt.', correctText:'Verdadero' } ]);
+}
+
+/* — M9: Distribución exponencial — */
+function qExpSurv(){
+  const lam = pePick([0.5,0.25,1,2,0.2]); const t = peRi(1,5);
+  const prob = Math.exp(-lam*t);
+  return { type:'numeric', topic:'pe_exp', tol:0.01,
+    prompt:'El tiempo entre eventos es Exponencial con λ='+lam+'. ¿Cuál es <b>P(X > '+t+')</b>?',
+    answer:prob, correctText:peR(prob,4).toString(),
+    explain:'Función de supervivencia: P(X>t) = e<sup>−λt</sup>.',
+    steps:['P(X>t) = e<sup>−λt</sup> = e<sup>−'+lam+'·'+t+'</sup> = e<sup>−'+peR(lam*t,3)+'</sup> = '+peR(prob,4)] };
+}
+function qExpBetween(){
+  const lam = pePick([0.5,0.25,1,0.2]); let a=peRi(1,3), b=a+peRi(1,3);
+  const prob = Math.exp(-lam*a) - Math.exp(-lam*b);
+  return { type:'numeric', topic:'pe_exp', tol:0.01,
+    prompt:'Tiempo de espera Exponencial con λ='+lam+'. ¿Cuál es <b>P('+a+' < X < '+b+')</b>?',
+    answer:prob, correctText:peR(prob,4).toString(),
+    explain:'P(a<X<b) = P(X>a) − P(X>b) = e<sup>−λa</sup> − e<sup>−λb</sup>.',
+    steps:['P(X>'+a+') = e<sup>−'+peR(lam*a,3)+'</sup> = '+peR(Math.exp(-lam*a),4),
+      'P(X>'+b+') = e<sup>−'+peR(lam*b,3)+'</sup> = '+peR(Math.exp(-lam*b),4),
+      'P('+a+'<X<'+b+') = '+peR(Math.exp(-lam*a),4)+' − '+peR(Math.exp(-lam*b),4)+' = '+peR(prob,4)] };
+}
+function qExpFindLambda(){
+  const t = peRi(2,5); const pTarget = pePick([0.5,0.6,0.4,0.3]);
+  const lam = -Math.log(pTarget)/t;
+  return { type:'numeric', topic:'pe_exp', tol:0.01,
+    prompt:'Se sabe que <b>P(X > '+t+') = '+pTarget+'</b> para un tiempo Exponencial. Despeja <b>λ</b>.',
+    answer:lam, correctText:peR(lam,4).toString(),
+    explain:'De e<sup>−λt</sup> = p se despeja λ = −ln(p)/t.',
+    steps:['e<sup>−λ·'+t+'</sup> = '+pTarget,
+      '−λ·'+t+' = ln('+pTarget+') = '+peR(Math.log(pTarget),4),
+      'λ = −ln('+pTarget+')/'+t+' = '+peR(lam,4)] };
+}
+function qExpFindTime(){
+  const lam = pePick([0.5,0.25,1,0.2]); const pTarget = pePick([0.5,0.6,0.4,0.3]);
+  const t = -Math.log(pTarget)/lam;
+  return { type:'numeric', topic:'pe_exp', tol:0.02,
+    prompt:'Con λ='+lam+' (Exponencial), ¿para qué tiempo <b>t</b> se cumple <b>P(X > t) = '+pTarget+'</b>?',
+    answer:t, correctText:peR(t,4).toString(),
+    explain:'De e<sup>−λt</sup> = p ⇒ t = −ln(p)/λ.',
+    steps:['e<sup>−'+lam+'·t</sup> = '+pTarget,
+      't = −ln('+pTarget+')/'+lam+' = '+peR(t,4)] };
+}
+function qExpMean(){
+  const lam = pePick([0.5,0.25,2,4,0.2]); const isVar = pePick([true,false]);
+  const ans = isVar ? 1/(lam*lam) : 1/lam;
+  return { type:'numeric', topic:'pe_exp', tol:0.02,
+    prompt:'Para un tiempo Exponencial con λ='+lam+', ¿cuánto vale <b>'+(isVar?'Var(X)':'E[X]')+'</b>?',
+    answer:ans, correctText:peR(ans,4).toString(),
+    explain:isVar?'Var(X) = 1/λ².':'E[X] = 1/λ.',
+    steps:[isVar? 'Var(X) = 1/λ² = 1/'+lam+'² = '+peR(ans,4) : 'E[X] = 1/λ = 1/'+lam+' = '+peR(ans,4)] };
+}
+function buildPE9(){
+  return peShuffle([ qExpSurv(), qExpSurv(), qExpBetween(), qExpFindLambda(), qExpFindTime(), qExpMean(), qExpMean(),
+    { type:'mc', topic:'pe_exp', prompt:'La distribución Exponencial modela:',
+      options:[ {t:'El tiempo entre eventos consecutivos de un proceso de Poisson', ok:true},
+        {t:'El número de eventos en un intervalo', ok:false}, {t:'La suma de todas las llegadas', ok:false},
+        {t:'La probabilidad de un dado', ok:false} ],
+      explain:'Poisson cuenta eventos; la Exponencial mide el tiempo entre ellos.', correctText:'Tiempo entre eventos consecutivos' } ]);
+}
+
+/* — M10: Pérdida de memoria — */
+function qMemoria(){
+  const mean = pePick([5,10,8,4,6]); const waited = peRi(1, mean-1);
+  return { type:'numeric', topic:'pe_memoria', unit:'min', tol:0.001,
+    prompt:'Un camión pasa en promedio cada <b>'+mean+' min</b> (tiempos Exponenciales). Llevas <b>'+waited+' min</b> esperando y no ha pasado. ¿Cuánto tiempo <b>esperado adicional</b> falta para que pase?',
+    answer:mean, correctText:mean+' min',
+    explain:'Por la pérdida de memoria, el tiempo que ya esperaste no cuenta: el tiempo esperado adicional sigue siendo la media.',
+    steps:['Pérdida de memoria: P(X > t+s | X > s) = P(X > t)',
+      'El proceso «olvida» los '+waited+' min ya esperados',
+      'Tiempo esperado adicional = media = '+mean+' min'] };
+}
+function buildPE10(){
+  return peShuffle([ qMemoria(), qMemoria(), qMemoria(),
+    { type:'mc', topic:'pe_memoria', prompt:'La <b>propiedad de pérdida de memoria</b> de la Exponencial dice:',
+      options:[ {t:'P(X > t+s | X > s) = P(X > t)', ok:true}, {t:'P(X > t+s) = P(X > t)·P(X > s)·2', ok:false},
+        {t:'El tiempo esperado disminuye mientras esperas', ok:false}, {t:'X siempre vale su media', ok:false} ],
+      explain:'Haber esperado s no cambia la distribución del tiempo restante.', correctText:'P(X>t+s | X>s) = P(X>t)' },
+    { type:'tf', topic:'pe_memoria', prompt:'Si un componente con vida Exponencial ya funcionó 100 h, su probabilidad de durar 50 h más es la misma que la de uno nuevo de durar 50 h.',
+      answer:true, explain:'Justamente eso implica la pérdida de memoria.', correctText:'Verdadero' } ]);
+}
+
+/* — M11: Erlang / Gamma (evento n-ésimo) — */
+function qErlangMean(){
+  const lam = pePick([2,0.5,4,1,0.25]); const n = peRi(2,6); const isVar = pePick([true,false]);
+  const ans = isVar ? n/(lam*lam) : n/lam;
+  return { type:'numeric', topic:'pe_erlang', tol:0.02,
+    prompt:'El tiempo hasta el <b>evento n-ésimo</b> es S<sub>n</sub>=T<sub>1</sub>+…+T<sub>n</sub> (Erlang). Con λ='+lam+' y n='+n+', ¿cuánto vale <b>'+(isVar?'Var(S'+n+')':'E[S'+n+']')+'</b>?',
+    answer:ans, correctText:peR(ans,4).toString(),
+    explain:isVar?'Var(S<sub>n</sub>) = n/λ².':'E[S<sub>n</sub>] = n/λ.',
+    steps:[isVar? 'Var(S<sub>n</sub>) = n/λ² = '+n+'/'+lam+'² = '+peR(ans,4) : 'E[S<sub>n</sub>] = n/λ = '+n+'/'+lam+' = '+peR(ans,4)] };
+}
+function buildPE11(){
+  return peShuffle([ qErlangMean(), qErlangMean(), qErlangMean(),
+    { type:'mc', topic:'pe_erlang', prompt:'El tiempo hasta la <b>n-ésima</b> llegada de un proceso de Poisson se distribuye:',
+      options:[ {t:'Erlang/Gamma (suma de n exponenciales)', ok:true}, {t:'Poisson', ok:false},
+        {t:'Uniforme', ok:false}, {t:'Binomial', ok:false} ],
+      explain:'S<sub>n</sub> = T<sub>1</sub>+…+T<sub>n</sub>, suma de n exponenciales i.i.d. ⇒ Erlang/Gamma.', correctText:'Erlang/Gamma' },
+    { type:'fill', topic:'pe_erlang', prompt:'La esperanza del tiempo hasta el evento n-ésimo es E[S<sub>n</sub>] = ____ (en términos de n y λ).',
+      accept:['n/λ','n/lambda','n/l','n sobre lambda'], correctText:'n/λ' } ]);
+}
+
+/* — M12: Propiedades integradoras de Poisson — */
+function qThinning(){
+  const lam = pePick([1.7,2,3,4,5]); const pPct = pePick([60,40,30,25,15]); const p=pPct/100;
+  const newLam = lam*p;
+  return { type:'numeric', topic:'pe_integrador', tol:0.01,
+    prompt:'Un proceso de Poisson tiene tasa λ='+lam+'. Cada evento es de «tipo A» con probabilidad p='+p+' (adelgazamiento). ¿Cuál es la <b>nueva tasa</b> λ<sub>A</sub> del proceso de eventos tipo A?',
+    answer:newLam, correctText:peR(newLam,4).toString(),
+    explain:'Al clasificar/adelgazar un Poisson, cada subproceso es Poisson con tasa λ·p.',
+    steps:['λ<sub>A</sub> = λ·p = '+lam+'·'+p+' = '+peR(newLam,4)] };
+}
+function qThinningProb(){
+  const lam = pePick([1.7,2,3]); const pPct = pePick([60,40,50]); const p=pPct/100;
+  const m = lam*p; const t=1; const k=peRi(0,2);
+  const prob = pePmf(m*t,k);
+  return { type:'numeric', topic:'pe_integrador', tol:0.01,
+    prompt:'Poisson con λ='+lam+'; los eventos son de «tipo A» con prob. p='+p+'. En t=1, ¿cuál es P(N<sub>A</sub>(1)='+k+')?',
+    answer:prob, correctText:peR(prob,4).toString(),
+    explain:'El subproceso A es Poisson con tasa λp; luego se aplica la fórmula de Poisson.',
+    steps:['λ<sub>A</sub> = λp = '+lam+'·'+p+' = '+peR(m,3),
+      'P(N<sub>A</sub>(1)='+k+') = e<sup>−'+peR(m,3)+'</sup>·('+peR(m,3)+')<sup>'+k+'</sup>/'+k+'! = '+peR(prob,4)] };
+}
+function qThinAtLeast(){
+  // caso de control 2: λ=1.7, p=0.6 → λp=1.02, P(N≥2)
+  const lam = pePick([1.7,2,2.5]); const pPct = pePick([60,50,40]); const p=pPct/100;
+  const m = lam*p; const prob = 1-peCdf(m,1);
+  return { type:'numeric', topic:'pe_integrador', tol:0.01,
+    prompt:'Un proceso de Poisson con λ='+lam+' se clasifica: una categoría ocurre con prob. p='+p+'. En t=1, ¿cuál es P(N<sub>cat</sub>(1) ≥ 2)?',
+    answer:prob, correctText:peR(prob,4).toString(),
+    explain:'Nueva tasa λp; luego P(N≥2)=1−P(0)−P(1).',
+    steps:['λp = '+lam+'·'+p+' = '+peR(m,3),
+      'P(N=0)=e<sup>−'+peR(m,3)+'</sup>='+peR(pePmf(m,0),4)+'; P(N=1)='+peR(pePmf(m,1),4),
+      'P(N≥2)=1−'+peR(pePmf(m,0),4)+'−'+peR(pePmf(m,1),4)+' = '+peR(prob,4)] };
+}
+function qSuperpos(){
+  const l1 = pePick([1,2,1.5,3]); const l2 = pePick([2,1,2.5,1.5]);
+  const tot = l1+l2;
+  return { type:'numeric', topic:'pe_integrador', tol:0.01,
+    prompt:'Se superponen (suman) dos procesos de Poisson independientes con tasas λ<sub>1</sub>='+l1+' y λ<sub>2</sub>='+l2+'. ¿Cuál es la <b>tasa del proceso combinado</b>?',
+    answer:tot, correctText:tot.toString(),
+    explain:'La superposición de Poisson independientes es Poisson con tasa λ<sub>1</sub>+λ<sub>2</sub>.',
+    steps:['λ = λ<sub>1</sub> + λ<sub>2</sub> = '+l1+' + '+l2+' = '+tot] };
+}
+function qCondBin(){
+  // caso de control 3: N(s)|N(t)=n ~ Bin(n, s/t)
+  const t = pePick([4,5,6,8,10]); let s = peRi(1,t-1);
+  const n = peRi(3,7); const k = peRi(1,n-1);
+  const ratio = s/t; const prob = peComb(n,k)*Math.pow(ratio,k)*Math.pow(1-ratio,n-k);
+  return { type:'numeric', topic:'pe_integrador', tol:0.01,
+    prompt:'En un proceso de Poisson se sabe que ocurrieron <b>N('+t+')='+n+'</b> eventos. ¿Cuál es la probabilidad de que <b>'+k+'</b> de ellos ocurrieran antes de s='+s+', es decir P(N('+s+')='+k+' | N('+t+')='+n+')?',
+    answer:prob, correctText:peR(prob,4).toString(),
+    explain:'Dado N(t)=n, N(s) ~ Binomial(n, s/t): P = C(n,k)(s/t)<sup>k</sup>(1−s/t)<sup>n−k</sup>.',
+    steps:['s/t = '+s+'/'+t+' = '+peR(ratio,4),
+      'P = C('+n+','+k+')·('+peR(ratio,3)+')<sup>'+k+'</sup>·('+peR(1-ratio,3)+')<sup>'+(n-k)+'</sup>',
+      '= '+peComb(n,k)+'·'+peR(Math.pow(ratio,k),4)+'·'+peR(Math.pow(1-ratio,n-k),4)+' = '+peR(prob,4)] };
+}
+function qCompound(){
+  const lam = pePick([2,3,4,5]); const t = pePick([1,2,3]); const eY = pePick([10,50,100,200,20]);
+  const ex = lam*t*eY;
+  return { type:'numeric', topic:'pe_integrador', tol:1,
+    prompt:'Proceso de Poisson compuesto X(t)=ΣY<sub>i</sub>, con λ='+lam+' eventos por unidad y monto medio E[Y]='+eY+' por evento. ¿Cuál es <b>E[X('+t+')]</b>?',
+    answer:ex, correctText:ex.toString(),
+    explain:'Para el Poisson compuesto, E[X(t)] = λt · E[Y].',
+    steps:['E[X(t)] = λt · E[Y] = '+lam+'·'+t+'·'+eY,
+      '= '+peR(lam*t,2)+'·'+eY+' = '+ex] };
+}
+function buildPE12(){
+  return peShuffle([ qThinning(), qThinning(), qThinningProb(), qThinAtLeast(), qSuperpos(), qCondBin(), qCondBin(), qCompound(), qCompound(),
+    { type:'mc', topic:'pe_integrador', prompt:'Dado que en (0,t) ocurrieron n eventos de Poisson, ¿cómo se distribuye el número que cae en (0,s) con s<t?',
+      options:[ {t:'Binomial(n, s/t)', ok:true}, {t:'Poisson(λs)', ok:false}, {t:'Uniforme(0,n)', ok:false}, {t:'Exponencial(s/t)', ok:false} ],
+      explain:'N(s) | N(t)=n ~ Binomial(n, s/t).', correctText:'Binomial(n, s/t)' } ]);
+}
+
+/* — Lecciones (mini-teoría para módulos conceptuales) — */
+const LESSON_PE_FUND = { title:'📐 Fundamentos de procesos estocásticos', html:
+  '<p>Un <b>proceso estocástico</b> es una colección de variables aleatorias {X<sub>t</sub> : t ∈ T} que describe cómo evoluciona un sistema con azar a lo largo del tiempo.</p>'
+  +'<p>Formalmente X: Ω × T → S, donde:</p>'
+  +'<ul><li><b>Ω</b>: espacio muestral (los resultados del azar).</li><li><b>T</b>: espacio temporal (discreto {0,1,2,…} o continuo [0,∞)).</li><li><b>S</b>: espacio de estados (los valores posibles).</li></ul>'
+  +'<p>Si <b>fijamos ω</b> y variamos t, obtenemos una <b>trayectoria</b> (realización). Si <b>fijamos t</b> y variamos ω, obtenemos una <b>variable aleatoria</b> X<sub>t</sub>.</p>' };
+const LESSON_PE_CAMINATA = { title:'🚶 Caminata aleatoria', html:
+  '<p>Partimos de X<sub>0</sub>=0 y en cada paso sumamos ε<sub>n</sub> = +1 (con prob. p) o −1 (con prob. q=1−p):</p>'
+  +'<p style="text-align:center">X<sub>n</sub> = X<sub>n−1</sub> + ε<sub>n</sub> = ε<sub>1</sub> + … + ε<sub>n</sub></p>'
+  +'<ul><li><b>Esperanza:</b> E[X<sub>n</sub>] = n(p − q).</li><li><b>Varianza:</b> Var[X<sub>n</sub>] = n(1 − (p−q)²) = 4npq.</li>'
+  +'<li><b>Posición:</b> para llegar a k en n pasos hacen falta r=(n+k)/2 pasos «+1»: P(X<sub>n</sub>=k) = C(n,r) p<sup>r</sup> q<sup>n−r</sup>.</li></ul>'
+  +'<p>X<sub>n</sub> siempre tiene la misma <b>paridad</b> que n.</p>' };
+const LESSON_PE_POISSON = { title:'⏱️ Proceso de Poisson', html:
+  '<p>El proceso de Poisson <b>cuenta llegadas</b>: N(t) = número de eventos en [0,t]. Los tiempos entre eventos T<sub>i</sub> son Exponenciales(λ) independientes.</p>'
+  +'<p style="text-align:center">N(t) ~ Poisson(λt) &nbsp;⇒&nbsp; P(N(t)=k) = e<sup>−λt</sup>(λt)<sup>k</sup> / k!</p>'
+  +'<ul><li>Tiene <b>incrementos estacionarios e independientes</b> y la propiedad de Markov.</li>'
+  +'<li><b>E[N(t)] = Var[N(t)] = λt.</b></li>'
+  +'<li>«Al menos» y «a lo más» se resuelven con el <b>complemento</b> y sumas de la fórmula.</li>'
+  +'<li>Ojo con las <b>unidades</b>: ajusta λ al tiempo (por hora, minuto, etc.).</li></ul>' };
+const LESSON_PE_EXP = { title:'📉 Distribución exponencial', html:
+  '<p>La Exponencial(λ) mide el <b>tiempo entre eventos</b> de un proceso de Poisson.</p>'
+  +'<ul><li><b>Supervivencia:</b> P(X&gt;t) = e<sup>−λt</sup>.</li><li><b>Distribución:</b> F(t)=1−e<sup>−λt</sup>.</li>'
+  +'<li><b>E[X]=1/λ</b>, <b>Var(X)=1/λ².</b></li>'
+  +'<li><b>Pérdida de memoria:</b> P(X&gt;t+s | X&gt;s) = P(X&gt;t). Lo ya esperado no cuenta.</li></ul>'
+  +'<p>El tiempo hasta la <b>n-ésima</b> llegada es S<sub>n</sub>=T<sub>1</sub>+…+T<sub>n</sub> ~ Erlang/Gamma, con E[S<sub>n</sub>]=n/λ y Var=n/λ².</p>' };
+
+/* — Módulos de la materia — */
+const MODULES_STOCH = [
+  {id:0,  icon:'📐', name:'Fundamentos de procesos', desc:'Definición, Ω×T→S, trayectorias y notación básica.', kind:'Quiz mixto', lesson:LESSON_PE_FUND, build:buildPE1},
+  {id:1,  icon:'🔀', name:'Tipos y propiedades', desc:'i.i.d., Markov, incrementos independientes y estacionariedad.', kind:'Clasificación', build:buildPE2},
+  {id:2,  icon:'🚶', name:'Caminata aleatoria', desc:'Xₙ=Σεₖ, esperanza, varianza y probabilidad de posición.', kind:'Ejercicios ilimitados', lesson:LESSON_PE_CAMINATA, build:buildPE3},
+  {id:3,  icon:'↩️', name:'Regreso al origen', desc:'Estar en 0 (pₙ) vs. primer regreso (fₙ) y paridad.', kind:'Ejercicios + retos', build:buildPE4},
+  {id:4,  icon:'🔗', name:'Cadenas de Markov', desc:'Propiedad de Markov, estados y construcción de cadenas.', kind:'Quiz conceptual', build:buildPE5},
+  {id:5,  icon:'🕸️', name:'Diagramas de transición', desc:'Nodos, flechas, lazos y probabilidades que suman 1.', kind:'Quiz conceptual', build:buildPE6},
+  {id:6,  icon:'🔢', name:'Matrices de transición', desc:'Construir P, filas que suman 1, P² y vₙ=v₀Pⁿ.', kind:'Ejercicios ilimitados', build:buildPE7},
+  {id:7,  icon:'⏱️', name:'Proceso de Poisson', desc:'N(t)~Poisson(λt): exacto, al menos, a lo más y unidades.', kind:'Ejercicios ilimitados', lesson:LESSON_PE_POISSON, build:buildPE8},
+  {id:8,  icon:'📉', name:'Distribución exponencial', desc:'P(X>t)=e^(−λt), despejar λ o t, media y varianza.', kind:'Ejercicios ilimitados', lesson:LESSON_PE_EXP, build:buildPE9},
+  {id:9,  icon:'🧠', name:'Pérdida de memoria', desc:'P(X>t+s|X>s)=P(X>t) y el tiempo esperado adicional.', kind:'Ejercicios + retos', build:buildPE10},
+  {id:10, icon:'⛓️', name:'Erlang/Gamma (evento n)', desc:'Sₙ=T₁+…+Tₙ, E[Sₙ]=n/λ y Var=n/λ².', kind:'Ejercicios ilimitados', build:buildPE11},
+  {id:11, icon:'🧩', name:'Propiedades de Poisson', desc:'Adelgazamiento λp, superposición, Binomial(n,s/t) y compuesto.', kind:'Casos integradores', build:buildPE12}
+];
+
+/* Temas → nombre legible (se fusiona con TOPIC_NAMES) */
+const TOPIC_NAMES_STOCH = {
+  pe_fund:'Fundamentos', pe_tipos:'Tipos de proceso', pe_caminata:'Caminata aleatoria', pe_regreso:'Regreso al origen',
+  pe_markov:'Cadenas de Markov', pe_diagrama:'Diagramas', pe_matriz:'Matrices de transición',
+  pe_poisson:'Proceso de Poisson', pe_exp:'Exponencial', pe_memoria:'Pérdida de memoria',
+  pe_erlang:'Erlang/Gamma', pe_integrador:'Integrador Poisson'
+};
+
+/* Qué módulos entran en cada parcial (para el modo Repaso Examen y el examen diario) */
+const STOCH_PARCIALES = { 1:[0,1,2,3,4,5,6], 2:[7,8,9,10,11] };
+
+/* Examen diario de Procesos: mezcla de ambos parciales disponibles */
+function buildExamStoch(){
+  const pool = [];
+  MODULES_STOCH.forEach(m => { if(m.build){ try{ pool.push(...m.build()); }catch(e){} } });
+  return peShuffle(pool).slice(0, 12);
+}
+/* Registrar temas legibles de la materia en el mapa global */
+Object.assign(TOPIC_NAMES, TOPIC_NAMES_STOCH);
+
 /* modulesBySubject: para dar contenido a una materia nueva basta con llenar su
    arreglo aquí siguiendo el formato de MODULES_CA3 (id, icon, name, desc, kind,
    build → función que regresa las preguntas del quiz). */
-const MODULES_BY_SUBJECT = { ca3: MODULES_CA3, reg: [], nopar: [], stoch: [], fin: [] };
+const MODULES_BY_SUBJECT = { ca3: MODULES_CA3, reg: [], nopar: [], stoch: MODULES_STOCH, fin: [] };
 /* MODULES siempre apunta a los módulos de la materia activa */
 let MODULES = MODULES_BY_SUBJECT[S.activeSubject] || [];
 /* ==================== Modal ==================== */
@@ -3630,11 +4151,127 @@ const MODE_RUN = {
   vf:startVF, formula:startFormulaMode, order:startOrderMode, errors:startErrorReview, wrong:startWrongOnly,
   infinite:startInfinite, carrera:startCarrera, final:startFinalExam, parcial:startParcial
 };
+/* ============ Repaso Examen (estudio / simulación por parcial) ============
+   Modo de preparación exclusivo de materias con parciales definidos (Procesos
+   Estocásticos). Distinto al quiz normal: primero eliges parcial, luego la
+   modalidad (Estudio con retroalimentación, o Simulación tipo examen). */
+const PARCIALES_BY_SUBJECT = { stoch: (typeof STOCH_PARCIALES!=='undefined'?STOCH_PARCIALES:null) };
+/* Modelos que se pueden «reconocer» en cada parcial de Procesos */
+const STOCH_MODELOS = {
+  1:[ {id:'caminata',name:'Caminata aleatoria'}, {id:'markov',name:'Cadena de Markov'}, {id:'matriz',name:'Matriz de transición'} ],
+  2:[ {id:'poisson',name:'Proceso de Poisson'}, {id:'exp',name:'Distribución Exponencial'}, {id:'erlang',name:'Erlang/Gamma (evento n-ésimo)'},
+      {id:'condbin',name:'Binomial condicional N(s)|N(t)'}, {id:'thin',name:'Clasificación / adelgazamiento'},
+      {id:'super',name:'Superposición de procesos'}, {id:'comp',name:'Poisson compuesto'} ]
+};
+const STOCH_ESCENARIOS = [
+  {p:1, m:'caminata', s:'Una partícula parte de 0 y en cada paso sube o baja 1 con probabilidades p y q. Quieres la probabilidad de su posición tras n pasos.'},
+  {p:1, m:'markov',   s:'El clima de mañana depende solo del clima de hoy (soleado/nublado/lluvioso), no de días previos.'},
+  {p:1, m:'matriz',   s:'Tienes las probabilidades de pasar entre 3 estados y quieres las probabilidades después de 2 pasos.'},
+  {p:2, m:'poisson',  s:'Llegan clientes a razón de λ por hora y quieres la probabilidad de que lleguen exactamente k en t minutos.'},
+  {p:2, m:'exp',      s:'Quieres la probabilidad de esperar más de t minutos entre dos llegadas consecutivas.'},
+  {p:2, m:'erlang',   s:'Quieres el tiempo esperado hasta que ocurra la n-ésima llegada.'},
+  {p:2, m:'condbin',  s:'Sabes que en (0,t) ocurrieron n eventos y quieres cuántos cayeron antes del instante s.'},
+  {p:2, m:'thin',     s:'Cada evento del proceso es de «tipo A» con probabilidad p; quieres la tasa del proceso de eventos tipo A.'},
+  {p:2, m:'super',    s:'Sumas (superpones) dos procesos de Poisson independientes y quieres la tasa del proceso combinado.'},
+  {p:2, m:'comp',     s:'Cada evento trae asociado un monto Y y quieres el monto total esperado acumulado E[X(t)].'}
+];
+/* Etapa 1: reconoce el modelo — pregunta mc con solo los modelos del parcial */
+function qReconoceModelo(parcial){
+  const esc0 = pick(STOCH_ESCENARIOS.filter(e=>e.p===parcial));
+  const modelos = STOCH_MODELOS[parcial];
+  const correct = modelos.find(m=>m.id===esc0.m);
+  let opts = modelos.filter(m=>m.id!==esc0.m);
+  opts = shuffle(opts).slice(0, Math.min(3, opts.length));
+  const options = shuffle([{t:correct.name, ok:true}, ...opts.map(m=>({t:m.name, ok:false}))]);
+  return { type:'mc', topic:'pe_'+(parcial===1?'markov':'poisson'), stage:'reconoce',
+    prompt:'<b>🔎 Reconoce el modelo.</b> '+esc0.s+'<br>¿Qué modelo debes usar?',
+    options, explain:'El modelo adecuado es: <b>'+correct.name+'</b>.', correctText:correct.name };
+}
+/* Caso final tipo examen: varios incisos ligados con el mismo contexto (Poisson) */
+function casoFinalP2(){
+  const lam = pick([1.7,2,2.5,3]); const p = pick([0.6,0.5,0.4]);
+  const ctx = '<div class="q-help" style="margin-bottom:6px">🧪 <b>Caso final.</b> Un proceso de Poisson tiene tasa λ='+lam+' por unidad. Cada evento es de «tipo A» con probabilidad p='+p+'.</div>';
+  const m = lam, mA = lam*p;
+  const inc = [
+    { type:'numeric', topic:'pe_poisson', tol:0.01, stage:'caso',
+      prompt:ctx+'a) ¿Cuál es P(N(1)=0)?', answer:pePmf(m,0), correctText:peR(pePmf(m,0),4).toString(),
+      explain:'P(N(1)=0)=e^(−λ).', steps:['λt='+lam,'P(N=0)=e^(−'+lam+')='+peR(pePmf(m,0),4)] },
+    { type:'numeric', topic:'pe_integrador', tol:0.01, stage:'caso',
+      prompt:ctx+'b) Tasa de eventos tipo A: λ<sub>A</sub> = ?', answer:mA, correctText:peR(mA,4).toString(),
+      explain:'λ_A = λ·p.', steps:['λ_A = '+lam+'·'+p+' = '+peR(mA,4)] },
+    { type:'numeric', topic:'pe_integrador', tol:0.01, stage:'caso',
+      prompt:ctx+'c) ¿Cuál es P(N<sub>A</sub>(1) ≥ 1)?', answer:1-pePmf(mA,0), correctText:peR(1-pePmf(mA,0),4).toString(),
+      explain:'P(N_A≥1)=1−e^(−λ_A).', steps:['P(N_A≥1)=1−e^(−'+peR(mA,3)+')='+peR(1-pePmf(mA,0),4)] }
+  ];
+  return inc;
+}
+/* Reúne el banco de un parcial: reconoce-modelo + preguntas de sus módulos (+ caso) */
+function repasoPool(parcial, withStages){
+  const mods = (PARCIALES_BY_SUBJECT[S.activeSubject]||{})[parcial] || [];
+  let pool = [];
+  mods.forEach(id => { const m = MODULES.find(x=>x.id===id); if(m && m.build){ try{ pool.push(...m.build()); }catch(e){} } });
+  pool = shuffle(pool).slice(0, 10);
+  if(withStages){
+    const rec = [qReconoceModelo(parcial), qReconoceModelo(parcial)];
+    pool = rec.concat(pool);
+    if(parcial===2) pool = pool.concat(casoFinalP2());
+  }
+  return pool;
+}
+const STOCH_PARCIAL_META = {
+  1:{ estado:'ok',   nota:'Disponible' },
+  2:{ estado:'ok',   nota:'📌 Examen próximo · repaso recomendado' },
+  3:{ estado:'soon', nota:'Próximamente' },
+  final:{ estado:'lock', nota:'Bloqueado hasta contar con los 3 parciales' }
+};
+function startRepasoExamen(){
+  const pm = PARCIALES_BY_SUBJECT[S.activeSubject];
+  if(!pm){ toast('🚧 El Repaso Examen está disponible en Procesos Estocásticos.'); sfx('bad'); return; }
+  const card = (key, titulo) => {
+    const meta = STOCH_PARCIAL_META[key];
+    const dis = meta.estado!=='ok';
+    return '<button class="btn repaso-card'+(dis?' ghost':'')+'"'+(dis?' disabled':'')+' data-par="'+key+'" style="flex-direction:column;align-items:flex-start;gap:4px;text-align:left;'+(dis?'opacity:.6':'')+'">'
+      + '<b>'+titulo+'</b><small style="font-weight:600;color:'+(meta.estado==='ok'?'var(--good-text)':'var(--muted)')+'">'+meta.nota+'</small></button>';
+  };
+  const o = openModal('<h2 style="margin-top:0">🎓 Repaso Examen · Procesos Estocásticos</h2>'
+    + '<p style="color:var(--ink2);font-size:.9rem">Prepárate por parcial. Elige cuál repasar:</p>'
+    + '<div class="repaso-grid">'
+    + card(1,'📘 Primer parcial') + card(2,'📗 Segundo parcial') + card(3,'📙 Tercer parcial') + card('final','🏆 Examen final')
+    + '</div>');
+  o.querySelectorAll('[data-par]:not([disabled])').forEach(b => b.addEventListener('click', () => {
+    const par = b.dataset.par === 'final' ? 'final' : +b.dataset.par;
+    if(par==='final' || par===3) return;
+    repasoModalidad(par);
+  }));
+}
+function repasoModalidad(parcial){
+  const o = openModal('<h2 style="margin-top:0">'+(parcial===1?'📘 Primer':'📗 Segundo')+' parcial</h2>'
+    + '<p style="color:var(--ink2);font-size:.9rem">Elige la modalidad de repaso:</p>'
+    + '<div class="repaso-grid">'
+    + '<button class="btn repaso-card" data-mod="estudio" style="flex-direction:column;align-items:flex-start;gap:4px;text-align:left">'
+      + '<b>📖 Modo estudio</b><small style="font-weight:600;color:var(--muted)">Retroalimentación, fórmula y procedimiento tras cada respuesta. Sin presión de tiempo.</small></button>'
+    + '<button class="btn repaso-card ghost" data-mod="simulacion" style="flex-direction:column;align-items:flex-start;gap:4px;text-align:left">'
+      + '<b>📝 Simulación de examen</b><small style="font-weight:600;color:var(--muted)">Preguntas mezcladas, sin ver respuestas hasta el final. Calificación y revisión completa.</small></button>'
+    + '</div>'
+    + '<div class="q-actions" style="justify-content:center;margin-top:6px"><button class="btn ghost small" id="repBack">← Volver</button></div>');
+  o.querySelector('#repBack').addEventListener('click', () => { closeModal(); startRepasoExamen(); });
+  o.querySelectorAll('[data-mod]').forEach(b => b.addEventListener('click', () => {
+    const modo = b.dataset.mod; closeModal();
+    const qs = repasoPool(parcial, true);
+    if(!qs.length){ toast('🚧 Aún no hay preguntas para este parcial.'); sfx('bad'); return; }
+    const titulo = 'Repaso · '+(parcial===1?'1.er':'2.º')+' parcial · '+(modo==='estudio'?'Estudio':'Simulación');
+    startMode({ id:'repaso'+parcial+modo, title:titulo, icon:'🎓', qs,
+      hideAnswers: modo==='simulacion',
+      introToast: modo==='estudio' ? '📖 Modo estudio: revisa la solución en cada pregunta.' : '📝 Simulación: las respuestas se revelan al final.' });
+  }));
+}
+
 const GAME_MODES = [
   {id:'quiz',    cat:'Quiz',        ico:'📝', name:'Quiz clásico',            desc:'Juega cualquier módulo del curso.',            run:openModulePicker, needs:'content'},
   {id:'daily',   cat:'Quiz',        ico:'📅', name:'Reto diario',             desc:'Un examen calificado, uno por día.',           run:startExam,        needs:'content'},
   {id:'parcial', cat:'Exámenes',    ico:'📖', name:'Modo parcial',            desc:'Simula un examen por parcial.',                run:startParcial,     needs:'content'},
   {id:'final',   cat:'Exámenes',    ico:'🏆', name:'Examen final',            desc:'Mezcla todos los temas de la materia.',        run:startFinalExam,   needs:'content'},
+  {id:'repasoex', cat:'Exámenes',    ico:'🎓', name:'Repaso Examen',            desc:'Prepárate por parcial: estudio o simulación.', run:startRepasoExamen, needs:'repaso'},
   {id:'blitz',   cat:'Rapidez',     ico:'⚡', name:'Examen contrarreloj',     desc:'+5 s por acierto; cada falla resta más tiempo.', run:()=>{touchStreak();startBlitz();}, needs:'content'},
   {id:'vf',      cat:'Rapidez',     ico:'⚖️', name:'Verdadero / Falso rápido',desc:'12 afirmaciones a toda velocidad.',            run:startVF,          needs:'content'},
   {id:'carrera', cat:'Rapidez',     ico:'🏁', name:'Carrera de XP',           desc:'Llega a 100 XP lo antes posible.',             run:startCarrera,     needs:'content'},
@@ -3656,6 +4293,7 @@ const GAME_MODES = [
 ];
 function modeAvailable(m){
   if(m.needs==='ca3') return S.activeSubject==='ca3';
+  if(m.needs==='repaso') return !!PARCIALES_BY_SUBJECT[S.activeSubject];
   if(m.needs==='content') return MODULES.length>0;
   return true;
 }
@@ -3673,7 +4311,7 @@ function renderModes(){
         const colors = {Quiz:'var(--c1)',Exámenes:'var(--c5)',Rapidez:'var(--c8)',Repaso:'var(--c2)','Práctica':'var(--c3)',Juegos:'var(--c6)',Multijugador:'var(--c7)'};
         return '<button class="mode-card'+(ok?'':' locked')+'" style="--mc:'+(colors[cat]||'var(--accent)')+'" data-mode="'+m.id+'"'+(ok?'':' disabled')+'>'
           + '<span class="mo-cat">'+cat+'</span><span class="mo-ico">'+m.ico+'</span><h4>'+esc(m.name)+'</h4><p>'+esc(m.desc)+'</p>'
-          + (ok?'':'<span class="mo-cat" style="color:var(--muted)">🔒 '+(m.needs==='ca3'?'Solo en Cálculo III':'Requiere contenido')+'</span>')
+          + (ok?'':'<span class="mo-cat" style="color:var(--muted)">🔒 '+(m.needs==='ca3'?'Solo en Cálculo III':m.needs==='repaso'?'Solo en Procesos Estocásticos':'Requiere contenido')+'</span>')
           + '</button>';
       }).join('') + '</div>';
   });
@@ -4661,7 +5299,7 @@ $('#btnPrint').addEventListener('click', () => {
 /* ==================== Examen diario ==================== */
 /* Los exámenes son POR MATERIA: cada materia registra su generador aquí.
    Los temas no se mezclan entre materias. */
-const EXAM_BUILDERS_BY_SUBJECT = { ca3: buildExam };
+const EXAM_BUILDERS_BY_SUBJECT = { ca3: buildExam, stoch: buildExamStoch };
 function buildExam(){
   const usedTF = new Set(), usedF = new Set(), usedP = new Set();
   return shuffle([
