@@ -47,8 +47,9 @@ Incluye el juego **🏢 Director Financiero**: 5 decisiones encadenadas
 (apalancamiento → liquidez → inventario → WACC → valuación) usando únicamente
 las fórmulas de los módulos. Temas no desarrollados (VPN, TIR, bonos, opciones,
 derivados, portafolios, Black-Scholes, valuación de más de dos etapas, etc.)
-**no** se implementan. En Repaso Examen aparece «Esperando preguntas del
-examen». La Φ de la insolvencia reutiliza el helper `npPhi` (sin duplicar).
+**no** se implementan. Su Repaso Examen ofrece el examen de práctica generado
+por parcial (aún sin examen real del profesor). La Φ de la insolvencia reutiliza
+el helper `npPhi` (sin duplicar).
 
 **Casos de control verificados** (todos exactos, sin errores del pizarrón):
 ROE=0.2485, U_N=497, x*=0.785281, i*=0.151667, ROE*=0.260296; VP=1756.48 y
@@ -73,8 +74,9 @@ cuaderno:
 
 Incluye el modo **🧪 Laboratorio No Paramétrico**: dado un escenario, eliges
 la prueba correcta entre las 11 vistas. No se agregan pruebas no desarrolladas
-(Wilcoxon, Kruskal-Wallis, Friedman, Kendall, rachas, etc.). En Repaso Examen
-aparece la tarjeta «Esperando preguntas del examen».
+(Wilcoxon, Kruskal-Wallis, Friedman, Kendall, rachas, etc.). Su Repaso Examen
+incluye el **📄 Examen real** del 2.º parcial (transcrito del examen del
+profesor) además del examen de práctica generado por parcial.
 
 **Casos de control verificados** (con dos correcciones documentadas por
 truncamiento de tabla z en el cuaderno): KS D≈0.1338 / 0.175 / 0.1359;
@@ -103,9 +105,9 @@ Los ejercicios se generan con `regCompute(X,Y)` (una sola implementación
 reutilizada) que devuelve todas las cantidades (medias, sumas, Sxx, β̂,
 residuos, SCE/SCR/SCT, σ̂², R²) con solución paso a paso. Regresión múltiple,
 logística, polinomial, Ridge/Lasso y diagnóstico avanzado **solo se
-mencionan** (no generan ejercicios). En **Repaso Examen** aparece la tarjeta
-«Esperando preguntas del examen» con la estructura reservada para cargar
-después las preguntas reales del profesor.
+mencionan** (no generan ejercicios). Su **Repaso Examen** ofrece el examen de
+práctica generado por parcial; cuando llegue el examen real del profesor, se
+transcribe en `REAL_EXAMS_BY_SUBJECT` para que aparezca su **📄 Examen real**.
 
 **Caso de control verificado** (X=25,21,15,22,15,16,28,30,23,15 · Y=126,110,
 87,97,80,84,129,126,115,91): Sxx=284, β̂₁≈3.1690, β̂₀≈37.9507, Ŷ(25)≈117.176,
@@ -126,13 +128,34 @@ XP global, estadísticas por materia, examen diario, blitz, flashcards…). Sus
   Erlang/Gamma (Sₙ, n/λ, n/λ²) y propiedades integradoras
   (adelgazamiento λp, superposición, Binomial(n,s/t) condicional, compuesto).
 
-Incluye el modo **🎓 Repaso Examen**: eliges parcial (1.º y 2.º disponibles;
-3.º «Próximamente» y Final bloqueado hasta tener los tres) y modalidad
-**Estudio** (retroalimentación, fórmula y procedimiento) o **Simulación**
-(preguntas mezcladas, calificación y revisión al final), con etapa
-«reconoce el modelo» y un caso final de varios incisos. Los ejercicios se
-generan con funciones (valores aleatorios válidos, distractores por errores
-comunes) y muestran solución paso a paso.
+Incluye el modo **🎓 Repaso Examen** (ver la sección dedicada abajo). En
+Procesos, además del **📄 Examen real** del 2.º parcial, el repaso de módulos
+añade la etapa «reconoce el modelo» y un caso final de varios incisos; los
+ejercicios generados usan valores aleatorios válidos, distractores por errores
+comunes y solución paso a paso.
+
+## 🎓 Repaso Examen (todas las materias)
+
+El **Repaso Examen** está disponible en **todas las materias con módulos**. Al
+abrirlo eliges primero el **parcial** y luego la modalidad. Hay una diferencia
+real entre dos tipos de examen:
+
+- **📄 Examen real** — el examen **tal cual del profesor**, transcrito pregunta
+  por pregunta (respuestas fijas, no aleatorias). Solo existe donde el alumno
+  envió su examen: **Procesos Estocásticos · 2.º parcial** (Poisson,
+  exponencial, Erlang/Gamma y propiedades) y **Estadística No Paramétrica ·
+  2.º parcial** (signos, McNemar, Cox-Stuart, Spearman y Mann-Whitney). Se
+  califica al final, como en el examen de verdad, con revisión y procedimiento.
+- **📖 Repaso de módulos · Estudio** / **📝 Examen de práctica · Simulación** —
+  preguntas **generadas** con los temas del parcial. Estudio da
+  retroalimentación tras cada respuesta; Simulación revela todo al final. Están
+  disponibles en **cualquier** materia; en las que aún no tienen examen real,
+  este examen de práctica cubre el repaso con sus temas.
+
+Los exámenes reales se registran en `REAL_EXAMS_BY_SUBJECT` (enganchados al
+parcial por su índice en `SUBJECT_PARCIALES`); agregar uno nuevo es solo añadir
+su lista de preguntas. Cuando llegue el examen del profesor de otra materia,
+basta con transcribirlo ahí para que aparezca su **📄 Examen real**.
 
 ## 📋 Tareas y calendario de exámenes
 
@@ -171,9 +194,22 @@ ejercicios numéricos **cambian en cada intento**.
 - **Estrellas por módulo**: ★ 80 %, ★★ 90 %, ★★★ 100 %.
 - **23 insignias** (Perfeccionista, Escapista, rachas de 3/7/15/30 días,
   preguntas respondidas, racha de rayo…).
-- **Racha diaria** 🔥 de días de estudio, con recordatorio visual en el inicio.
-- **Examen diario** 📝: 12 preguntas mixtas, un solo intento por día, con
-  calificación, revisión completa con filtros e historial de resultados.
+- **Icono de racha 🔥 = hub de retos y logros**: el chip 🔥 del encabezado abre
+  un panel con tres pestañas y un punto rojo cuando tienes recompensas listas:
+  - **📅 Retos diarios**: estudia hoy, responde 15 preguntas, gana 80 XP,
+    presenta el examen diario. Se renuevan a medianoche (CDMX).
+  - **🗓️ Retos semanales**: estudia 5 días, responde 120 preguntas, gana 500 XP,
+    acumula 60 min. Se renuevan cada semana ISO.
+  - **🎖️ Logros**: todas las insignias (antes vivían en Estadísticas) más el
+    conteo de logros secretos.
+  Cada reto completado se **reclama** por su XP una sola vez. El progreso se
+  mide por deltas contra una línea base diaria/semanal, así que no depende de
+  enganchar cada pregunta.
+- **Racha diaria** 🔥 de días de estudio, con congeladores y recordatorio visual.
+- **Examen diario** 📝: 12 preguntas mixtas de los **módulos** de la materia, un
+  solo intento por día, con calificación, revisión e historial. (Es un repaso de
+  módulos; el examen del profesor vive aparte, en 🎓 Repaso Examen → 📄 Examen
+  real.)
 - **Reto contrarreloj** ⚡: inicia con 60 s y cada acierto suma **+5 s**
   (máx. 90 s); cada falla resta cada vez más tiempo (−5, −10, −15…), con
   contador de racha y bonus de XP. Banco de preguntas amplio y sin repetición.

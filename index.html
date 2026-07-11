@@ -83,6 +83,29 @@ header.top{
 .chip .icon{font-size:1rem}
 .chip.xp b{color:var(--accent)}
 .chip.streak b{color:var(--c8)}
+.chip.streak{transition:transform .15s, background .2s}
+.chip.streak:hover{transform:translateY(-2px); background:var(--surface2)}
+.streak-dot{position:absolute; top:-6px; right:-6px; min-width:17px; height:17px; padding:0 4px;
+  border-radius:999px; background:var(--bad); color:#fff; font-size:.66rem; font-weight:800;
+  display:grid; place-items:center; box-shadow:0 0 0 2px var(--bg); line-height:1}
+/* Retos diarios/semanales (misiones) del hub de racha */
+.mission{display:flex; align-items:center; gap:10px; padding:9px 10px; border:1px solid var(--line);
+  border-radius:12px; margin:7px 0; background:var(--surface)}
+.mission.m-ready{border-color:var(--good); background:color-mix(in srgb, var(--good) 10%, var(--surface))}
+.mission.m-claimed{opacity:.6}
+.mission .m-ico{font-size:1.3rem; width:30px; text-align:center; flex:none}
+.mission .m-body{flex:1; min-width:0}
+.mission .m-top{display:flex; justify-content:space-between; gap:8px; font-size:.9rem}
+.mission .m-xp{color:var(--accent); font-weight:800; flex:none}
+.mission .m-sub{font-size:.76rem; color:var(--muted); margin-top:3px}
+.mission .m-act{flex:none}
+.mission .m-check{font-size:1.1rem}
+.mission .m-lock{color:var(--muted)}
+.mission .pbar{height:7px; margin:5px 0 0}
+.hub-tabs{display:flex; gap:6px; margin:10px 0}
+.hub-tabs button{flex:1; padding:8px 6px; border-radius:10px; border:1px solid var(--line);
+  background:var(--surface); font-weight:700; font-size:.82rem; cursor:pointer}
+.hub-tabs button.on{background:var(--accent); color:#fff; border-color:var(--accent)}
 .iconbtn{
   width:38px;height:38px;border-radius:12px;border:1px solid var(--border);
   background:var(--surface); display:grid; place-items:center; font-size:17px;
@@ -702,7 +725,7 @@ select.ainput{appearance:auto}
   <button class="iconbtn" id="btnShop" title="Tienda y colección" aria-label="Tienda y colección">🛒</button>
   <button class="iconbtn" id="btnModes" title="Modos de juego" aria-label="Modos de juego">🎮</button>
   <button class="iconbtn" id="btnTasks" title="Tareas y calendario" aria-label="Tareas y calendario" style="position:relative">📋<span id="taskBadge" class="task-badge hidden"></span></button>
-  <span class="chip streak" title="Racha de días de estudio"><span class="icon">🔥</span><b id="streakTxt">0</b></span>
+  <button class="chip streak" id="btnStreak" title="Racha, retos diarios/semanales y logros" style="position:relative;cursor:pointer;border:none;font:inherit"><span class="icon">🔥</span><b id="streakTxt">0</b><span id="streakDot" class="streak-dot hidden"></span></button>
   <div class="more-wrap">
     <button class="iconbtn" id="btnMore" title="Más opciones" aria-label="Más opciones" aria-haspopup="true" aria-expanded="false">⋯</button>
     <div class="more-menu hidden" id="moreMenu">
@@ -982,6 +1005,15 @@ const cdmxHour = (ts=Date.now()) => +new Intl.DateTimeFormat('en-US', {timeZone:
 const fmtDate = ts => new Date(ts).toLocaleString('es-MX',{timeZone:CDMX_TZ, day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});
 const cdmxMonth = () => todayKey().slice(0,7);   // 'YYYY-MM' en CDMX
 const daysBetweenKeys = (a,b) => Math.round((new Date(b+'T00:00') - new Date(a+'T00:00'))/86400000);
+/* Clave de semana ISO (lunes-domingo) a partir de una fecha 'YYYY-MM-DD' de CDMX.
+   Se usa para los retos semanales del hub de racha. */
+function weekKey(dstr){
+  const d = new Date((dstr || todayKey()) + 'T00:00');
+  const t = new Date(d); t.setDate(t.getDate() + 4 - (t.getDay() || 7));   // jueves de esa semana ISO
+  const yStart = new Date(t.getFullYear(), 0, 1);
+  const wk = Math.ceil((((t - yStart) / 86400000) + 1) / 7);
+  return t.getFullYear() + '-W' + String(wk).padStart(2, '0');
+}
 const fmtDur = sec => { sec=Math.round(sec); const h=Math.floor(sec/3600), m=Math.floor(sec%3600/60);
   return h>0 ? h+' h '+m+' min' : (m>0 ? m+' min' : sec+' s'); };
 const clamp = (n,a,b) => Math.max(a,Math.min(b,n));
@@ -1073,7 +1105,8 @@ const DEFAULT_STATE = () => ({
   streakFreezes:0,      // 🧊 congeladores de racha disponibles (cubren días perdidos)
   freezeMonth:null,     // 'YYYY-MM' del último congelador mensual reclamado
   parcialFreezeAwarded:{}, // '<materia>|<idxParcial>' -> true (congelador ya otorgado por terminar ese parcial)
-  missions:null         // {d:'YYYY-MM-DD', w:'YYYY-Www', daily:{}, weekly:{}} progreso de misiones
+  missions:null,        // {d, w, base, wbase, dclaimed, wclaimed} progreso de retos diarios/semanales
+  studyLog:[]           // ['YYYY-MM-DD', …] días con actividad (para retos semanales)
 });
 let PROFILES = Store.getJSON(PKEY, null);
 if(!PROFILES || !Array.isArray(PROFILES.list) || !PROFILES.list.length){
@@ -1162,8 +1195,17 @@ function addXP(n){
     });
   }
 }
+function logStudyDay(){
+  const today = todayKey();
+  if(!Array.isArray(S.studyLog)) S.studyLog = [];
+  if(S.studyLog[S.studyLog.length-1] !== today){
+    if(!S.studyLog.includes(today)) S.studyLog.push(today);
+    if(S.studyLog.length > 70) S.studyLog = S.studyLog.slice(-70);
+  }
+}
 function touchStreak(){
   const today = todayKey();
+  logStudyDay();
   if(S.lastDay === today) return;
   if(!S.lastDay){ S.streak = 1; S.lastDay = today; save(); return; }   // primer día
   const gap = daysBetweenKeys(S.lastDay, today);                        // días transcurridos desde la última vez
@@ -1212,6 +1254,66 @@ function checkParcialFreezes(){
   });
   if(granted) save();
   return granted;
+}
+
+/* ==================== Retos diarios / semanales (misiones) ====================
+   Viven en el hub del icono de racha 🔥. El progreso se mide por deltas contra
+   una "línea base" capturada al inicio de cada día/semana (CDMX), más contadores
+   que ya existen (dayXP, examDay, studyLog). Al completar un reto se reclama su
+   XP una sola vez. No dependen de enganchar cada pregunta: basta un save(). */
+const DAILY_MISSIONS = [
+  {id:'d_study',  ico:'📅', name:'Estudia hoy',                goal:1,  xp:20, desc:'Practica cualquier actividad hoy y mantén tu racha.',
+    cur:()=> S.lastDay===todayKey() ? 1 : 0},
+  {id:'d_answer', ico:'✍️', name:'Responde 15 preguntas',      goal:15, xp:25, desc:'Suma 15 respuestas a lo largo del día.',
+    cur:()=> Math.max(0,(S.totalAnswered||0) - missionState().base.answered)},
+  {id:'d_xp',     ico:'⚡', name:'Gana 80 XP',                 goal:80, xp:30, desc:'Consigue 80 XP durante el día.',
+    cur:()=> (S.dayXP && S.dayXP.d===todayKey()) ? (S.dayXP.xp||0) : 0},
+  {id:'d_exam',   ico:'📝', name:'Presenta el examen diario',  goal:1,  xp:35, desc:'Completa el examen diario de tu materia.',
+    need:()=> typeof EXAM_BUILDERS_BY_SUBJECT!=='undefined' && !!EXAM_BUILDERS_BY_SUBJECT[S.activeSubject],
+    cur:()=> S.examDay===todayKey() ? 1 : 0}
+];
+const WEEKLY_MISSIONS = [
+  {id:'w_days',   ico:'🔥', name:'Estudia 5 días',             goal:5,   xp:80,  desc:'Ten actividad en 5 días distintos esta semana.',
+    cur:()=> studyDaysThisWeek()},
+  {id:'w_answer', ico:'🧠', name:'Responde 120 preguntas',     goal:120, xp:100, desc:'Acumula 120 respuestas en la semana.',
+    cur:()=> Math.max(0,(S.totalAnswered||0) - missionState().wbase.answered)},
+  {id:'w_xp',     ico:'🏆', name:'Gana 500 XP',                goal:500, xp:130, desc:'Consigue 500 XP a lo largo de la semana.',
+    cur:()=> Math.max(0,(S.xp||0) - missionState().wbase.xp)},
+  {id:'w_time',   ico:'⏱️', name:'Estudia 60 minutos', unit:'min', goal:60, xp:70, desc:'Acumula 60 minutos de estudio esta semana.',
+    cur:()=> Math.floor(Math.max(0,(S.totalTime||0) - missionState().wbase.time)/60)}
+];
+/* Asegura la estructura de misiones y hace el "rollover" diario/semanal. */
+function missionState(){
+  const dk = todayKey(), wk = weekKey();
+  let m = (S.missions && typeof S.missions==='object') ? S.missions : {};
+  if(m.d !== dk){ m.d = dk; m.base = {answered:S.totalAnswered||0, xp:S.xp||0, time:S.totalTime||0}; m.dclaimed = {}; }
+  if(m.w !== wk){ m.w = wk; m.wbase = {answered:S.totalAnswered||0, xp:S.xp||0, time:S.totalTime||0}; m.wclaimed = {}; }
+  if(!m.base)  m.base  = {answered:S.totalAnswered||0, xp:S.xp||0, time:S.totalTime||0};
+  if(!m.wbase) m.wbase = {answered:S.totalAnswered||0, xp:S.xp||0, time:S.totalTime||0};
+  if(!m.dclaimed) m.dclaimed = {};
+  if(!m.wclaimed) m.wclaimed = {};
+  S.missions = m;
+  return m;
+}
+function studyDaysThisWeek(){ const wk = weekKey(); return (S.studyLog||[]).filter(d=>weekKey(d)===wk).length; }
+const missionCur = def => Math.max(0, def.cur());
+const missionActive = def => !def.need || def.need();
+function missionsReadyCount(){
+  const m = missionState(); let c = 0;
+  DAILY_MISSIONS.forEach(d => { if(missionActive(d) && !m.dclaimed[d.id] && missionCur(d) >= d.goal) c++; });
+  WEEKLY_MISSIONS.forEach(d => { if(!m.wclaimed[d.id] && missionCur(d) >= d.goal) c++; });
+  return c;
+}
+function claimMission(scope, id){
+  const m = missionState();
+  const def = (scope==='w'?WEEKLY_MISSIONS:DAILY_MISSIONS).find(x=>x.id===id);
+  if(!def || !missionActive(def)) return;
+  const claimed = scope==='w' ? m.wclaimed : m.dclaimed;
+  if(claimed[id] || missionCur(def) < def.goal) return;
+  claimed[id] = true; save();
+  addXP(def.xp);                 // addXP guarda y refresca el encabezado
+  toast('🎉 Reto '+(scope==='w'?'semanal':'diario')+' completado: '+def.name+' · +'+def.xp+' XP'); sfx('unlock');
+  openStreakHub(scope==='w'?'weekly':'daily');
 }
 function modState(id){ return S.modules[id] || {best:0, stars:0, attempts:0, done:false}; }
 function trackConcept(topic, ok){
@@ -1434,7 +1536,7 @@ function goHome(){ renderHome(); showView('home'); }
 const HDR = {
   lvlNum:$('#lvlNum'), lvlBar:$('#lvlBar'), lvlXpTxt:$('#lvlXpTxt'), streakTxt:$('#streakTxt'),
   btnProfile:$('#btnProfile'), btnSound:$('#btnSound'), hdrBadge:$('#hdrBadge'),
-  subjIcon:$('#subjIcon'), subjShort:$('#subjShort')
+  subjIcon:$('#subjIcon'), subjShort:$('#subjShort'), streakDot:$('#streakDot')
 };
 function renderHeader(){
   const li = levelInfo();
@@ -1442,6 +1544,7 @@ function renderHeader(){
   HDR.lvlBar.style.width = Math.round(li.frac*100)+'%';
   HDR.lvlXpTxt.textContent = S.xp+' XP · faltan '+li.toNext;
   HDR.streakTxt.textContent = S.streak;
+  if(HDR.streakDot){ const ready = missionsReadyCount(); HDR.streakDot.textContent = ready; HDR.streakDot.classList.toggle('hidden', ready===0); }
   HDR.btnProfile.innerHTML = avatarStack(activeProfile(), 26);
   HDR.btnSound.textContent = S.sound ? '🔊 Sonido: activado' : '🔇 Sonido: apagado';
   HDR.btnSound.setAttribute('aria-pressed', S.sound);
@@ -1588,6 +1691,7 @@ $('#btnContinue').addEventListener('click', ()=>{
   openModule(next.id);
 });
 $('#btnStats').addEventListener('click', ()=>{ sfx('click'); renderStats(); showView('stats'); });
+$('#btnStreak').addEventListener('click', ()=>{ sfx('click'); openStreakHub('daily'); });
 $('#btnGuide').addEventListener('click', ()=>{ sfx('click'); renderGuide(); showView('guide'); });
 $('#lvlbox').addEventListener('click', ()=>{ sfx('click'); renderLevels(); showView('levels'); });
 $('#lvlbox').setAttribute('role','button'); $('#lvlbox').setAttribute('tabindex','0');
@@ -5580,11 +5684,15 @@ const MODE_RUN = {
   vf:startVF, formula:startFormulaMode, order:startOrderMode, errors:startErrorReview, wrong:startWrongOnly,
   infinite:startInfinite, carrera:startCarrera
 };
-/* ============ Repaso Examen (estudio / simulación por parcial) ============
-   Modo de preparación exclusivo de materias con parciales definidos (Procesos
-   Estocásticos). Distinto al quiz normal: primero eliges parcial, luego la
-   modalidad (Estudio con retroalimentación, o Simulación tipo examen). */
-const PARCIALES_BY_SUBJECT = { stoch: (typeof STOCH_PARCIALES!=='undefined'?STOCH_PARCIALES:null) };
+/* ============ Repaso Examen (para TODAS las materias) ============
+   Disponible en cualquier materia con parciales definidos (SUBJECT_PARCIALES).
+   Primero eliges el parcial; luego la modalidad:
+     • 📄 Examen real → el examen tal cual del profesor (solo donde el alumno lo
+       envió: Procesos 2.º parcial y No Paramétrica 2.º parcial). Se califica al
+       final, como en el examen de verdad.
+     • 📖 Repaso de módulos (Estudio) / 📝 Examen de práctica (Simulación) →
+       preguntas GENERADAS con los temas del parcial. Esta es la diferencia real:
+       el modo examen real usa el examen del profesor; el de módulos, práctica. */
 /* Modelos que se pueden «reconocer» en cada parcial de Procesos */
 const STOCH_MODELOS = {
   1:[ {id:'caminata',name:'Caminata aleatoria'}, {id:'markov',name:'Cadena de Markov'}, {id:'matriz',name:'Matriz de transición'} ],
@@ -5634,84 +5742,170 @@ function casoFinalP2(){
   ];
   return inc;
 }
-/* Reúne el banco de un parcial: reconoce-modelo + preguntas de sus módulos (+ caso) */
-function repasoPool(parcial, withStages){
-  const mods = (PARCIALES_BY_SUBJECT[S.activeSubject]||{})[parcial] || [];
+/* Grupos (parciales) de la materia, tomados de SUBJECT_PARCIALES (definido más abajo). */
+function subjectGroups(sid){ const p = (typeof SUBJECT_PARCIALES!=='undefined') ? SUBJECT_PARCIALES[sid] : null; return (p && p.groups) ? p.groups : null; }
+
+/* ===== Exámenes reales transcritos (el examen tal cual del profesor) =====
+   Solo existen donde el alumno envió su examen. Se enganchan a un grupo por su
+   índice dentro de SUBJECT_PARCIALES[sid].groups. Las respuestas están fijas
+   (no se aleatorizan): son las mismas preguntas del examen original. */
+function buildRealExamStochP2(){ return [
+  {type:'numeric', topic:'pe_poisson', tol:0.001, prompt:'<b>1.</b> Un proceso de Poisson tiene λ=1.5 y t=2. Calcula P(N(2) ≤ 1).',
+    answer:0.1991, correctText:'0.1991', explain:'P(N≤k)=Σ e^(−λt)(λt)^i/i!, con λt=3.',
+    steps:['λt = 1.5·2 = 3','P(N=0)=e^(−3)=0.0498','P(N=1)=e^(−3)·3=0.1494','P(N≤1)=0.0498+0.1494=0.1991']},
+  {type:'numeric', topic:'pe_poisson', tol:0.001, prompt:'<b>2.</b> Un proceso de Poisson tiene tasa λ=4 por unidad de tiempo. Calcula P(N(1)=4).',
+    answer:0.1954, correctText:'0.1954', explain:'P(N(t)=k)=e^(−λt)(λt)^k/k!.',
+    steps:['λt = 4·1 = 4','P(N=4)=e^(−4)·4⁴/4! = e^(−4)·256/24','= 0.1954']},
+  {type:'numeric', topic:'pe_poisson', tol:0.001, prompt:'<b>3.</b> Llegan en promedio 6 clientes por hora (Poisson). ¿Probabilidad de que lleguen exactamente 0 en 10 minutos?',
+    answer:0.3679, correctText:'0.3679', explain:'Ajusta la tasa a la unidad del tiempo: λ por minuto = 6/60.',
+    steps:['λ = 6/60 = 0.1 por minuto','λt = 0.1·10 = 1','P(N=0)=e^(−1)=0.3679']},
+  {type:'numeric', topic:'pe_poisson', tol:0.001, prompt:'<b>4.</b> Proceso de Poisson con λ=2, t=2. Calcula P(N(2) ≥ 2) usando el complemento.',
+    answer:0.9084, correctText:'0.9084', explain:'P(N≥2)=1−P(N=0)−P(N=1).',
+    steps:['λt = 4','P(N=0)=e^(−4)=0.0183','P(N=1)=e^(−4)·4=0.0733','P(N≥2)=1−0.0183−0.0733=0.9084']},
+  {type:'numeric', topic:'pe_exp', tol:0.001, prompt:'<b>5.</b> El tiempo entre eventos es Exponencial con λ=2. Calcula P(X > 1).',
+    answer:0.1353, correctText:'0.1353', explain:'Función de supervivencia: P(X>t)=e^(−λt).',
+    steps:['P(X>1)=e^(−2·1)=e^(−2)=0.1353']},
+  {type:'numeric', topic:'pe_exp', tol:0.001, prompt:'<b>6.</b> Se sabe que P(X > 2) = 0.5 para un tiempo Exponencial. Despeja λ.',
+    answer:0.3466, correctText:'0.3466', explain:'De e^(−λt)=p ⇒ λ=−ln(p)/t.',
+    steps:['e^(−2λ)=0.5','−2λ = ln(0.5) = −0.6931','λ = 0.6931/2 = 0.3466']},
+  {type:'numeric', topic:'pe_exp', tol:0.001, prompt:'<b>7.</b> Con λ=0.5 (Exponencial), ¿para qué tiempo t se cumple P(X > t) = 0.5?',
+    answer:1.3863, correctText:'1.3863', explain:'De e^(−λt)=p ⇒ t=−ln(p)/λ.',
+    steps:['e^(−0.5t)=0.5','t = −ln(0.5)/0.5','t = 0.6931/0.5 = 1.3863']},
+  {type:'numeric', topic:'pe_erlang', tol:0.01, prompt:'<b>8.</b> El tiempo hasta el n-ésimo evento es Sₙ=T₁+…+Tₙ (Erlang). Con λ=0.25 y n=3, ¿cuánto vale Var(S₃)?',
+    answer:48, correctText:'48', explain:'Var(Sₙ)=n/λ².',
+    steps:['Var(S₃) = 3/0.25²','= 3/0.0625','= 48']},
+  {type:'mc', topic:'pe_erlang', prompt:'<b>9.</b> El tiempo hasta la n-ésima llegada de un proceso de Poisson se distribuye:',
+    options:[{t:'Erlang/Gamma (suma de n exponenciales)', ok:true},{t:'Poisson',ok:false},{t:'Uniforme',ok:false},{t:'Binomial',ok:false}],
+    correctText:'Erlang/Gamma (suma de n exponenciales)', explain:'Sₙ=T₁+…+Tₙ, suma de n exponenciales i.i.d. ⇒ Erlang/Gamma.'},
+  {type:'numeric', topic:'pe_integrador', tol:0.001, prompt:'<b>10.</b> Un proceso de Poisson tiene λ=2. Cada evento es de «tipo A» con probabilidad p=0.3 (adelgazamiento). ¿Nueva tasa λ_A?',
+    answer:0.6, correctText:'0.6', explain:'Al adelgazar/clasificar un Poisson, el subproceso es Poisson con tasa λ·p.',
+    steps:['λ_A = λ·p','= 2·0.3','= 0.6']},
+  {type:'numeric', topic:'pe_integrador', tol:0.001, prompt:'<b>11.</b> En un proceso de Poisson se sabe que N(6)=5. ¿Cuál es P(N(5)=2 | N(6)=5)?',
+    answer:0.0322, correctText:'0.0322', explain:'Dado N(t)=n, N(s) ~ Binomial(n, s/t).',
+    steps:['s/t = 5/6 = 0.8333','P = C(5,2)·(0.8333)²·(0.1667)³','= 10·0.6944·0.00463 = 0.0322']},
+  {type:'mc', topic:'pe_memoria', prompt:'<b>12.</b> La propiedad de pérdida de memoria de la Exponencial dice:',
+    options:[{t:'P(X > t+s | X > s) = P(X > t)', ok:true},{t:'P(X > t+s) = P(X > t)·P(X > s)·2',ok:false},{t:'El tiempo esperado disminuye mientras esperas',ok:false},{t:'X siempre vale su media',ok:false}],
+    correctText:'P(X > t+s | X > s) = P(X > t)', explain:'Haber esperado s no cambia la distribución del tiempo restante.'}
+]; }
+function buildRealExamNpP2(){ return [
+  {type:'mc', topic:'np_signos', prompt:'<b>1.</b> El valor que divide la muestra en dos mitades iguales (50% a cada lado) es:',
+    options:[{t:'La mediana',ok:true},{t:'La media',ok:false},{t:'La moda',ok:false},{t:'El rango',ok:false}],
+    correctText:'La mediana', explain:'La mediana es el cuantil 0.5.'},
+  {type:'numeric', topic:'np_signos', tol:0.001, prompt:'<b>2.</b> Prueba de los signos para la mediana propuesta 50. Datos: {54, 55, 44, 53, 51, 56, 55, 53, 47, 51, 49}. Tras eliminar los empates con 50, ¿cuál es el tamaño efectivo n?',
+    answer:11, correctText:'11', explain:'Se descartan los valores iguales a la mediana propuesta; n efectivo = n − empates.',
+    steps:['Empates con 50: 0','Menores: 3 · Mayores: 8','n efectivo = 11 − 0 = 11']},
+  {type:'numeric', topic:'np_signos', tol:0.0005, prompt:'<b>3.</b> En la prueba de los signos, bajo H₀ el número de signos «+» es X ~ Bin(10, 0.5). Calcula P(X ≤ 1).',
+    answer:0.0107, correctText:'0.0107', explain:'P(X≤1)=Σ_{k=0}^{1} C(10,k)·0.5¹⁰.',
+    steps:['P(X=0)=0.5¹⁰=0.000977','P(X=1)=10·0.5¹⁰=0.009766','P(X≤1)=0.0107']},
+  {type:'numeric', topic:'np_signos', tol:0.001, prompt:'<b>4.</b> Prueba de los signos para la mediana propuesta 100. Datos: {102, 95, 105, 100, 102, 101, 99, 105, 99, 103}. Tras eliminar los empates con 100, ¿cuál es el tamaño efectivo n?',
+    answer:9, correctText:'9', explain:'Se descartan los valores iguales a la mediana propuesta.',
+    steps:['Empates con 100: 1','Menores: 3 · Mayores: 6','n efectivo = 10 − 1 = 9']},
+  {type:'numeric', topic:'np_mcnemar', tol:0.001, prompt:'<b>5.</b> McNemar (datos pareados). Tabla 2×2: A=280, B=16, C=20, D=174. Como B+C=36 ≥ 20, usa χ² con corrección de Yates: (|B−C|−1)²/(B+C).',
+    answer:0.25, correctText:'0.25', explain:'Solo los discordantes B y C aportan evidencia; gl=1.',
+    steps:['|B−C| = |16−20| = 4','χ² = (4−1)²/36','= 9/36 = 0.25']},
+  {type:'numeric', topic:'np_mcnemar', tol:0.001, prompt:'<b>6.</b> McNemar con discordantes B=3, C=7 (B+C=10 exacto). Con X ~ Bin(10, 0.5), calcula P(X ≤ 3).',
+    answer:0.1719, correctText:'0.1719', explain:'Con B+C<20 se usa la binomial exacta sobre los pares discordantes: X ~ Bin(B+C, 0.5).',
+    steps:['menor(B,C) = 3','P(X≤3) con Bin(10,0.5)','= 0.1719']},
+  {type:'numeric', topic:'np_cox', tol:0.001, prompt:'<b>7.</b> Cox-Stuart de tendencia. Serie: {70, 66, 65, 60, 59, 55, 53, 49, 48, 43}. 5 parejas (xᵢ, xᵢ₊5), C=5 y T ~ Bin(5, 0.5). Calcula P(T ≤ 0).',
+    answer:0.0313, correctText:'0.0313', explain:'Bajo H₀ (sin tendencia), T ~ Bin(C, 0.5).',
+    steps:['Signos +: 0 · signos −: 5','menor = 0','P(T≤0) = 0.5⁵ = 0.0313']},
+  {type:'numeric', topic:'np_cox', tol:0.0001, prompt:'<b>8.</b> Si las 6 parejas de Cox-Stuart muestran todas disminución (0 signos «+»), el valor p de esa cola es (0.5)⁶. Calcula ese valor.',
+    answer:0.015625, correctText:'0.015625', explain:'(0.5)⁶ = 1/64.',
+    steps:['(0.5)⁶ = 1/64','= 0.015625']},
+  {type:'numeric', topic:'np_rangos', tol:0.001, prompt:'<b>9.</b> Correlación de Spearman con n=8 y Σdᵢ²=0.5. Calcula ρs = 1 − 6Σdᵢ²/[n(n²−1)].',
+    answer:0.994, correctText:'0.994', explain:'ρs = 1 − 6Σdᵢ²/[n(n²−1)].',
+    steps:['n(n²−1) = 8·63 = 504','ρs = 1 − 6·0.5/504','= 1 − 3/504 = 0.994']},
+  {type:'numeric', topic:'np_rangos', tol:0.001, prompt:'<b>10.</b> Con n=7 y Σdᵢ²=40, aplica ρs = 1 − 6Σdᵢ²/[n(n²−1)].',
+    answer:0.2857, correctText:'0.2857', explain:'Sustitución directa en la fórmula de Spearman.',
+    steps:['n(n²−1) = 7·48 = 336','ρs = 1 − 240/336','= 0.2857']},
+  {type:'numeric', topic:'np_rangos', tol:0.01, prompt:'<b>11.</b> Mann-Whitney con A={15, 18, 19, 20} (n₁=4) y B={23, 24, 25, 26} (n₂=4). La suma de rangos de A es R₁=10. Calcula U = mín(U₁, U₂).',
+    answer:0, correctText:'0', explain:'U₁=n₁n₂+n₁(n₁+1)/2−R₁; U₂=n₁n₂−U₁; U=mín(U₁,U₂).',
+    steps:['U₁ = 4·4 + 4·5/2 − 10 = 16','U₂ = 16 − 16 = 0','U = mín(16, 0) = 0']},
+  {type:'mc', topic:'np_rangos', prompt:'<b>12.</b> En Mann-Whitney se rechaza H₀ cuando:',
+    options:[{t:'U ≤ U_crítico',ok:true},{t:'U ≥ U_crítico',ok:false},{t:'U = n₁n₂',ok:false},{t:'U > 0',ok:false}],
+    correctText:'U ≤ U_crítico', explain:'Se rechaza H₀ si U ≤ U_crítico (tabla de Mann-Whitney).'}
+]; }
+const REAL_EXAMS_BY_SUBJECT = {
+  stoch: { 1: { note:'Poisson, exponencial, Erlang/Gamma y propiedades del 2.º parcial.', build:buildRealExamStochP2 } },
+  'estadistica-no-parametrica': { 1: { note:'Signos, McNemar, Cox-Stuart, Spearman y Mann-Whitney del 2.º parcial.', build:buildRealExamNpP2 } }
+};
+function realExamFor(sid, gi){ const e = REAL_EXAMS_BY_SUBJECT[sid]; return e ? e[gi] : null; }
+
+/* Banco GENERADO de un parcial: preguntas de sus módulos (+ etapas de Procesos). */
+function repasoPool(sid, mods, parcialNum, withStages){
+  const modList = MODULES_BY_SUBJECT[sid] || MODULES;
   let pool = [];
-  mods.forEach(id => { const m = MODULES.find(x=>x.id===id); if(m && m.build){ try{ pool.push(...m.build()); }catch(e){} } });
+  (mods||[]).forEach(id => { const m = modList.find(x=>x.id===id); if(m && m.build){ try{ pool.push(...m.build()); }catch(e){} } });
   pool = shuffle(pool).slice(0, 10);
-  if(withStages){
-    const rec = [qReconoceModelo(parcial), qReconoceModelo(parcial)];
-    pool = rec.concat(pool);
-    if(parcial===2) pool = pool.concat(casoFinalP2());
+  if(withStages && sid==='stoch' && (parcialNum===1 || parcialNum===2)){
+    pool = [qReconoceModelo(parcialNum), qReconoceModelo(parcialNum)].concat(pool);
+    if(parcialNum===2) pool = pool.concat(casoFinalP2());
   }
   return pool;
 }
-const STOCH_PARCIAL_META = {
-  1:{ estado:'ok',   nota:'Disponible' },
-  2:{ estado:'ok',   nota:'📌 Examen próximo · repaso recomendado' },
-  3:{ estado:'soon', nota:'Próximamente' },
-  final:{ estado:'lock', nota:'Bloqueado hasta contar con los 3 parciales' }
-};
 function startRepasoExamen(){
-  const pm = PARCIALES_BY_SUBJECT[S.activeSubject];
-  // Materias con examen real aún no capturado: tarjeta "esperando preguntas".
-  if(!pm){
-    const rev = EXAM_REVIEWS_BY_SUBJECT[S.activeSubject];
-    if(rev && rev.pending){
-      const ov = openModal('<h2 style="margin-top:0">🎓 Repaso Examen · '+esc(subjectById(S.activeSubject).name)+'</h2>'
-        + '<div class="panel" style="margin:6px 0;background:var(--surface2)"><h3 style="margin-top:0">⏳ '+esc(subjectById(S.activeSubject).name)+' — Esperando preguntas del examen</h3>'
-        + '<p style="color:var(--ink2);font-size:.9rem">Cuando se agreguen las preguntas reales, podrás practicar el <b>examen original</b> y <b>nuevas variaciones</b> del mismo tipo.</p>'
-        + '<p class="q-help">Mientras tanto, practica los 9 módulos y usa el 📝 Reto diario o el ⚡ Contrarreloj para repasar.</p></div>'
-        + '<div class="q-actions" style="justify-content:center"><button class="btn ghost" id="rvOk">Entendido</button></div>');
-      ov.querySelector('#rvOk').addEventListener('click', ()=>{ closeModal(); sfx('click'); });
-      return;
-    }
+  const sid = S.activeSubject, subj = subjectById(sid);
+  const groups = subjectGroups(sid);
+  if(!groups || !groups.length || !(MODULES_BY_SUBJECT[sid]||[]).some(m=>m.build)){
     toast('🚧 El Repaso Examen aún no está disponible en esta materia.'); sfx('bad'); return;
   }
-  const card = (key, titulo) => {
-    const meta = STOCH_PARCIAL_META[key];
-    const dis = meta.estado!=='ok';
-    return '<button class="btn repaso-card'+(dis?' ghost':'')+'"'+(dis?' disabled':'')+' data-par="'+key+'" style="flex-direction:column;align-items:flex-start;gap:4px;text-align:left;'+(dis?'opacity:.6':'')+'">'
-      + '<b>'+titulo+'</b><small style="font-weight:600;color:'+(meta.estado==='ok'?'var(--good-text)':'var(--muted)')+'">'+meta.nota+'</small></button>';
-  };
-  const o = openModal('<h2 style="margin-top:0">🎓 Repaso Examen · Procesos Estocásticos</h2>'
-    + '<p style="color:var(--ink2);font-size:.9rem">Prepárate por parcial. Elige cuál repasar:</p>'
-    + '<div class="repaso-grid">'
-    + card(1,'📘 Primer parcial') + card(2,'📗 Segundo parcial') + card(3,'📙 Tercer parcial') + card('final','🏆 Examen final')
-    + '</div>');
-  o.querySelectorAll('[data-par]:not([disabled])').forEach(b => b.addEventListener('click', () => {
-    const par = b.dataset.par === 'final' ? 'final' : +b.dataset.par;
-    if(par==='final' || par===3) return;
-    repasoModalidad(par);
-  }));
+  const modList = MODULES_BY_SUBJECT[sid] || [];
+  const cards = groups.map((g, gi) => {
+    const nMods = (g.mods||[]).filter(id => { const m = modList.find(x=>x.id===id); return m && m.build; }).length;
+    const real = realExamFor(sid, gi);
+    return '<button class="btn repaso-card" data-gi="'+gi+'" style="flex-direction:column;align-items:flex-start;gap:4px;text-align:left">'
+      + '<b>'+esc(g.name)+'</b>'
+      + '<small style="font-weight:600;color:var(--muted)">'+nMods+' módulo'+(nMods===1?'':'s')+' con práctica</small>'
+      + (real ? '<small style="font-weight:700;color:var(--good-text)">📄 Examen real disponible</small>'
+              : '<small style="font-weight:600;color:var(--muted)">📝 Examen de práctica generado</small>')
+      + '</button>';
+  }).join('');
+  const o = openModal('<h2 style="margin-top:0">🎓 Repaso Examen · '+esc(subj.name)+'</h2>'
+    + '<p style="color:var(--ink2);font-size:.9rem">Elige el parcial que quieres preparar:</p>'
+    + '<div class="repaso-grid">'+cards+'</div>'
+    + '<p class="q-help" style="margin-top:8px">📄 <b>Examen real</b>: el examen tal cual del profesor. 📝 <b>Repaso de módulos</b>: preguntas generadas con los temas del parcial.</p>');
+  o.querySelectorAll('[data-gi]').forEach(b => b.addEventListener('click', () => repasoGroupMenu(sid, +b.dataset.gi)));
 }
-function repasoModalidad(parcial){
-  const o = openModal('<h2 style="margin-top:0">'+(parcial===1?'📘 Primer':'📗 Segundo')+' parcial</h2>'
-    + '<p style="color:var(--ink2);font-size:.9rem">Elige la modalidad de repaso:</p>'
-    + '<div class="repaso-grid">'
-    + '<button class="btn repaso-card" data-mod="estudio" style="flex-direction:column;align-items:flex-start;gap:4px;text-align:left">'
-      + '<b>📖 Modo estudio</b><small style="font-weight:600;color:var(--muted)">Retroalimentación, fórmula y procedimiento tras cada respuesta. Sin presión de tiempo.</small></button>'
-    + '<button class="btn repaso-card ghost" data-mod="simulacion" style="flex-direction:column;align-items:flex-start;gap:4px;text-align:left">'
-      + '<b>📝 Simulación de examen</b><small style="font-weight:600;color:var(--muted)">Preguntas mezcladas, sin ver respuestas hasta el final. Calificación y revisión completa.</small></button>'
-    + '</div>'
+function repasoGroupMenu(sid, gi){
+  const groups = subjectGroups(sid), g = groups[gi], subj = subjectById(sid);
+  const real = realExamFor(sid, gi), parcialNum = gi+1;
+  let cards = '';
+  if(real){
+    cards += '<button class="btn repaso-card" data-act="real" style="flex-direction:column;align-items:flex-start;gap:4px;text-align:left">'
+      + '<b>📄 Examen real</b><small style="font-weight:600;color:var(--good-text)">'+esc(real.note)+' Se califica al final, como el examen del profesor.</small></button>';
+  }
+  cards += '<button class="btn repaso-card'+(real?' ghost':'')+'" data-act="estudio" style="flex-direction:column;align-items:flex-start;gap:4px;text-align:left">'
+      + '<b>📖 Repaso de módulos · Estudio</b><small style="font-weight:600;color:var(--muted)">Preguntas generadas con retroalimentación, fórmula y procedimiento tras cada respuesta.</small></button>'
+    + '<button class="btn repaso-card ghost" data-act="simulacion" style="flex-direction:column;align-items:flex-start;gap:4px;text-align:left">'
+      + '<b>📝 Examen de práctica · Simulación</b><small style="font-weight:600;color:var(--muted)">Preguntas generadas mezcladas; las respuestas se revelan al final.</small></button>';
+  const o = openModal('<h2 style="margin-top:0">'+esc(subj.short)+' · '+esc(g.name)+'</h2>'
+    + (real ? '<p class="q-help" style="margin:0 0 6px">Este parcial tiene el <b>examen real</b> del profesor y también un repaso generado.</p>'
+            : '<p class="q-help" style="margin:0 0 6px">Aún no hay examen real de este parcial; practica con un examen generado de sus temas.</p>')
+    + '<div class="repaso-grid">'+cards+'</div>'
     + '<div class="q-actions" style="justify-content:center;margin-top:6px"><button class="btn ghost small" id="repBack">← Volver</button></div>');
   o.querySelector('#repBack').addEventListener('click', () => { closeModal(); startRepasoExamen(); });
-  o.querySelectorAll('[data-mod]').forEach(b => b.addEventListener('click', () => {
-    const modo = b.dataset.mod; closeModal();
-    const qs = repasoPool(parcial, true);
+  o.querySelectorAll('[data-act]').forEach(b => b.addEventListener('click', () => {
+    const act = b.dataset.act; closeModal();
+    if(act==='real'){
+      const qs = real.build();
+      if(!qs || !qs.length){ toast('🚧 Examen real no disponible.'); sfx('bad'); return; }
+      startMode({ id:'examreal_'+sid+'_'+gi, title:'📄 Examen real · '+g.name, icon:'📄', qs,
+        hideAnswers:true, introToast:'📄 Examen real del profesor. Se califica al final; luego revisa cada respuesta con su procedimiento.' });
+      return;
+    }
+    const qs = repasoPool(sid, g.mods, parcialNum, true);
     if(!qs.length){ toast('🚧 Aún no hay preguntas para este parcial.'); sfx('bad'); return; }
-    const titulo = 'Repaso · '+(parcial===1?'1.er':'2.º')+' parcial · '+(modo==='estudio'?'Estudio':'Simulación');
-    startMode({ id:'repaso'+parcial+modo, title:titulo, icon:'🎓', qs,
-      hideAnswers: modo==='simulacion',
-      introToast: modo==='estudio' ? '📖 Modo estudio: revisa la solución en cada pregunta.' : '📝 Simulación: las respuestas se revelan al final.' });
+    const titulo = 'Repaso · '+g.name+' · '+(act==='estudio'?'Estudio':'Simulación');
+    startMode({ id:'repaso_'+sid+'_'+gi+'_'+act, title:titulo, icon:'🎓', qs,
+      hideAnswers: act==='simulacion',
+      introToast: act==='estudio' ? '📖 Modo estudio: revisa la solución en cada pregunta.' : '📝 Simulación: las respuestas se revelan al final.' });
   }));
 }
 
 const GAME_MODES = [
   {id:'quiz',    cat:'Quiz',        ico:'📝', name:'Quiz clásico',            desc:'Juega cualquier módulo del curso.',            run:openModulePicker, needs:'content'},
   {id:'daily',   cat:'Exámenes',    ico:'📅', name:'Examen diario',           desc:'Un examen calificado, uno por día.',           run:startExam,        needs:'content'},
-  {id:'repasoex', cat:'Exámenes',    ico:'🎓', name:'Repaso Examen',            desc:'Prepárate por parcial: estudio o simulación (junta parciales y final).', run:startRepasoExamen, needs:'repaso'},
+  {id:'repasoex', cat:'Exámenes',    ico:'🎓', name:'Repaso Examen',            desc:'Prepárate por parcial: examen real del profesor o repaso generado (estudio/simulación).', run:startRepasoExamen, needs:'repaso'},
   {id:'nplab',    cat:'Juegos',      ico:'🧪', name:'Laboratorio No Paramétrico',desc:'Elige la prueba correcta para cada escenario.', run:startNPLab, needs:'nplab'},
   {id:'cfo',      cat:'Juegos',      ico:'🏢', name:'Director Financiero',      desc:'Toma decisiones y valúa la empresa con las fórmulas del curso.', run:startDirectorFinanciero, needs:'cfo'},
   {id:'blitz',   cat:'Rapidez',     ico:'⚡', name:'Examen contrarreloj',     desc:'+5 s por acierto; cada falla resta más tiempo.', run:()=>{touchStreak();startBlitz();}, needs:'content'},
@@ -5736,7 +5930,7 @@ const GAME_MODES = [
 ];
 function modeAvailable(m){
   if(m.needs==='ca3') return S.activeSubject==='ca3';
-  if(m.needs==='repaso') return !!PARCIALES_BY_SUBJECT[S.activeSubject] || !!EXAM_REVIEWS_BY_SUBJECT[S.activeSubject];
+  if(m.needs==='repaso') return !!subjectGroups(S.activeSubject) && (MODULES_BY_SUBJECT[S.activeSubject]||[]).some(x=>x.build);
   if(m.needs==='nplab') return S.activeSubject==='estadistica-no-parametrica';
   if(m.needs==='cfo') return S.activeSubject==='administracion-financiera';
   if(m.needs==='content') return MODULES.length>0;
@@ -5756,7 +5950,7 @@ function renderModes(){
         const colors = {Quiz:'var(--c1)',Exámenes:'var(--c5)',Rapidez:'var(--c8)',Repaso:'var(--c2)','Práctica':'var(--c3)',Juegos:'var(--c6)',Multijugador:'var(--c7)'};
         return '<button class="mode-card'+(ok?'':' locked')+'" style="--mc:'+(colors[cat]||'var(--accent)')+'" data-mode="'+m.id+'"'+(ok?'':' disabled')+'>'
           + '<span class="mo-cat">'+cat+'</span><span class="mo-ico">'+m.ico+'</span><h4>'+esc(m.name)+'</h4><p>'+esc(m.desc)+'</p>'
-          + (ok?'':'<span class="mo-cat" style="color:var(--muted)">🔒 '+(m.needs==='ca3'?'Solo en Cálculo III':m.needs==='repaso'?'Solo en Procesos Estocásticos':'Requiere contenido')+'</span>')
+          + (ok?'':'<span class="mo-cat" style="color:var(--muted)">🔒 '+(m.needs==='ca3'?'Solo en Cálculo III':m.needs==='repaso'?'Requiere módulos del curso':'Requiere contenido')+'</span>')
           + '</button>';
       }).join('') + '</div>';
   });
@@ -6826,6 +7020,75 @@ function statsBadgesPanelHTML(){
       }).join('')
     + '</div><p class="q-help">🕵️ Logros secretos: '+secretGot+'/'+secretTotal+' descubiertos.</p></div>';
 }
+/* — Adelanto de logros en Estadísticas (viven ahora en el hub del icono 🔥) — */
+function statsAchievementsTeaserHTML(){
+  const recent = BADGES.filter(b=>S.badges.includes(b.id)).slice(-6).reverse();
+  const secretGot = BADGES.filter(b=>b.secret && S.badges.includes(b.id)).length;
+  return '<div class="panel"><h3>🎖️ Logros ('+S.badges.length+'/'+BADGES.length+')</h3>'
+    + (recent.length
+        ? '<div class="tag-list" style="margin-bottom:8px">'+recent.map(b=>'<span class="tag dom">'+b.ico+' '+esc(b.name)+'</span>').join('')+'</div>'
+        : '<p class="q-help">Aún no tienes logros: ¡juega para desbloquearlos!</p>')
+    + '<p class="q-help">🕵️ Secretos descubiertos: '+secretGot+'/'+BADGES.filter(b=>b.secret).length+'. Los retos diarios/semanales y todos los logros ahora viven en el icono 🔥 del encabezado.</p>'
+    + '<div class="q-actions" style="justify-content:flex-start"><button class="btn small" id="statsGoLogros">🔥 Ver retos y logros</button></div></div>';
+}
+/* ==================== Hub del icono de racha 🔥 ====================
+   Reúne en un solo lugar: estado de la racha, retos diarios, retos semanales y
+   logros (insignias). Se abre desde el chip 🔥 del encabezado. */
+function missionRowHTML(def, scope, m){
+  const raw = missionCur(def), goal = def.goal;
+  const cur = Math.min(raw, goal);
+  const pctv = Math.round(cur/goal*100);
+  const claimed = (scope==='w'?m.wclaimed:m.dclaimed)[def.id];
+  const done = raw >= goal;
+  const unit = def.unit ? ' '+def.unit : '';
+  const act = claimed ? '<span class="m-check" title="Reclamado">✅</span>'
+    : done ? '<button class="btn small" data-claim="'+scope+':'+def.id+'">🎁 Reclamar</button>'
+    : '<span class="m-lock">'+pctv+'%</span>';
+  return '<div class="mission '+(claimed?'m-claimed':done?'m-ready':'')+'">'
+    + '<div class="m-ico">'+def.ico+'</div>'
+    + '<div class="m-body"><div class="m-top"><b>'+esc(def.name)+'</b><span class="m-xp">+'+def.xp+' XP</span></div>'
+    + '<div class="pbar"><i style="width:'+pctv+'%"></i></div>'
+    + '<div class="m-sub">'+cur+' / '+goal+unit+' · '+esc(def.desc)+'</div></div>'
+    + '<div class="m-act">'+act+'</div></div>';
+}
+function streakHubHTML(tab){
+  const m = missionState();
+  const dList = DAILY_MISSIONS.filter(missionActive);
+  const dReady = dList.filter(d=>!m.dclaimed[d.id] && missionCur(d)>=d.goal).length;
+  const wReady = WEEKLY_MISSIONS.filter(d=>!m.wclaimed[d.id] && missionCur(d)>=d.goal).length;
+  const badge = n => n ? ' <span class="streak-dot" style="position:static;box-shadow:none;display:inline-grid;vertical-align:middle">'+n+'</span>' : '';
+  let body = '';
+  if(tab==='daily'){
+    body = '<p class="q-help" style="margin:0 0 6px">Se renuevan cada día (medianoche, hora CDMX). Completa y reclama tu XP. 🎁</p>'
+      + dList.map(d=>missionRowHTML(d,'d',m)).join('');
+  } else if(tab==='weekly'){
+    body = '<p class="q-help" style="margin:0 0 6px">Se renuevan cada semana. Suma progreso en cualquier materia.</p>'
+      + WEEKLY_MISSIONS.map(d=>missionRowHTML(d,'w',m)).join('');
+  } else {
+    body = statsBadgesPanelHTML();
+  }
+  return '<h2 style="margin-top:0">🔥 Racha, retos y logros</h2>'
+    + '<div class="tag-list" style="margin-bottom:4px">'
+    + '<span class="tag neutral">🔥 Racha: '+S.streak+(S.streak===1?' día':' días')+'</span>'
+    + '<span class="tag neutral">🧊 Congeladores: '+(S.streakFreezes||0)+'</span>'
+    + '<span class="tag neutral">📆 Días esta semana: '+studyDaysThisWeek()+'</span>'
+    + '<span class="tag neutral">🎖️ Logros: '+S.badges.length+'/'+BADGES.length+'</span>'
+    + '</div>'
+    + '<div class="hub-tabs">'
+    + '<button data-tab="daily"'+(tab==='daily'?' class="on"':'')+'>📅 Diarios'+badge(dReady)+'</button>'
+    + '<button data-tab="weekly"'+(tab==='weekly'?' class="on"':'')+'>🗓️ Semanales'+badge(wReady)+'</button>'
+    + '<button data-tab="logros"'+(tab==='logros'?' class="on"':'')+'>🎖️ Logros</button>'
+    + '</div>'
+    + '<div id="hubBody">'+body+'</div>'
+    + '<div class="q-actions" style="justify-content:center;margin-top:6px"><button class="btn ghost" id="hubClose">Cerrar</button></div>';
+}
+function openStreakHub(tab){
+  tab = tab || 'daily';
+  const o = openModal(streakHubHTML(tab));
+  o.querySelectorAll('.hub-tabs [data-tab]').forEach(b => b.addEventListener('click', ()=>{ sfx('click'); openStreakHub(b.dataset.tab); }));
+  o.querySelectorAll('[data-claim]').forEach(b => b.addEventListener('click', ()=>{ const [sc,id]=b.dataset.claim.split(':'); claimMission(sc,id); }));
+  const cl = o.querySelector('#hubClose'); if(cl) cl.addEventListener('click', ()=>{ sfx('click'); closeModal(); });
+}
 /* — Mejores resultados de la materia activa — */
 function statsBestPanelHTML(subj){
   const best = [...S.history].sort((a,b)=>b.score-a.score).slice(0,5);
@@ -6871,12 +7134,13 @@ function renderStats(){
     + statsModulesPanelHTML(subj)
     + statsTopicsPanelHTML(subj)
     + statsConceptsPanelHTML(subj)
-    + statsBadgesPanelHTML()
+    + statsAchievementsTeaserHTML()
     + statsBestPanelHTML(subj)
     + statsRecentActivityPanelHTML(subj)
     + statsDailyExamsPanelHTML(exams, exAvg, subj)
     + '</div>';
   $$('#statsBody [data-goto-mod]').forEach(b => b.addEventListener('click', () => { sfx('click'); openModule(+b.dataset.gotoMod); }));
+  const gl = $('#statsGoLogros'); if(gl) gl.addEventListener('click', ()=>{ sfx('click'); openStreakHub('logros'); });
 }
 
 /* ==================== Guía de estudio (pantalla + PDF) ==================== */
