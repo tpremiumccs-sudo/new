@@ -495,6 +495,16 @@ details.coll-sec[open] > summary::before{transform:rotate(90deg)}
 .lb-table tr.first td{background:color-mix(in srgb, var(--gold) 14%, var(--surface)); font-weight:800}
 .lb-table tr.me td{background:color-mix(in srgb, var(--accent) 9%, var(--surface))}
 .lb-medal{font-size:1.05rem}
+.lb-view{background:none; border:0; padding:0; margin:0; cursor:pointer; font:inherit; color:inherit; display:inline-flex; align-items:center; border-radius:10px; transition:opacity .15s}
+.lb-view:hover{opacity:.75}
+.lb-name{text-align:left; line-height:1.25}
+.lb-name b{border-bottom:1px dotted color-mix(in srgb, var(--accent) 55%, transparent)}
+/* ============ Modal de stats de un estudiante del leaderboard ============ */
+.lbs-head{display:flex; align-items:center; gap:14px; margin-bottom:6px}
+.lbs-tiles{display:grid; grid-template-columns:repeat(auto-fit,minmax(120px,1fr)); gap:10px; margin:16px 0 6px}
+.lbs-tiles .tile{padding:12px 14px}
+.lbs-bar{height:9px; border-radius:6px; background:var(--surface2); overflow:hidden; margin-top:8px}
+.lbs-bar>span{display:block; height:100%; background:linear-gradient(90deg,var(--accent),var(--gold))}
 .lb-motiv{margin:10px 0 0; padding:10px 14px; border-radius:var(--radius-s); background:var(--surface2); font-size:.88rem; font-weight:700; color:var(--ink2)}
 /* ============ Modal de desbloqueo múltiple ============ */
 .reward-unlock-list{max-height:min(46vh,320px); overflow-y:auto; margin:12px 0; text-align:left; display:flex; flex-direction:column; gap:6px}
@@ -5162,22 +5172,6 @@ function startWrongOnly(){
 }
 function startInfinite(){ startMode({id:'infinite', title:'Práctica infinita', icon:'♾️', endless:true, next:()=>pick(subjPool()), introToast:'♾️ Practica sin fin. Toca “🏁 Terminar” cuando quieras.'}); }
 function startCarrera(){ startMode({id:'carrera', title:'Carrera de XP', icon:'🏁', endless:true, target:100, next:()=>pick(subjPool()), introToast:'🏁 ¡Llega a 100 XP lo antes posible!'}); }
-function startFinalExam(){ startMode({id:'final', title:'Examen final', icon:'🏆', qs: shuffle(subjPool()).slice(0,15), hideAnswers:true, introToast:'🏆 Examen final: mezcla de toda la materia. Respuestas al final.'}); }
-function startParcial(){
-  const mods = MODULES.filter(m => m.build);
-  const third = Math.ceil(mods.length/3);
-  const o = openModal('<h2 style="margin-top:0">📖 Modo parcial</h2><p style="color:var(--ink2);font-size:.9rem">Elige qué parcial simular. Las respuestas se revelan al final.</p>'
-    + '<div class="q-actions" style="justify-content:center;flex-wrap:wrap">'
-    + '<button class="btn" data-par="0">1.er parcial</button>'
-    + '<button class="btn" data-par="1">2.º parcial</button>'
-    + '<button class="btn" data-par="2">3.er parcial</button></div>');
-  o.querySelectorAll('[data-par]').forEach(b => b.addEventListener('click', () => {
-    const p = +b.dataset.par; closeModal();
-    const sel = mods.slice(p*third, p*third+third);
-    const qs = shuffle(sel.flatMap(m => { try{return m.build();}catch(e){return [];} })).slice(0,12);
-    startMode({id:'parcial', title:'Modo parcial · '+(p+1), icon:'📖', qs, hideAnswers:true});
-  }));
-}
 function openModulePicker(){
   const avail = MODULES.filter(m => m.build && isUnlocked(m.id));
   if(!avail.length){ toast('🔒 Desbloquea módulos para el quiz clásico.'); return; }
@@ -5417,7 +5411,7 @@ function hotseatSetup(n){
 /* — Registro de modos + para el botón "Otra vez" — */
 const MODE_RUN = {
   vf:startVF, formula:startFormulaMode, order:startOrderMode, errors:startErrorReview, wrong:startWrongOnly,
-  infinite:startInfinite, carrera:startCarrera, final:startFinalExam, parcial:startParcial
+  infinite:startInfinite, carrera:startCarrera
 };
 /* ============ Repaso Examen (estudio / simulación por parcial) ============
    Modo de preparación exclusivo de materias con parciales definidos (Procesos
@@ -5549,10 +5543,8 @@ function repasoModalidad(parcial){
 
 const GAME_MODES = [
   {id:'quiz',    cat:'Quiz',        ico:'📝', name:'Quiz clásico',            desc:'Juega cualquier módulo del curso.',            run:openModulePicker, needs:'content'},
-  {id:'daily',   cat:'Quiz',        ico:'📅', name:'Reto diario',             desc:'Un examen calificado, uno por día.',           run:startExam,        needs:'content'},
-  {id:'parcial', cat:'Exámenes',    ico:'📖', name:'Modo parcial',            desc:'Simula un examen por parcial.',                run:startParcial,     needs:'content'},
-  {id:'final',   cat:'Exámenes',    ico:'🏆', name:'Examen final',            desc:'Mezcla todos los temas de la materia.',        run:startFinalExam,   needs:'content'},
-  {id:'repasoex', cat:'Exámenes',    ico:'🎓', name:'Repaso Examen',            desc:'Prepárate por parcial: estudio o simulación.', run:startRepasoExamen, needs:'repaso'},
+  {id:'daily',   cat:'Exámenes',    ico:'📅', name:'Examen diario',           desc:'Un examen calificado, uno por día.',           run:startExam,        needs:'content'},
+  {id:'repasoex', cat:'Exámenes',    ico:'🎓', name:'Repaso Examen',            desc:'Prepárate por parcial: estudio o simulación (junta parciales y final).', run:startRepasoExamen, needs:'repaso'},
   {id:'nplab',    cat:'Juegos',      ico:'🧪', name:'Laboratorio No Paramétrico',desc:'Elige la prueba correcta para cada escenario.', run:startNPLab, needs:'nplab'},
   {id:'cfo',      cat:'Juegos',      ico:'🏢', name:'Director Financiero',      desc:'Toma decisiones y valúa la empresa con las fórmulas del curso.', run:startDirectorFinanciero, needs:'cfo'},
   {id:'blitz',   cat:'Rapidez',     ico:'⚡', name:'Examen contrarreloj',     desc:'+5 s por acierto; cada falla resta más tiempo.', run:()=>{touchStreak();startBlitz();}, needs:'content'},
@@ -5813,15 +5805,59 @@ function lbRowHTML(s, i){
   const avp = {avatar:s.avatar, photo:s.photo, avatarMode:lbMode, custom:s.custom};
   return '<tr class="'+(i===0?'first ':'')+(isMe?'me':'')+'">'
     + '<td>'+(i+1)+' <span class="lb-medal">'+medal+'</span></td>'
-    + '<td>'+avatarStack(avp, 32, eqOv)+'</td>'
-    + '<td><b>'+esc(s.name||'—')+'</b>'+(bd?' <span title="'+esc(bd.name)+'">'+bd.ico+'</span>':'')
-      + (title?'<br><small style="color:var(--accent)">'+tIco+' '+esc(title)+'</small>':'')+'</td>'
+    + '<td><button class="lb-view" data-lbview="'+esc(s.pid)+'" title="Ver stats de '+esc(s.name||'')+'">'+avatarStack(avp, 32, eqOv)+'</button></td>'
+    + '<td><button class="lb-view lb-name" data-lbview="'+esc(s.pid)+'"><b>'+esc(s.name||'—')+'</b>'+(bd?' <span title="'+esc(bd.name)+'">'+bd.ico+'</span>':'')
+      + (title?'<br><small style="color:var(--accent)">'+tIco+' '+esc(title)+'</small>':'')+'</button></td>'
     + '<td class="num"><b>'+(s.xp||0).toLocaleString()+'</b></td>'
     + '<td class="num">'+(s.lvl||1)+'</td>'
     + '<td class="num">'+(s.avg!=null?s.avg+'%':'—')+'</td>'
     + '<td class="num">'+(s.streak||0)+' 🔥</td>'
     + (lbAdminOn ? '<td><button class="btn ghost small" data-lbedit="'+esc(s.pid)+'">✏️</button> <button class="btn ghost small" data-lbdel="'+esc(s.pid)+'">🗑️</button></td>' : '')
     + '</tr>';
+}
+/* — Leaderboard: modal con las stats de un estudiante (al tocar su avatar o nombre).
+   Muestra lo que NO cabe en la tabla: avatar completo, módulos completados,
+   progreso al siguiente nivel y última actualización. — */
+function lbShowStudent(pid){
+  const board = lbLoad();
+  const s = board.students.find(x => x.pid === pid);
+  if(!s) return;
+  const isMe = s.pid === PROFILES.active;
+  const ranked = lbRanked(board);
+  const pos = ranked.findIndex(x => x.pid === pid) + 1;
+  const lvl = s.lvl || levelOf(s.xp||0);
+  const lo = xpForLvl(lvl), hi = xpForLvl(lvl+1);
+  const frac = hi>lo ? Math.max(0, Math.min(1, ((s.xp||0)-lo)/(hi-lo))) : 0;
+  const toNext = Math.max(0, hi - (s.xp||0));
+  const totalMods = SUBJECTS.reduce((a,x)=> a + (MODULES_BY_SUBJECT[x.id]||[]).length, 0);
+  const eqOv = isMe ? ensureEquip() : {frame:s.frame||null, acc:s.acc||[], bg:s.bg||null, effect:null};
+  const lbMode = (s.avatarMode==='photo' && s.photo) ? 'photo' : 'custom';
+  const avp = {avatar:s.avatar, photo:s.photo, avatarMode:lbMode, custom:s.custom};
+  const title = isMe ? currentTitle() : (s.title||'');
+  const tIco = isMe ? titleIco() : titleIcoByName(title);
+  const badgeId = isMe ? (S.equip&&S.equip.badge) : s.badge;
+  const bd = badgeId ? BADGES.find(b=>b.id===badgeId) : null;
+  const medal = pos===1?'🥇':pos===2?'🥈':pos===3?'🥉':'';
+  const tile = (label, value, sub) => '<div class="tile"><div class="t-label">'+label+'</div><div class="t-value">'+value+'</div>'+(sub?'<div class="t-sub">'+sub+'</div>':'')+'</div>';
+  openModal(
+    '<div class="lbs-head">'
+      + '<div>'+avatarStack(avp, 84, eqOv)+'</div>'
+      + '<div><h2 style="margin:0">'+esc(s.name||'—')+(bd?' <span title="'+esc(bd.name)+'">'+bd.ico+'</span>':'')+'</h2>'
+        + (title?'<div style="color:var(--accent);font-weight:700">'+tIco+' '+esc(title)+'</div>':'')
+        + '<div style="color:var(--ink2);font-size:.9rem;margin-top:2px">'+(medal?medal+' ':'')+'Puesto #'+pos+' de '+ranked.length+(isMe?' · <b>eres tú</b>':'')+'</div></div>'
+    + '</div>'
+    + '<div class="lbs-tiles">'
+      + tile('⚡ Nivel', lvl, 'Faltan '+toNext.toLocaleString()+' XP para el '+(lvl+1))
+      + tile('✨ XP total', (s.xp||0).toLocaleString())
+      + tile('✅ Módulos', (s.mods||0)+(totalMods?' <span class="unit">/ '+totalMods+'</span>':''), 'completados en todas las materias')
+      + tile('📈 Promedio', s.avg!=null? s.avg+'%' : '—', 'de sus exámenes')
+      + tile('🔥 Racha', (s.streak||0), (s.streak===1?'día':'días')+' seguidos')
+    + '</div>'
+    + '<div class="lbs-bar"><span style="width:'+Math.round(frac*100)+'%"></span></div>'
+    + '<p class="q-help" style="margin-top:10px">🕒 Última actualización: '+(s.updated?fmtDate(s.updated):'—')+'</p>'
+    + '<div class="q-actions" style="justify-content:flex-end;margin-top:14px"><button class="btn" id="lbsClose">Cerrar</button></div>'
+  );
+  const c = document.getElementById('lbsClose'); if(c) c.addEventListener('click', ()=>{ sfx('click'); closeModal(); });
 }
 /* — Leaderboard: panel principal (búsqueda, orden, tabla y acciones) — */
 function lbBoardPanelHTML(visible, myPos, total){
@@ -5913,6 +5949,7 @@ function bindBoardEvents(){
       toast('⬆️ Importado: '+changed+' fila'+(changed===1?'':'s')+' aplicada'+(changed===1?'':'s')); sfx('unlock');
     });
   });
+  $$('#boardBody [data-lbview]').forEach(btn => btn.addEventListener('click', () => { sfx('click'); lbShowStudent(btn.dataset.lbview); }));
   $$('#boardBody [data-lbedit]').forEach(btn => btn.addEventListener('click', () => { lbEditId = btn.dataset.lbedit; renderBoard(); }));
   $$('#boardBody [data-lbdel]').forEach(btn => btn.addEventListener('click', () => {
     const bd = lbLoad();
@@ -6667,12 +6704,103 @@ function guideHTML(){
       + '. Aprueba los módulos anteriores con ≥ 80% para estudiarla.</span></div>';
   }).join('');
 }
+/* ===== Guía de estudio POR MATERIA (data-driven) =====
+   Cálculo III conserva su guía escrita a mano (guideHTML). Las demás materias
+   arman su guía con sus módulos reales (agrupados por parcial) más un bloque
+   curado de fórmulas clave; así cada materia tiene SU propia guía, no la de CA3. */
+const SUBJECT_PARCIALES = {
+  ca3:   { proposed:true,  groups:[ {name:'Primer parcial', mods:[0,1,2,3,4]}, {name:'Segundo parcial', mods:[5,6,7]}, {name:'Práctica e integrador', mods:[8,9,10,11]} ] },
+  stoch: { proposed:false, groups:[ {name:'Primer parcial', mods:[0,1,2,3,4,5,6]}, {name:'Segundo parcial', mods:[7,8,9,10,11]} ] },
+  'modelos-regresion':          { proposed:true, groups:[ {name:'Primer parcial', mods:[0,1,2,3,4]}, {name:'Segundo parcial', mods:[5,6,7,8]} ] },
+  'estadistica-no-parametrica': { proposed:true, groups:[ {name:'Primer parcial', mods:[0,1,2,3,4]}, {name:'Segundo parcial', mods:[5,6,7,8]} ] },
+  'administracion-financiera':  { proposed:true, groups:[ {name:'Primer parcial', mods:[0,1,2,3]}, {name:'Segundo parcial', mods:[4,5,6,7]} ] }
+};
+/* Fórmulas clave por materia (notación HTML sub/sup, sin KaTeX). Tomadas del
+   contenido ya verificado de cada materia (mismos casos de control). */
+const GUIDE_FORMULAS = {
+  stoch: [
+    ['Proceso estocástico','{X<sub>t</sub> : t∈T}: familia de variables aleatorias indexadas por el tiempo (Ω×T→S).'],
+    ['Caminata aleatoria','X<sub>n</sub>=Σε<sub>k</sub> con ε=±1. E[X<sub>n</sub>]=n(2p−1), Var(X<sub>n</sub>)=4np(1−p).'],
+    ['Regreso al origen','Solo en pasos pares; p<sub>2n</sub>=C(2n,n)p<sup>n</sup>q<sup>n</sup>. Primer regreso f<sub>n</sub> ≠ estar en 0 (p<sub>n</sub>).'],
+    ['Cadena de Markov','P(X<sub>n+1</sub>=j | X<sub>n</sub>=i)=p<sub>ij</sub>. Filas de P suman 1; v<sub>n</sub>=v<sub>0</sub>P<sup>n</sup>; límite π con πP=π.'],
+    ['Proceso de Poisson','N(t)~Poisson(λt): P(N=k)=e<sup>−λt</sup>(λt)<sup>k</sup>/k!. E[N]=Var(N)=λt.'],
+    ['Exponencial','P(X&gt;t)=e<sup>−λt</sup>. E[X]=1/λ, Var(X)=1/λ². Tiempo entre eventos de Poisson.'],
+    ['Pérdida de memoria','P(X&gt;t+s | X&gt;s)=P(X&gt;t): lo ya esperado no cuenta.'],
+    ['Erlang / Gamma','S<sub>n</sub>=T<sub>1</sub>+…+T<sub>n</sub> (n-ésimo evento). E[S<sub>n</sub>]=n/λ, Var=n/λ².'],
+    ['Propiedades de Poisson','Adelgazamiento λp; superposición λ<sub>1</sub>+λ<sub>2</sub>; condicional N(s)|N(t)=n ~ Bin(n, s/t); compuesto E[S]=E[N]·E[X].']
+  ],
+  'modelos-regresion': [
+    ['Modelo lineal simple','Y<sub>i</sub>=β<sub>0</sub>+β<sub>1</sub>X<sub>i</sub>+ε<sub>i</sub>, con ε<sub>i</sub>~N(0,σ²) independientes.'],
+    ['Sumas de cuadrados','S<sub>xx</sub>=Σx<sub>i</sub>²−(Σx<sub>i</sub>)²/n ; S<sub>xy</sub>=Σx<sub>i</sub>y<sub>i</sub>−(Σx<sub>i</sub>)(Σy<sub>i</sub>)/n.'],
+    ['Estimadores MCO','β̂<sub>1</sub>=S<sub>xy</sub>/S<sub>xx</sub> ; β̂<sub>0</sub>=ȳ−β̂<sub>1</sub>x̄.'],
+    ['Ajuste y residuos','Ŷ=β̂<sub>0</sub>+β̂<sub>1</sub>x ; e<sub>i</sub>=y<sub>i</sub>−ŷ<sub>i</sub> ; Σe<sub>i</sub>=0.'],
+    ['Varianza del error','σ̂²=SCE/(n−2), con SCE=S<sub>yy</sub>−β̂<sub>1</sub>S<sub>xy</sub>.'],
+    ['ANOVA y R²','SCT=SCR+SCE ; R²=SCR/SCT=1−SCE/SCT.'],
+    ['Inferencia sobre β<sub>1</sub>','ee(β̂<sub>1</sub>)=√(σ̂²/S<sub>xx</sub>) ; t=β̂<sub>1</sub>/ee ; IC β̂<sub>1</sub>±t<sub>α/2,n−2</sub>·ee.'],
+    ['Predicción','IC de la respuesta media E(Y|x<sub>0</sub>) &lt; intervalo de predicción individual (este suma +1 dentro de la raíz).']
+  ],
+  'estadistica-no-parametrica': [
+    ['Función empírica','F<sub>n</sub>(x)=(1/n)Σ I(X<sub>i</sub>≤x). Glivenko-Cantelli: sup|F<sub>n</sub>−F|→0.'],
+    ['Kolmogórov-Smirnov','D=máx|F<sub>n</sub>(x)−F<sub>0</sub>(x)|. Si estimas parámetros de los datos → Lilliefors.'],
+    ['Bondad de ajuste χ²','χ²=Σ(O<sub>i</sub>−E<sub>i</sub>)²/E<sub>i</sub> ; gl=k−1−(#parámetros estimados).'],
+    ['Proporción / binomial','z=(p̂−p<sub>0</sub>)/√(p<sub>0</sub>(1−p<sub>0</sub>)/n) ; exacta con X~Bin(n,p<sub>0</sub>).'],
+    ['Prueba de los signos','X~Bin(n,0.5); los empates con la mediana se descartan (n efectivo).'],
+    ['McNemar (pareada 2×2)','Solo discordantes B y C: χ²=(|B−C|−1)²/(B+C) ; exacta con Bin(B+C,0.5).'],
+    ['Cox-Stuart (tendencia)','Parear x<sub>i</sub> con x<sub>i+c</sub>, tomar signos; T~Bin(#no empates,0.5).'],
+    ['Spearman','ρ<sub>s</sub>=1−6Σd<sub>i</sub>²/[n(n²−1)].'],
+    ['Mann-Whitney','U=n<sub>1</sub>n<sub>2</sub>+n<sub>1</sub>(n<sub>1</sub>+1)/2−R<sub>1</sub>.']
+  ],
+  'administracion-financiera': [
+    ['Rentabilidad','ROA=UN/Activos ; ROE=UN/Capital. Apalancamiento: ROE=ROA+(D/C)(ROA−i(1−t)).'],
+    ['Estructura óptima','Con i(x)=a+bx²: (D/C)*=√[(r−a)/(3b)].'],
+    ['Sartoris-Hill','VP de la política = flujos descontados al costo de capital diario, menos incobrables y descuentos.'],
+    ['Gallinger / insolvencia','λ=(L<sub>0</sub>+μT)/(σ√T) ; P(insolvencia)=1−Φ(λ).'],
+    ['Lote económico (EOQ)','Q*=√(2D·C<sub>o</sub>/C<sub>m</sub>), C<sub>m</sub>=rP ; costo=D·C<sub>o</sub>/Q+C<sub>m</sub>·Q/2+DP ; reorden=d·L.'],
+    ['CAPM / WACC','k<sub>e</sub>=r<sub>f</sub>+β(r<sub>m</sub>−r<sub>f</sub>) ; WACC=(E/V)k<sub>e</sub>+(D/V)k<sub>d</sub>(1−t).'],
+    ['DuPont y crecimiento','ROE=margen×rotación×apalancamiento ; g=b·ROE (b = tasa de retención).'],
+    ['Valuación (Gordon)','V=D<sub>1</sub>/(k−g) ; dos etapas: flujos explícitos + valor terminal descontado.']
+  ]
+};
+function guideGeneric(sid){
+  const mods = MODULES_BY_SUBJECT[sid] || [];
+  const subj = subjectById(sid);
+  const par = SUBJECT_PARCIALES[sid];
+  const formulas = GUIDE_FORMULAS[sid] || [];
+  const prog = S.guideProgressive !== false;
+  const modCard = m => {
+    if(prog && !isUnlocked(m.id))
+      return '<div class="lesson-card guide-locked">🔒 <b>'+m.icon+' '+esc(m.name)+'</b><br>'
+        + '<span>Se desbloquea al llegar a este módulo. Aprueba los anteriores con ≥ 80% para estudiarlo.</span></div>';
+    return '<div class="lesson-card"><h3>'+m.icon+' Módulo '+(m.id+1)+' · '+esc(m.name)+'</h3>'
+      + '<p>'+esc(m.desc)+'</p>'
+      + '<p style="font-size:.82rem;color:var(--muted)">Práctica: '+esc(m.kind)+'</p></div>';
+  };
+  let html = '<div class="lesson-card"><h3>📖 Guía de estudio · '+esc(subj.name)+'</h3>'
+    + '<p>Resumen de los módulos del curso, agrupados por parcial, con las fórmulas clave. Usa <b>Imprimir / Guardar PDF</b> para llevarla contigo.</p>'
+    + (prog ? '<p style="font-size:.82rem;color:var(--muted)">🔓 La guía se desbloquea conforme avanzas. Desactiva “Guía de estudio progresiva” en tu perfil ⚙️ para verla completa.</p>' : '')
+    + '</div>';
+  if(formulas.length){
+    html += '<div class="lesson-card"><h3>🧮 Fórmulas clave</h3><table><tr><th>Tema</th><th>Fórmula / idea</th></tr>'
+      + formulas.map(f => '<tr><td><b>'+f[0]+'</b></td><td>'+f[1]+'</td></tr>').join('') + '</table></div>';
+  }
+  if(par){
+    if(par.proposed) html += '<div class="lesson-card" style="border-left:4px solid var(--accent)"><p style="margin:0;font-size:.86rem">🗂️ <b>División por parciales sugerida.</b> Ajústala con tu profesor si cambia.</p></div>';
+    par.groups.forEach(g => {
+      html += '<div class="section-h" style="margin:16px 0 8px"><h2 style="font-size:1.05rem">📚 '+esc(g.name)+'</h2><span class="line"></span></div>';
+      g.mods.forEach(id => { const m = mods.find(x=>x.id===id); if(m) html += modCard(m); });
+    });
+  } else {
+    mods.forEach(m => html += modCard(m));
+  }
+  return html;
+}
 function renderGuide(){
-  $('#guideBody').innerHTML = guideHTML();
+  const sid = S.activeSubject;
+  $('#guideBody').innerHTML = (sid === 'ca3') ? guideHTML() : guideGeneric(sid);
 }
 $('#btnPrint').addEventListener('click', () => {
   sfx('click');
-  $('#printGuide').innerHTML = '<h1>📖 ActuarIQ · Guía de estudio de Cálculo Actuarial</h1>'
+  $('#printGuide').innerHTML = '<h1>📖 ActuarIQ · Guía de estudio · '+esc(subjectById(S.activeSubject).name)+'</h1>'
     + $('#guideBody').innerHTML
         .replaceAll('class="lesson-card"','')
         .replaceAll('<h3>','<h2>').replaceAll('</h3>','</h2>')
