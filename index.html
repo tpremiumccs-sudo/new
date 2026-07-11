@@ -505,6 +505,11 @@ details.coll-sec[open] > summary::before{transform:rotate(90deg)}
 .lbs-tiles .tile{padding:12px 14px}
 .lbs-bar{height:9px; border-radius:6px; background:var(--surface2); overflow:hidden; margin-top:8px}
 .lbs-bar>span{display:block; height:100%; background:linear-gradient(90deg,var(--accent),var(--gold))}
+.cmp-table{width:100%; border-collapse:collapse; margin:8px 0}
+.cmp-table td,.cmp-table th{padding:8px 10px; text-align:center; border-bottom:1px solid var(--line)}
+.cmp-table th:nth-child(2){color:var(--muted); font-size:.82rem; font-weight:700; text-transform:uppercase; letter-spacing:.04em}
+.cmp-table td{font-size:1.1rem; font-weight:800; color:var(--ink2)}
+.cmp-table td.cmp-win{color:var(--good-text); background:color-mix(in srgb, var(--good) 16%, transparent); border-radius:8px}
 .lb-motiv{margin:10px 0 0; padding:10px 14px; border-radius:var(--radius-s); background:var(--surface2); font-size:.88rem; font-weight:700; color:var(--ink2)}
 /* ============ Modal de desbloqueo múltiple ============ */
 .reward-unlock-list{max-height:min(46vh,320px); overflow-y:auto; margin:12px 0; text-align:left; display:flex; flex-direction:column; gap:6px}
@@ -972,6 +977,8 @@ const CDMX_TZ = 'America/Mexico_City';
 const todayKey = () => new Intl.DateTimeFormat('en-CA', {timeZone:CDMX_TZ, year:'numeric', month:'2-digit', day:'2-digit'}).format(new Date());
 const cdmxHour = (ts=Date.now()) => +new Intl.DateTimeFormat('en-US', {timeZone:CDMX_TZ, hour:'2-digit', hour12:false}).format(new Date(ts)) % 24;
 const fmtDate = ts => new Date(ts).toLocaleString('es-MX',{timeZone:CDMX_TZ, day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});
+const cdmxMonth = () => todayKey().slice(0,7);   // 'YYYY-MM' en CDMX
+const daysBetweenKeys = (a,b) => Math.round((new Date(b+'T00:00') - new Date(a+'T00:00'))/86400000);
 const fmtDur = sec => { sec=Math.round(sec); const h=Math.floor(sec/3600), m=Math.floor(sec%3600/60);
   return h>0 ? h+' h '+m+' min' : (m>0 ? m+' min' : sec+' s'); };
 const clamp = (n,a,b) => Math.max(a,Math.min(b,n));
@@ -1059,7 +1066,11 @@ const DEFAULT_STATE = () => ({
   activeSubject:'ca3',  // materia actualmente desplegada
   subjectData:{},       // statsBySubject: materia -> {modules, history, concepts, examDay, examHistory, flashSRS, subjXP}
   subjXP:0,             // XP ganado en la materia activa
-  taskDone:{}           // tareas marcadas como realizadas: taskId -> timestamp
+  taskDone:{},          // tareas marcadas como realizadas: taskId -> timestamp
+  streakFreezes:0,      // 🧊 congeladores de racha disponibles (cubren días perdidos)
+  freezeMonth:null,     // 'YYYY-MM' del último congelador mensual reclamado
+  parcialFreezeAwarded:{}, // '<materia>|<idxParcial>' -> true (congelador ya otorgado por terminar ese parcial)
+  missions:null         // {d:'YYYY-MM-DD', w:'YYYY-Www', daily:{}, weekly:{}} progreso de misiones
 });
 let PROFILES = Store.getJSON(PKEY, null);
 if(!PROFILES || !Array.isArray(PROFILES.list) || !PROFILES.list.length){
@@ -1151,10 +1162,53 @@ function addXP(n){
 function touchStreak(){
   const today = todayKey();
   if(S.lastDay === today) return;
-  const y = new Date(); y.setDate(y.getDate()-1);
-  S.streak = (S.lastDay === y.toISOString().slice(0,10)) ? S.streak+1 : 1;
+  if(!S.lastDay){ S.streak = 1; S.lastDay = today; save(); return; }   // primer día
+  const gap = daysBetweenKeys(S.lastDay, today);                        // días transcurridos desde la última vez
+  if(gap === 1){                                                        // día consecutivo
+    S.streak += 1;
+  } else {
+    const missed = gap - 1;                                             // días saltados
+    if(missed > 0 && (S.streakFreezes||0) >= missed){                   // 🧊 se cubren con congeladores
+      S.streakFreezes -= missed; S.streak += 1; S.everUsedFreeze = true;
+      toast('🧊 Se usó '+(missed===1?'1 congelador':missed+' congeladores')+' para salvar tu racha ('+S.streak+' días). Quedan '+S.streakFreezes+'.');
+      sfx('unlock');
+    } else {
+      S.streak = 1;                                                     // sin congeladores suficientes: se reinicia
+    }
+  }
   S.lastDay = today; save();
   if(S.streak>1) toast('🔥 Racha de '+S.streak+' días. ¡Sigue así!');
+}
+/* 🧊 Congelador mensual: 1 gratis por mes calendario (CDMX). Devuelve true si se otorgó. */
+function claimMonthlyFreeze(){
+  const m = cdmxMonth();
+  if(S.freezeMonth === m) return false;
+  S.freezeMonth = m; S.streakFreezes = (S.streakFreezes||0) + 1; save();
+  return true;
+}
+/* 🧊 Congelador por terminar un parcial: al completar ≥90% de los módulos de un
+   parcial (de cualquier materia) se otorga 1 congelador, una sola vez por parcial. */
+function checkParcialFreezes(){
+  let granted = 0;
+  SUBJECTS.forEach(sx => {
+    const par = SUBJECT_PARCIALES[sx.id]; if(!par) return;
+    const snap = subjSnapshot(sx.id);
+    const modsDone = snap.modules || {};
+    par.groups.forEach((g, gi) => {
+      const key = sx.id+'|'+gi;
+      if(S.parcialFreezeAwarded[key]) return;
+      const total = g.mods.length; if(!total) return;
+      const done = g.mods.filter(id => modsDone[id] && modsDone[id].done).length;
+      if(done/total >= 0.9){
+        S.parcialFreezeAwarded[key] = true;
+        S.streakFreezes = (S.streakFreezes||0) + 1; granted++;
+        toast('🧊 ¡Terminaste el '+g.name+' de '+sx.short+' (≥90%)! +1 congelador de racha.');
+        sfx('unlock');
+      }
+    });
+  });
+  if(granted) save();
+  return granted;
 }
 function modState(id){ return S.modules[id] || {best:0, stars:0, attempts:0, done:false}; }
 function trackConcept(topic, ok){
@@ -1463,7 +1517,7 @@ function renderHome(){
     tile('📈','Promedio', Math.round(o.avg), '%', S.history.length+' actividades') +
     tile('⚡','XP total', S.xp, '', 'Nivel '+levelInfo().lvl+' · '+titleIco()+' '+currentTitle()) +
     tile('📅','Objetivo de hoy', dayXp+'<span class="unit">/'+goal+' XP</span>', '', dayXp>=goal ? '¡Cumplido! ✅' : 'ajústalo en tu perfil') +
-    tile('🔥','Racha diaria', S.streak, S.streak===1?' día':' días', S.lastDay===todayKey() ? '¡Ya estudiaste hoy! ✅' : '⚠️ Estudia hoy para mantenerla') +
+    tile('🔥','Racha diaria', S.streak, S.streak===1?' día':' días', (S.lastDay===todayKey() ? '¡Ya estudiaste hoy! ✅' : '⚠️ Estudia hoy para mantenerla') + ((S.streakFreezes||0) ? ' · 🧊 '+S.streakFreezes+' congelador'+(S.streakFreezes===1?'':'es') : '')) +
     tile('📋','Tareas pendientes', pend, '', pend ? 'revísalas en 📋 Tareas' : 'todo al día 🎉');
   $('#subjSectionTitle').textContent = subj.icon+' '+subj.name;
   $('#modMeta').textContent = hasContent ? o.done+' / '+o.total+' completados · se desbloquea con ≥ 80%' : 'en preparación';
@@ -1676,7 +1730,7 @@ function recordResult(id, score, xpEarned, sec, recap){
   if(S.history.length > 80) S.history.length = 80;
   let bonus = passed ? 30 : 0; if(score===100) bonus += 20;
   addXP(xpEarned + bonus);
-  save(); checkBadges(); checkRewards(); renderHeader();
+  save(); checkBadges(); checkRewards(); if(passed) checkParcialFreezes(); renderHeader();
   const unlockedNext = nextWasLocked && isUnlocked(id+1);
   renderResult(m, score, stars, xpEarned+bonus, sec, recap, passed, unlockedNext);
   if(passed){ sfx('win'); confetti(score===100 ? 120 : 70); } else sfx('bad');
@@ -5855,9 +5909,55 @@ function lbShowStudent(pid){
     + '</div>'
     + '<div class="lbs-bar"><span style="width:'+Math.round(frac*100)+'%"></span></div>'
     + '<p class="q-help" style="margin-top:10px">🕒 Última actualización: '+(s.updated?fmtDate(s.updated):'—')+'</p>'
-    + '<div class="q-actions" style="justify-content:flex-end;margin-top:14px"><button class="btn" id="lbsClose">Cerrar</button></div>'
+    + '<div class="q-actions" style="justify-content:flex-end;margin-top:14px;flex-wrap:wrap">'
+      + (!isMe && board.students.some(x=>x.pid===PROFILES.active) ? '<button class="btn ghost" id="lbsCompare" data-pid="'+esc(s.pid)+'">⚖️ Comparar con el mío</button>' : '')
+      + '<button class="btn" id="lbsClose">Cerrar</button></div>'
   );
   const c = document.getElementById('lbsClose'); if(c) c.addEventListener('click', ()=>{ sfx('click'); closeModal(); });
+  const cmp = document.getElementById('lbsCompare'); if(cmp) cmp.addEventListener('click', ()=>{ sfx('click'); lbCompare(cmp.dataset.pid); });
+}
+/* — Leaderboard: comparación lado a lado (tú vs. otro alumno) — */
+function lbCompare(pid){
+  const board = lbLoad();
+  const me = board.students.find(s => s.pid === PROFILES.active);
+  const other = board.students.find(s => s.pid === pid);
+  if(!me || !other){ toast('No se pudo comparar'); sfx('bad'); return; }
+  const ranked = lbRanked(board);
+  const posOf = p => ranked.findIndex(s=>s.pid===p)+1;
+  const avOf = (s, isMe) => {
+    const eqOv = isMe ? ensureEquip() : {frame:s.frame||null, acc:s.acc||[], bg:s.bg||null, effect:null};
+    const mode = (s.avatarMode==='photo' && s.photo) ? 'photo' : 'custom';
+    return avatarStack({avatar:s.avatar, photo:s.photo, avatarMode:mode, custom:s.custom}, 64, eqOv);
+  };
+  const rows = [
+    ['✨ XP', me.xp||0, other.xp||0, 'high'],
+    ['⚡ Nivel', me.lvl||levelOf(me.xp||0), other.lvl||levelOf(other.xp||0), 'high'],
+    ['✅ Módulos', me.mods||0, other.mods||0, 'high'],
+    ['📈 Promedio', me.avg!=null?me.avg:0, other.avg!=null?other.avg:0, 'high'],
+    ['🔥 Racha', me.streak||0, other.streak||0, 'high'],
+    ['🏆 Puesto', posOf(PROFILES.active), posOf(pid), 'low']
+  ];
+  const fmtV = (label,v) => label==='📈 Promedio' ? v+'%' : label==='🏆 Puesto' ? '#'+v : (+v).toLocaleString();
+  let myWins=0, otherWins=0;
+  const body = rows.map(([label,a,b,dir])=>{
+    const aWin = dir==='high'? a>b : a<b, bWin = dir==='high'? b>a : b<a;
+    if(aWin) myWins++; if(bWin) otherWins++;
+    return '<tr><td class="'+(aWin?'cmp-win':'')+'">'+fmtV(label,a)+'</td><th>'+label+'</th><td class="'+(bWin?'cmp-win':'')+'">'+fmtV(label,b)+'</td></tr>';
+  }).join('');
+  const verdict = myWins>otherWins ? '🎉 Vas arriba, '+esc((me.name||'tú').split(' ')[0])+'.'
+    : otherWins>myWins ? '💪 '+esc((other.name||'').split(' ')[0])+' va arriba. ¡A darle!'
+    : '🤝 Empate técnico.';
+  openModal(
+    '<h2 style="margin-top:0">⚖️ Comparación</h2>'
+    + '<table class="cmp-table"><tr>'
+      + '<th style="text-align:center">'+avOf(me,true)+'<br><b>'+esc(me.name||'Tú')+'</b></th><th></th>'
+      + '<th style="text-align:center">'+avOf(other,false)+'<br><b>'+esc(other.name||'—')+'</b></th></tr>'
+    + body + '</table>'
+    + '<p class="lb-motiv" style="text-align:center">'+verdict+' ('+myWins+' – '+otherWins+')</p>'
+    + '<div class="q-actions" style="justify-content:flex-end;margin-top:6px"><button class="btn ghost" id="cmpBack">← Volver</button><button class="btn" id="cmpClose">Cerrar</button></div>'
+  );
+  const bk = document.getElementById('cmpBack'); if(bk) bk.addEventListener('click', ()=>{ sfx('click'); lbShowStudent(pid); });
+  const cl = document.getElementById('cmpClose'); if(cl) cl.addEventListener('click', ()=>{ sfx('click'); closeModal(); });
 }
 /* — Leaderboard: panel principal (búsqueda, orden, tabla y acciones) — */
 function lbBoardPanelHTML(visible, myPos, total){
@@ -6425,6 +6525,17 @@ const BADGES = [
   {id:'ans25',   ico:'📝', name:'Practicante',        desc:'Responde 25 preguntas',            test:()=>(S.totalAnswered||0)>=25},
   {id:'ans50',   ico:'🧾', name:'Curtido',            desc:'Responde 50 preguntas',            test:()=>(S.totalAnswered||0)>=50},
   {id:'ans100',  ico:'🗂️', name:'Veterano',           desc:'Responde 100 preguntas',           test:()=>(S.totalAnswered||0)>=100},
+  {id:'ans250',  ico:'📚', name:'Incansable',         desc:'Responde 250 preguntas',           test:()=>(S.totalAnswered||0)>=250},
+  {id:'xp5000',  ico:'✨', name:'Cinco mil',          desc:'Acumula 5,000 XP',                 test:()=>S.xp>=5000},
+  {id:'exam5',   ico:'🗓️', name:'Rutina de examen',   desc:'Presenta 5 exámenes diarios',      test:()=>(S.examHistory||[]).length>=5},
+  // — Multi-materia y parciales (progreso en todas las materias) —
+  {id:'parcial1', ico:'📗', name:'Parcial superado',  desc:'Termina un parcial de una materia (≥ 90%)', test:()=>Object.keys(S.parcialFreezeAwarded||{}).length>=1},
+  {id:'subjDone', ico:'🎯', name:'Materia dominada',  desc:'Completa TODOS los módulos de una materia', test:()=>SUBJECTS.some(sx=>{ const snap=subjSnapshot(sx.id); const mods=MODULES_BY_SUBJECT[sx.id]||[]; return mods.length>0 && mods.every(m=>snap.modules&&snap.modules[m.id]&&snap.modules[m.id].done); })},
+  {id:'multi3',   ico:'🧩', name:'Todoterreno',       desc:'Ten actividad en 3 materias',       test:()=>SUBJECTS.filter(sx=>(subjSnapshot(sx.id).history||[]).length>0).length>=3},
+  {id:'multi5',   ico:'🌐', name:'Multidisciplinario',desc:'Ten actividad en las 5 materias',   test:()=>SUBJECTS.filter(sx=>(subjSnapshot(sx.id).history||[]).length>0).length>=5},
+  // — Congeladores de racha —
+  {id:'freeze1',  ico:'🧊', name:'Racha a salvo',     desc:'Un congelador salvó tu racha',     test:()=>!!S.everUsedFreeze},
+  {id:'freeze3',  ico:'❄️', name:'Bien preparado',    desc:'Ten 3 congeladores a la vez',      test:()=>(S.streakFreezes||0)>=3},
   // — Logros secretos: no revelan qué hacer hasta desbloquearlos —
   {id:'sec-owl',    ico:'🦉', secret:true, name:'Búho nocturno',   desc:'Estudiaste de madrugada (12 am – 5 am, CDMX).', test:()=>!!S.lateNight},
   {id:'sec-early',  ico:'🐦', secret:true, name:'Madrugador',      desc:'Estudiaste muy temprano (5 – 8 am, CDMX).',     test:()=>!!S.earlyBird},
@@ -6709,10 +6820,12 @@ function guideHTML(){
    arman su guía con sus módulos reales (agrupados por parcial) más un bloque
    curado de fórmulas clave; así cada materia tiene SU propia guía, no la de CA3. */
 const SUBJECT_PARCIALES = {
-  ca3:   { proposed:true,  groups:[ {name:'Primer parcial', mods:[0,1,2,3,4]}, {name:'Segundo parcial', mods:[5,6,7]}, {name:'Práctica e integrador', mods:[8,9,10,11]} ] },
+  ca3:   { proposed:true, note:'El contenido actual de la app corresponde al 2.º parcial; el 1.er parcial aún no está cargado.',
+           groups:[ {name:'Segundo parcial (contenido actual)', mods:[0,1,2,3,4,5,6,7,9,11]}, {name:'Práctica y juegos', mods:[8,10]} ] },
   stoch: { proposed:false, groups:[ {name:'Primer parcial', mods:[0,1,2,3,4,5,6]}, {name:'Segundo parcial', mods:[7,8,9,10,11]} ] },
   'modelos-regresion':          { proposed:true, groups:[ {name:'Primer parcial', mods:[0,1,2,3,4]}, {name:'Segundo parcial', mods:[5,6,7,8]} ] },
-  'estadistica-no-parametrica': { proposed:true, groups:[ {name:'Primer parcial', mods:[0,1,2,3,4]}, {name:'Segundo parcial', mods:[5,6,7,8]} ] },
+  'estadistica-no-parametrica': { proposed:true, note:'Ajustado al examen “Parcial 1” (cuantiles, signos, McNemar, Cox-Stuart).',
+           groups:[ {name:'Primer parcial', mods:[0,5,6,7]}, {name:'Segundo parcial', mods:[1,2,3,4,8]} ] },
   'administracion-financiera':  { proposed:true, groups:[ {name:'Primer parcial', mods:[0,1,2,3]}, {name:'Segundo parcial', mods:[4,5,6,7]} ] }
 };
 /* Fórmulas clave por materia (notación HTML sub/sup, sin KaTeX). Tomadas del
@@ -6784,7 +6897,7 @@ function guideGeneric(sid){
       + formulas.map(f => '<tr><td><b>'+f[0]+'</b></td><td>'+f[1]+'</td></tr>').join('') + '</table></div>';
   }
   if(par){
-    if(par.proposed) html += '<div class="lesson-card" style="border-left:4px solid var(--accent)"><p style="margin:0;font-size:.86rem">🗂️ <b>División por parciales sugerida.</b> Ajústala con tu profesor si cambia.</p></div>';
+    if(par.proposed) html += '<div class="lesson-card" style="border-left:4px solid var(--accent)"><p style="margin:0;font-size:.86rem">🗂️ <b>División por parciales sugerida.</b> Ajústala con tu profesor si cambia.'+(par.note?'<br>📌 '+esc(par.note):'')+'</p></div>';
     par.groups.forEach(g => {
       html += '<div class="section-h" style="margin:16px 0 8px"><h2 style="font-size:1.05rem">📚 '+esc(g.name)+'</h2><span class="line"></span></div>';
       g.mods.forEach(id => { const m = mods.find(x=>x.id===id); if(m) html += modCard(m); });
@@ -7576,9 +7689,18 @@ function renderProfile(){
     + '<div class="answer-row"><input class="ainput" id="newProfName" placeholder="Nombre del nuevo perfil…" maxlength="24">'
     + '<button class="btn small" id="pfNew">＋ Crear</button></div>'
     + '<p class="q-help">Cada perfil guarda su propio progreso en este navegador. Para llevarlo a otro dispositivo usa Exportar / Importar.</p></div>';
+  // — Congeladores de racha —
+  html += '<div class="panel"><h3>🧊 Congeladores de racha</h3>'
+    + '<p style="font-size:.9rem;color:var(--ink2)">Un congelador salva tu racha 🔥 si te saltas un día (se usa solo cuando hace falta). Tienes <b>'+(S.streakFreezes||0)+'</b>.</p>'
+    + '<div class="q-actions" style="justify-content:flex-start;flex-wrap:wrap">'
+    + (S.freezeMonth===cdmxMonth()
+        ? '<button class="btn ghost" disabled>🧊 Congelador mensual ya reclamado</button>'
+        : '<button class="btn" id="btnClaimFreeze">🧊 Reclamar congelador mensual</button>')
+    + '</div>'
+    + '<p class="q-help">Ganas +1 al reclamar el mensual y +1 cada vez que terminas un parcial de una materia (≥ 90% de sus módulos).</p></div>';
   // — Datos —
   html += '<div class="panel"><h3>💾 Mis datos</h3>'
-    + '<p style="font-size:.85rem;color:var(--ink2)">Tu progreso vive solo en este navegador. Exporta un respaldo <b>JSON</b> para guardarlo o moverlo a otro dispositivo, e impórtalo cuando lo necesites.</p>'
+    + '<p style="font-size:.85rem;color:var(--ink2)">Respaldo <b>total</b> en un archivo JSON: incluye <b>todos tus perfiles</b> y su progreso, el leaderboard y las tareas. Úsalo para guardar todo o moverlo a otro dispositivo.</p>'
     + '<div class="q-actions" style="justify-content:flex-start;flex-wrap:wrap">'
     + '<button class="btn" id="btnExport">⬇️ Exportar JSON</button>'
     + '<button class="btn ghost" id="btnImport">⬆️ Importar JSON</button>'
@@ -7622,6 +7744,11 @@ function renderProfile(){
     Store.remove(LOGOKEY);
     applyLogo(); renderProfile(); toast('↩️ Logo restablecido'); sfx('click');
   });
+  const cf = $('#btnClaimFreeze');
+  if(cf) cf.addEventListener('click', () => {
+    if(claimMonthlyFreeze()){ toast('🧊 +1 congelador mensual. Ahora tienes '+S.streakFreezes+'.'); sfx('unlock'); renderProfile(); renderHeader(); }
+    else { toast('🧊 Ya reclamaste el congelador de este mes.'); sfx('bad'); }
+  });
   $('#btnExport').addEventListener('click', exportData);
   $('#btnImport').addEventListener('click', () => $('#importFile').click());
   $('#importFile').addEventListener('change', e => { if(e.target.files[0]) importData(e.target.files[0]); e.target.value=''; });
@@ -7655,21 +7782,44 @@ function deleteProfile(id){
   if(PROFILES.active === id){ PROFILES.active = PROFILES.list[0].id; reloadActiveState(); applyTheme(); }
   saveProfiles(); renderHeader(); renderProfile(); toast('🗑️ Perfil eliminado'); sfx('bad');
 }
+/* Respaldo TOTAL: todos los perfiles y su progreso + leaderboard + tareas + logo. */
 function exportData(){
-  const p = activeProfile();
-  downloadJSON('actuariq-'+p.name.toLowerCase().replace(/[^a-z0-9ñáéíóú]+/gi,'-')+'-'+todayKey()+'.json',
-    { app:'actuariq', version:2, exported:new Date().toISOString(),
-      profile:{ name:p.name, avatar:p.avatar, created:p.created, photo:p.photo||null, avatarMode:p.avatarMode||null, custom:p.custom||null }, data:S });
-  toast('⬇️ Respaldo exportado como archivo JSON'); sfx('ok');
+  save();   // asegura que el estado del perfil activo esté persistido
+  const states = {};
+  (PROFILES.list||[]).forEach(pr => { states[pr.id] = Store.getJSON('actuariq_u_'+pr.id, {}); });
+  states[PROFILES.active] = S;   // copia fresca del perfil activo
+  downloadJSON('actuariq-respaldo-total-'+todayKey()+'.json', {
+    app:'actuariq-backup', version:1, exported:new Date().toISOString(),
+    profiles: PROFILES, states,
+    leaderboard: Store.getJSON(LBKEY, null),
+    shared: Store.getJSON(SHKEY, null),
+    logo: Store.get(LOGOKEY) || null
+  });
+  toast('⬇️ Respaldo total exportado ('+(PROFILES.list||[]).length+' perfil'+((PROFILES.list||[]).length===1?'':'es')+')'); sfx('ok');
 }
 function importData(file){
   readJSONFile(file, '❌ El archivo no es un respaldo válido de ActuarIQ', payload => {
+    // — Respaldo TOTAL (formato nuevo) —
+    if(payload && payload.app==='actuariq-backup' && payload.profiles && payload.states){
+      if(!(payload.profiles.list && payload.profiles.list.length)) throw new Error('formato');
+      if(!confirm('Esto REEMPLAZARÁ todos los perfiles y su progreso en este dispositivo (más el leaderboard y las tareas) con los del respaldo. ¿Continuar?')) return;
+      (PROFILES.list||[]).forEach(pr => { if(!payload.states[pr.id]) Store.remove('actuariq_u_'+pr.id); });  // limpia perfiles huérfanos
+      Object.keys(payload.states).forEach(pid => Store.setJSON('actuariq_u_'+pid, payload.states[pid]));
+      Store.setJSON(PKEY, payload.profiles); PROFILES = payload.profiles;
+      if(!PROFILES.list.some(pr => pr.id===PROFILES.active)) PROFILES.active = PROFILES.list[0].id;
+      if(payload.leaderboard) Store.setJSON(LBKEY, payload.leaderboard);
+      if(payload.shared) Store.setJSON(SHKEY, payload.shared);
+      if(payload.logo) Store.set(LOGOKEY, payload.logo);
+      saveProfiles(); reloadActiveState(); applyTheme(); applyLogo(); renderHeader(); renderProfile();
+      toast('⬆️ Respaldo total restaurado ('+Object.keys(payload.states).length+' perfiles)'); sfx('unlock');
+      return;
+    }
+    // — Compatibilidad: respaldo por-perfil antiguo (app:'actuariq') —
     const data = (payload && payload.app === 'actuariq' && payload.data) ? payload.data
       : (payload && typeof payload.xp === 'number' ? payload : null);
     if(!data) throw new Error('formato');
-    if(!confirm('Esto reemplazará TODO el progreso del perfil actual ("'+activeProfile().name+'") con el del archivo. ¿Continuar?')) return;
+    if(!confirm('Esto reemplazará el progreso del perfil actual ("'+activeProfile().name+'") con el del archivo. ¿Continuar?')) return;
     S = Object.assign(DEFAULT_STATE(), data);
-    // migración multi-materia también para respaldos antiguos
     if(!S.subjectData) S.subjectData = {};
     if(!SUBJECTS.some(x => x.id === S.activeSubject)) S.activeSubject = 'ca3';
     if(S.subjXP === undefined || S.subjXP === null) S.subjXP = S.xp;
