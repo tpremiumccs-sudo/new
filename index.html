@@ -510,6 +510,9 @@ details.coll-sec[open] > summary::before{transform:rotate(90deg)}
 .cmp-table th:nth-child(2){color:var(--muted); font-size:.82rem; font-weight:700; text-transform:uppercase; letter-spacing:.04em}
 .cmp-table td{font-size:1.1rem; font-weight:800; color:var(--ink2)}
 .cmp-table td.cmp-win{color:var(--good-text); background:color-mix(in srgb, var(--good) 16%, transparent); border-radius:8px}
+.reto-vs{display:flex; align-items:center; justify-content:center; gap:18px; text-align:center; margin:12px 0}
+.reto-vs .reto-sc{font-size:1.8rem; font-weight:800; color:var(--accent)}
+.reto-vs .reto-mid{font-size:.9rem; font-weight:800; color:var(--muted)}
 .lb-motiv{margin:10px 0 0; padding:10px 14px; border-radius:var(--radius-s); background:var(--surface2); font-size:.88rem; font-weight:700; color:var(--ink2)}
 /* ============ Modal de desbloqueo múltiple ============ */
 .reward-unlock-list{max-height:min(46vh,320px); overflow-y:auto; margin:12px 0; text-align:left; display:flex; flex-direction:column; gap:6px}
@@ -5178,6 +5181,7 @@ function finishGeneric(){
   save(); checkBadges(); checkRewards(); renderHeader();
   renderModeResult(cfg, score, baseXp+bonus, sec, recap);
   if(score>=80){ sfx('win'); confetti(50); } else sfx('bad');
+  if(cfg.onFinish) cfg.onFinish(score, recap, sec);   // hook opcional (p. ej. reto entre compañeros)
 }
 function renderModeResult(cfg, score, xp, sec, recap){
   const R = 56, C = 2*Math.PI*R;
@@ -5226,6 +5230,115 @@ function startWrongOnly(){
 }
 function startInfinite(){ startMode({id:'infinite', title:'Práctica infinita', icon:'♾️', endless:true, next:()=>pick(subjPool()), introToast:'♾️ Practica sin fin. Toca “🏁 Terminar” cuando quieras.'}); }
 function startCarrera(){ startMode({id:'carrera', title:'Carrera de XP', icon:'🏁', endless:true, target:100, next:()=>pick(subjPool()), introToast:'🏁 ¡Llega a 100 XP lo antes posible!'}); }
+
+/* ==================== Reto entre compañeros ====================
+   Sin servidor en tiempo real: el reto viaja en un CÓDIGO que se comparte.
+   Con la misma "semilla" (seed) ambos generan EXACTAMENTE las mismas preguntas,
+   juegan por separado y comparan resultados. */
+function mulberry32(a){ return function(){ a|=0; a=a+0x6D2B79F5|0; let t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
+function withSeed(seed, fn){ const orig=Math.random; Math.random = mulberry32(seed>>>0); try{ return fn(); } finally { Math.random = orig; } }
+/* Preguntas reproducibles de una materia a partir de la semilla (independiente del progreso). */
+function challengePool(subjectId, seed, n){
+  return withSeed(seed, ()=>{
+    const mods = MODULES_BY_SUBJECT[subjectId] || [];
+    let pool = [];
+    mods.forEach(m => { if(m.build){ try{ pool.push(...m.build()); }catch(e){} } });
+    return shuffle(pool).slice(0, n);
+  });
+}
+/* Código compartible: 'AIQ1' + base64(JSON) tolerante a nombres con acentos. */
+function challengeEncode(obj){ return 'AIQ1'+btoa(unescape(encodeURIComponent(JSON.stringify(obj)))).replace(/=+$/,''); }
+function challengeDecode(code){
+  try{
+    const s = String(code).trim().replace(/\s+/g,'');
+    if(!s.startsWith('AIQ1')) return null;
+    const json = decodeURIComponent(escape(atob(s.slice(4))));
+    const o = JSON.parse(json);
+    if(!o || !o.s || o.seed==null || !o.n) return null;
+    if(!MODULES_BY_SUBJECT[o.s]) return null;
+    return o;
+  }catch(e){ return null; }
+}
+async function copyToClipboard(text){
+  try{ await navigator.clipboard.writeText(text); return true; }
+  catch(e){
+    try{ const ta=document.createElement('textarea'); ta.value=text; ta.style.position='fixed'; ta.style.opacity='0'; document.body.appendChild(ta); ta.select(); const ok=document.execCommand('copy'); ta.remove(); return ok; }
+    catch(e2){ return false; }
+  }
+}
+const RETO_SUBJECTS = () => SUBJECTS.filter(s => (MODULES_BY_SUBJECT[s.id]||[]).some(m=>m.build));
+function openRetoHub(){
+  const o = openModal('<h2 style="margin-top:0">🤺 Reto entre compañeros</h2>'
+    + '<p style="color:var(--ink2);font-size:.92rem">Mismas preguntas para los dos: quien saque más, gana. Todo viaja en un código que se comparte (no necesitas internet).</p>'
+    + '<div class="q-actions" style="justify-content:center;flex-wrap:wrap"><button class="btn" id="retoCreate">➕ Crear un reto</button>'
+    + '<button class="btn ghost" id="retoRespond">📥 Responder un reto</button></div>');
+  o.querySelector('#retoCreate').addEventListener('click', ()=>{ sfx('click'); retoCreateForm(); });
+  o.querySelector('#retoRespond').addEventListener('click', ()=>{ sfx('click'); retoRespondForm(); });
+}
+function retoCreateForm(){
+  const subs = RETO_SUBJECTS();
+  const o = openModal('<h2 style="margin-top:0">➕ Crear un reto</h2>'
+    + '<label class="q-help" style="display:block;margin-bottom:4px">Materia</label>'
+    + '<select class="ainput" id="retoSubj">'+subs.map(s=>'<option value="'+s.id+'"'+(s.id===S.activeSubject?' selected':'')+'>'+s.icon+' '+esc(s.name)+'</option>').join('')+'</select>'
+    + '<label class="q-help" style="display:block;margin:10px 0 4px">Número de preguntas</label>'
+    + '<select class="ainput" id="retoN"><option value="6">6</option><option value="8" selected>8</option><option value="10">10</option><option value="12">12</option></select>'
+    + '<div class="q-actions" style="justify-content:flex-end;margin-top:14px"><button class="btn ghost" id="retoBack">← Volver</button><button class="btn" id="retoGo">🎮 Jugar mi reto</button></div>');
+  o.querySelector('#retoBack').addEventListener('click', ()=>{ sfx('click'); openRetoHub(); });
+  o.querySelector('#retoGo').addEventListener('click', ()=>{
+    const subject = o.querySelector('#retoSubj').value;
+    const n = +o.querySelector('#retoN').value || 8;
+    const seed = (Math.floor(Math.random()*1e9)) >>> 0;
+    closeModal(); sfx('click');
+    startChallenge({subject, seed, n, mode:'create'});
+  });
+}
+function retoRespondForm(){
+  const o = openModal('<h2 style="margin-top:0">📥 Responder un reto</h2>'
+    + '<p class="q-help">Pega el código que te compartió tu compañero.</p>'
+    + '<textarea class="ainput" id="retoCode" rows="3" placeholder="AIQ1…" style="width:100%;resize:vertical;font-family:ui-monospace,monospace"></textarea>'
+    + '<div class="q-actions" style="justify-content:flex-end;margin-top:12px"><button class="btn ghost" id="retoBack">← Volver</button><button class="btn" id="retoAccept">✅ Aceptar reto</button></div>');
+  o.querySelector('#retoBack').addEventListener('click', ()=>{ sfx('click'); openRetoHub(); });
+  o.querySelector('#retoAccept').addEventListener('click', ()=>{
+    const data = challengeDecode(o.querySelector('#retoCode').value);
+    if(!data){ toast('❌ Código de reto no válido'); sfx('bad'); return; }
+    closeModal(); sfx('click');
+    startChallenge({subject:data.s, seed:data.seed, n:data.n, mode:'respond', rivalName:data.by||'Tu rival', rivalScore:+data.sc||0});
+  });
+}
+function startChallenge(cfg){
+  if(cfg.subject !== S.activeSubject) switchSubject(cfg.subject);   // contexto de la materia del reto
+  const qs = challengePool(cfg.subject, cfg.seed, cfg.n);
+  if(!qs.length){ toast('🚧 Esa materia no tiene preguntas para el reto.'); sfx('bad'); return; }
+  const subj = subjectById(cfg.subject);
+  const intro = cfg.mode==='respond'
+    ? '🤺 Reto de '+esc(cfg.rivalName)+' ('+cfg.rivalScore+'%). ¡Supéralo!'
+    : '🤺 Juega tu reto; al final te doy el código para compartir.';
+  startMode({ id:'reto', title:'🤺 Reto · '+subj.short, icon:'🤺', qs, hideAnswers:true, introToast:intro,
+    onFinish:(score)=> retoResult(cfg, score) });
+}
+function retoResult(cfg, myScore){
+  const myName = activeProfile().name;
+  const code = challengeEncode({v:1, s:cfg.subject, seed:cfg.seed, n:cfg.n, by:myName, sc:myScore});
+  const subj = subjectById(cfg.subject);
+  let head, body;
+  if(cfg.mode==='respond'){
+    const win = myScore>cfg.rivalScore ? '🏆 ¡Ganaste!' : myScore<cfg.rivalScore ? '😮 Ganó '+esc(cfg.rivalName) : '🤝 ¡Empate!';
+    head = '🤺 Resultado del reto';
+    body = '<div class="reto-vs"><div><b>'+esc(myName)+'</b><div class="reto-sc">'+myScore+'%</div></div>'
+      + '<div class="reto-mid">vs</div><div><b>'+esc(cfg.rivalName)+'</b><div class="reto-sc">'+cfg.rivalScore+'%</div></div></div>'
+      + '<p class="lb-motiv" style="text-align:center">'+win+'</p>'
+      + '<p class="q-help">Envía este código de vuelta a '+esc(cfg.rivalName)+' para que vea tu resultado:</p>';
+  } else {
+    head = '🤺 ¡Reto listo!';
+    body = '<p style="text-align:center;font-size:1.05rem">Sacaste <b>'+myScore+'%</b> en '+subj.icon+' '+esc(subj.short)+'.</p>'
+      + '<p class="q-help">Comparte este código con un compa para que juegue las MISMAS preguntas y se comparen:</p>';
+  }
+  const o = openModal('<h2 style="margin-top:0">'+head+'</h2>'+body
+    + '<textarea class="ainput" id="retoOut" rows="3" readonly style="width:100%;resize:vertical;font-family:ui-monospace,monospace">'+esc(code)+'</textarea>'
+    + '<div class="q-actions" style="justify-content:flex-end;margin-top:12px"><button class="btn ghost" id="retoDone">Cerrar</button><button class="btn" id="retoCopy">📋 Copiar código</button></div>');
+  o.querySelector('#retoCopy').addEventListener('click', async ()=>{ const ok=await copyToClipboard(code); toast(ok?'📋 Código copiado':'Selecciona y copia el código'); sfx(ok?'ok':'bad'); });
+  o.querySelector('#retoDone').addEventListener('click', ()=>{ sfx('click'); closeModal(); });
+}
 function openModulePicker(){
   const avail = MODULES.filter(m => m.build && isUnlocked(m.id));
   if(!avail.length){ toast('🔒 Desbloquea módulos para el quiz clásico.'); return; }
@@ -5618,6 +5731,7 @@ const GAME_MODES = [
   {id:'escape',  cat:'Juegos',      ico:'🔐', name:'Escape room',             desc:'Resuelve acertijos y abre la caja fuerte.',    run:startEscape,      needs:'ca3'},
   {id:'codigo',  cat:'Juegos',      ico:'🔑', name:'Código secreto',          desc:'Descifra el código con 3 cálculos.',           run:startCodigo,      needs:'content'},
   {id:'bingo',   cat:'Juegos',      ico:'🎱', name:'Bingo de conceptos',      desc:'Marca los conceptos que se describan.',        run:startBingo,       needs:'ca3'},
+  {id:'reto',    cat:'Multijugador',ico:'🤺', name:'Reto entre compañeros',   desc:'Mismas preguntas para dos; se comparte por código.', run:openRetoHub, needs:'content'},
   {id:'hotseat', cat:'Multijugador',ico:'👥', name:'Todos contra todos',      desc:'Por turnos en el mismo dispositivo.',          run:startHotseat,     needs:'content'}
 ];
 function modeAvailable(m){
