@@ -827,6 +827,10 @@ svg.ic{ width:18px; height:18px; display:inline-block; vertical-align:-3px; }
 .chip .icon svg.ic{ width:16px; height:16px; display:block; }
 .chip.hearts .icon svg.ic{ color:#ff026f; }
 .chip.streak .icon svg.ic{ color:#eb6834; }
+.chip.subject .icon svg.ic{ width:16px; height:16px; color:var(--accent); }
+.pr-av svg.ic{ width:20px; height:20px; color:var(--accent); }
+.tag svg.ic{ width:13px; height:13px; vertical-align:-2px; }
+.m-ico svg.ic{ color:var(--mc, var(--accent)); }
 .more-item svg.ic{ width:16px; height:16px; flex:none; }
 .btn svg.ic{ width:16px; height:16px; margin-right:6px; }
 .mcard .lock svg.ic, .m-ico svg.ic{ width:20px; height:20px; }

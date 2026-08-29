@@ -72,6 +72,15 @@ const SUBJECTS = [
   {id:'administracion-financiera', icon:'💼', name:'Administración Financiera', short:'Admin. Financiera', wm:'💼💰'}
 ];
 const subjectById = id => SUBJECTS.find(s=>s.id===id) || SUBJECTS[0];
+/* Iconos SVG por materia (identidad UTECA: sin emojis en el chrome) */
+const SUBJ_SVG = {
+  'ca3': '<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/></svg>',
+  'modelos-regresion': '<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="22 17 13.5 8.5 8.5 13.5 2 7"/><polyline points="16 17 22 17 22 11"/></svg>',
+  'estadistica-no-parametrica': '<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" x2="12" y1="20" y2="10"/><line x1="18" x2="18" y1="20" y2="4"/><line x1="6" x2="6" y1="20" y2="16"/></svg>',
+  'stoch': '<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="12" height="12" x="2" y="10" rx="2" ry="2"/><path d="m17.92 14 3.5-3.5a2.24 2.24 0 0 0 0-3l-5-4.92a2.24 2.24 0 0 0-3 0L10 6"/><path d="M6 18h.01"/><path d="M10 14h.01"/><path d="M15 6h.01"/><path d="M18 9h.01"/></svg>',
+  'administracion-financiera': '<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 20V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/><rect width="20" height="14" x="2" y="6" rx="2"/></svg>'
+};
+const subjSVG = id => SUBJ_SVG[id] || (subjectById(id).icon || '');
 /* Claves del estado que pertenecen a la materia activa (se intercambian al
    cambiar de materia; el resto del estado es global) */
 const SUBJ_KEYS = ['modules','history','concepts','examDay','examHistory','flashSRS','subjXP'];
@@ -190,7 +199,7 @@ function switchSubject(id){
   MODULES = MODULES_BY_SUBJECT[id] || [];
   SES = null;
   renderHeader(); goHome();
-  toast('📚 Materia activa: '+subjectById(id).icon+' '+subjectById(id).name);
+  toast('Materia activa: '+subjectById(id).name);
 }
 
 /* Niveles: XP necesario crece cuadráticamente */
@@ -676,7 +685,7 @@ function renderHeader(){
   if(bd){ HDR.hdrBadge.textContent = bd.ico; HDR.hdrBadge.title = 'Insignia destacada: '+bd.name; HDR.hdrBadge.classList.remove('hidden'); }
   else HDR.hdrBadge.classList.add('hidden');
   const subj = subjectById(S.activeSubject);
-  HDR.subjIcon.textContent = subj.icon;
+  HDR.subjIcon.innerHTML = subjSVG(subj.id);
   HDR.subjShort.textContent = subj.short;
   renderHearts();
   updateTaskBadge();
@@ -689,7 +698,7 @@ function openSubjectPicker(){
     const done = Object.values(d.modules).filter(m=>m.done).length;
     const active = s.id === S.activeSubject;
     return '<button class="profile-row'+(active?' active':'')+'" style="width:100%;text-align:left" data-subj="'+s.id+'">'
-      + '<span class="pr-av">'+s.icon+'</span>'
+      + '<span class="pr-av">'+subjSVG(s.id)+'</span>'
       + '<span class="pr-name">'+esc(s.name)
       + '<br><small style="color:var(--muted);font-weight:600">'
       + (mods.length ? done+'/'+mods.length+' módulos · '+(d.subjXP||0)+' XP' : 'Contenido en preparación · tareas y calendario disponibles')
@@ -774,7 +783,7 @@ function renderHome(){
   if(!hasContent){
     $('#moduleGrid').innerHTML = '<div class="mcard locked" style="--mc:var(--c5)">'
       + '<span class="lock">🚧</span>'
-      + '<div class="m-top"><span class="m-ico">'+subj.icon+'</span><span><span class="m-num">Próximamente</span><h3>'+esc(subj.name)+'</h3></span></div>'
+      + '<div class="m-top"><span class="m-ico">'+subjSVG(subj.id)+'</span><span><span class="m-num">Próximamente</span><h3>'+esc(subj.name)+'</h3></span></div>'
       + '<span class="m-desc">Los módulos y quizzes de esta materia se agregarán pronto. Mientras tanto ya puedes consultar sus tareas 📋 y su calendario de exámenes 📅.</span>'
       + '<span class="m-type">En preparación</span></div>';
     return;
@@ -4556,7 +4565,7 @@ function retoCreateForm(){
   const subs = RETO_SUBJECTS();
   const o = openModal('<h2 style="margin-top:0">➕ Crear un reto</h2>'
     + '<label class="q-help" style="display:block;margin-bottom:4px">Materia</label>'
-    + '<select class="ainput" id="retoSubj">'+subs.map(s=>'<option value="'+s.id+'"'+(s.id===S.activeSubject?' selected':'')+'>'+s.icon+' '+esc(s.name)+'</option>').join('')+'</select>'
+    + '<select class="ainput" id="retoSubj">'+subs.map(s=>'<option value="'+s.id+'"'+(s.id===S.activeSubject?' selected':'')+'>'+esc(s.name)+'</option>').join('')+'</select>'
     + '<label class="q-help" style="display:block;margin:10px 0 4px">Número de preguntas</label>'
     + '<select class="ainput" id="retoN"><option value="6">6</option><option value="8" selected>8</option><option value="10">10</option><option value="12">12</option></select>'
     + '<div class="q-actions" style="justify-content:flex-end;margin-top:14px"><button class="btn ghost" id="retoBack">← Volver</button><button class="btn" id="retoGo">🎮 Jugar mi reto</button></div>');
@@ -4607,7 +4616,7 @@ function retoResult(cfg, myScore){
       + '<p class="q-help">Envía este código de vuelta a '+esc(cfg.rivalName)+' para que vea tu resultado:</p>';
   } else {
     head = '🤺 ¡Reto listo!';
-    body = '<p style="text-align:center;font-size:1.05rem">Sacaste <b>'+myScore+'%</b> en '+subj.icon+' '+esc(subj.short)+'.</p>'
+    body = '<p style="text-align:center;font-size:1.05rem">Sacaste <b>'+myScore+'%</b> en '+esc(subj.short)+'.</p>'
       + '<p class="q-help">Comparte este código con un compa para que juegue las MISMAS preguntas y se comparen:</p>';
   }
   const o = openModal('<h2 style="margin-top:0">'+head+'</h2>'+body
@@ -5654,7 +5663,7 @@ function taskCardHTML(t, archived){
     + '<div style="display:flex;gap:12px;align-items:flex-start;flex-wrap:wrap">'
     + '<div style="flex:1;min-width:220px"><b style="font-size:1.02rem">'+(done?'✅ ':'')+esc(t.title)+'</b>'
     + '<div class="tag-list" style="margin-top:7px">'
-    + '<span class="tag neutral">'+subj.icon+' '+esc(subj.short)+'</span>'
+    + '<span class="tag neutral">'+subjSVG(subj.id)+' '+esc(subj.short)+'</span>'
     + '<span class="tag neutral">'+partialLabel(t)+'</span>'
     + '<span class="tag prio-'+prio+'">'+prioIco+' '+prio.charAt(0).toUpperCase()+prio.slice(1)+'</span>'
     + dueChipHTML(t)
@@ -7213,7 +7222,7 @@ function renderProfile(){
     + '<option value="#e34948">🔴 Rojo</option><option value="#eb6834">🟠 Naranja</option><option value="#d55181">🌸 Rosa</option>'
     + '</select></label>'
     + '<label class="fld">📚 Materia activa<select class="ainput" id="prefSubject">'
-    + SUBJECTS.map(s=>'<option value="'+s.id+'"'+(s.id===S.activeSubject?' selected':'')+'>'+s.icon+' '+esc(s.name)+'</option>').join('')
+    + SUBJECTS.map(s=>'<option value="'+s.id+'"'+(s.id===S.activeSubject?' selected':'')+'>'+esc(s.name)+'</option>').join('')
     + '</select></label>'
     + '<label class="fld">📅 Objetivo diario de XP<select class="ainput" id="prefGoal">'
     + [25,50,75,100,150].map(g=>'<option value="'+g+'">'+g+' XP al día</option>').join('')
@@ -7491,7 +7500,7 @@ function showOnboarding(){
     + '<div class="avatar-pick" id="obAv" style="justify-content:flex-start">'
     + AVATARS.slice(0,4).map(a=>'<button class="av'+(a===chosen?' on':'')+'" data-av="'+a+'">'+a+'</button>').join('')+'</div></div>'
     + '<label class="fld">📚 ¿Qué materia quieres estudiar primero?<select class="ainput" id="obSubj">'
-    + SUBJECTS.map(s=>'<option value="'+s.id+'"'+(s.id===S.activeSubject?' selected':'')+'>'+s.icon+' '+esc(s.name)+(s.soon?' · en preparación':'')+'</option>').join('')
+    + SUBJECTS.map(s=>'<option value="'+s.id+'"'+(s.id===S.activeSubject?' selected':'')+'>'+esc(s.name)+(s.soon?' · en preparación':'')+'</option>').join('')
     + '</select></label>'
     + '<label class="fld">🎯 Tu meta diaria de XP<select class="ainput" id="obGoal">'
     + [25,50,75,100].map(g=>'<option value="'+g+'"'+(g===50?' selected':'')+'>'+g+' XP al día'+(g===50?' (recomendado)':'')+'</option>').join('')
