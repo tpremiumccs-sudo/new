@@ -3,7 +3,7 @@
    - HTML/JS/CSS: red primero (siempre la versión más nueva), caché de respaldo
      solo para poder abrir la app sin conexión (modo lectura).
    - Iconos y docs: caché primero. */
-const CACHE = 'aprendeuteca-v34';
+const CACHE = 'aprendeuteca-v35';
 const ASSETS = ['./', './index.html', './styles.css', './net.js', './app.js', './manifest.json', './icon-192.png', './icon-512.png', './assets/uteca-logo-white.png', './assets/uteca-icon-270.png', './assets/uteca-favicon-32.png', './assets/Logo_Login.png', './assets/svg_leftArrowLogin.svg', './assets/svg_rightArrowLogin.svg'];
 
 self.addEventListener('install', e => {
