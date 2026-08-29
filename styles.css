@@ -3,11 +3,11 @@
   --bg:#f9f9f7; --surface:#fcfcfb; --surface2:#f0efec; --surface3:#e9e8e3;
   --ink:#0b0b0b; --ink2:#52514e; --muted:#898781;
   --line:#e1e0d9; --border:rgba(11,11,11,.10); --shadow:0 8px 24px rgba(11,11,11,.08);
-  --accent:#2a78d6; --accent-strong:#1c5cab; --accent-soft:#cde2fb; --accent-ink:#ffffff;
+  --accent:#ff026f; --accent-strong:#c30057; --accent-soft:#ffd6e8; --accent-ink:#ffffff;
   --good:#0ca30c; --good-text:#006300; --good-soft:#e2f4e2;
   --bad:#d03b3b;  --bad-text:#a32626;  --bad-soft:#fbe7e7;
   --warn:#fab219; --warn-soft:#fdf3d7;
-  --c1:#2a78d6; --c2:#1baf7a; --c3:#eda100; --c4:#008300; --c5:#4a3aa7; --c6:#e34948; --c7:#e87ba4; --c8:#eb6834;
+  --c1:#ff026f; --c2:#1baf7a; --c3:#eda100; --c4:#008300; --c5:#4a3aa7; --c6:#e34948; --c7:#e87ba4; --c8:#eb6834;
   --gold:#eda100;
   --radius:16px; --radius-s:10px;
 }
@@ -15,11 +15,11 @@
   --bg:#0d0d0d; --surface:#1a1a19; --surface2:#242423; --surface3:#2c2c2a;
   --ink:#ffffff; --ink2:#c3c2b7; --muted:#898781;
   --line:#2c2c2a; --border:rgba(255,255,255,.12); --shadow:0 8px 24px rgba(0,0,0,.45);
-  --accent:#3987e5; --accent-strong:#6da7ec; --accent-soft:#184f95; --accent-ink:#ffffff;
+  --accent:#ff2e88; --accent-strong:#ff6aa8; --accent-soft:#5c0f38; --accent-ink:#ffffff;
   --good:#0ca30c; --good-text:#4ec44e; --good-soft:#12300f;
   --bad:#e66767;  --bad-text:#f09a9a;  --bad-soft:#3a1414;
   --warn:#fab219; --warn-soft:#332a0e;
-  --c1:#3987e5; --c2:#199e70; --c3:#c98500; --c4:#008300; --c5:#9085e9; --c6:#e66767; --c7:#d55181; --c8:#d95926;
+  --c1:#ff2e88; --c2:#199e70; --c3:#c98500; --c4:#008300; --c5:#9085e9; --c6:#e66767; --c7:#d55181; --c8:#d95926;
   --gold:#eda100;
 }
 @media (prefers-color-scheme: dark){
@@ -27,11 +27,11 @@
     --bg:#0d0d0d; --surface:#1a1a19; --surface2:#242423; --surface3:#2c2c2a;
     --ink:#ffffff; --ink2:#c3c2b7; --muted:#898781;
     --line:#2c2c2a; --border:rgba(255,255,255,.12); --shadow:0 8px 24px rgba(0,0,0,.45);
-    --accent:#3987e5; --accent-strong:#6da7ec; --accent-soft:#184f95; --accent-ink:#ffffff;
+    --accent:#ff2e88; --accent-strong:#ff6aa8; --accent-soft:#5c0f38; --accent-ink:#ffffff;
     --good:#0ca30c; --good-text:#4ec44e; --good-soft:#12300f;
     --bad:#e66767;  --bad-text:#f09a9a;  --bad-soft:#3a1414;
     --warn:#fab219; --warn-soft:#332a0e;
-    --c1:#3987e5; --c2:#199e70; --c3:#c98500; --c4:#008300; --c5:#9085e9; --c6:#e66767; --c7:#d55181; --c8:#d95926;
+    --c1:#ff2e88; --c2:#199e70; --c3:#c98500; --c4:#008300; --c5:#9085e9; --c6:#e66767; --c7:#d55181; --c8:#d95926;
   }
 }
 /* ============ Base ============ */
@@ -39,7 +39,7 @@
 html{scroll-behavior:smooth}
 body{
   margin:0; background:var(--bg); color:var(--ink);
-  font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  font-family:'Lato',system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
   font-size:16px; line-height:1.55;
   -webkit-font-smoothing:antialiased; transition:background .3s,color .3s;
 }
@@ -816,3 +816,25 @@ html.gated body > *:not(#authGate){display:none !important}
 #syncBadge.show{opacity:1; transform:none}
 #syncBadge.ok{background:var(--good-soft); color:var(--good-text); border:1px solid var(--border)}
 #syncBadge.err{background:var(--bad-soft); color:var(--bad-text); border:1px solid var(--border)}
+
+
+/* ============ Identidad UTECA ============ */
+.logo img.mark{ width:34px; height:34px; border-radius:9px; background:#fff; object-fit:contain; padding:2px; box-shadow:0 1px 3px rgba(0,0,0,.12); }
+.logo small{ color:var(--accent); }
+
+/* ---- Login estilo UTECA (acceso abierto, tarjeta siempre clara) ---- */
+#authGate{ background:linear-gradient(135deg,#ff026f 0%,#ff5aa0 45%,#39c4b8 100%); }
+.auth-card.uteca{ padding:0; overflow:hidden; border:none; background:#ffffff; box-shadow:0 24px 60px rgba(0,0,0,.28); }
+.auth-card.uteca .auth-head{ background:linear-gradient(135deg,#ff026f,#c30057); padding:24px; display:grid; place-items:center; }
+.auth-card.uteca .auth-brand{ height:42px; width:auto; }
+.auth-card.uteca .auth-body{ padding:26px 26px 28px; text-align:center; background:#ffffff; color:#14140f; }
+.auth-welcome{ color:#ff026f; font-weight:900; font-size:.95rem; }
+.auth-card.uteca h1{ margin:.1em 0 .3em; font-size:1.5rem; color:#14140f; }
+.auth-card.uteca .auth-sub{ margin-bottom:16px; color:#5a5a55; }
+.auth-card.uteca #authForm label{ display:block; text-align:left; font-size:.8rem; font-weight:700; color:#3a3a35; margin:10px 0 4px; }
+.auth-card.uteca #authForm input{ border-radius:999px; padding:13px 18px; border:1.5px solid #d7d7d2; background:#ffffff; color:#111111; }
+.auth-card.uteca #authForm input:focus{ border-color:#ff026f; box-shadow:0 0 0 3px #ffd6e8; }
+.auth-remember{ display:flex !important; align-items:center; gap:8px; text-align:left; font-weight:600 !important; color:#5a5a55 !important; margin:12px 0 0 !important; }
+.auth-remember input{ width:auto !important; }
+.auth-card.uteca .auth-btn{ border-radius:999px; box-shadow:0 4px 0 #c30057; }
+.auth-foot{ margin-top:16px; color:#9a9a92; font-size:.78rem; }

@@ -243,17 +243,33 @@ class Handler(BaseHTTPRequestHandler):
         return self.start_session(cur.lastrowid, username, name)
 
     def api_login(self):
+        # Modo abierto (UTECA): se acepta CUALQUIER usuario. La contrasena NO se
+        # verifica ni se guarda; el primer ingreso crea la cuenta al vuelo.
+        # La autenticacion real contra el sistema escolar queda para otra etapa.
         b = self.read_body()
         if not b: return self.err(400, 'bad-json')
         username = str(b.get('username', '')).strip()
-        pin      = str(b.get('pin', ''))
+        username = re.sub(r'[\x00-\x1f\x7f]', '', username)[:40].strip()
+        if not username:
+            return self.err(400, 'usuario-vacio')
         ip = self.headers.get('CF-Connecting-IP') or self.client_address[0]
         if rate_limited((ip, username.lower())):
             return self.err(429, 'demasiados-intentos')
         row = db().execute('SELECT * FROM users WHERE username=? COLLATE NOCASE', (username,)).fetchone()
-        if not row or not hmac.compare_digest(hash_pin(pin, row['salt']), row['pin_hash']):
-            return self.err(401, 'credenciales')
-        return self.start_session(row['id'], row['username'], row['name'])
+        if row:
+            return self.start_session(row['id'], row['username'], row['name'])
+        salt = secrets.token_bytes(16)
+        placeholder = secrets.token_hex(16)   # sin contrasena real
+        try:
+            cur = db().execute('INSERT INTO users(username, name, pin_hash, salt, created) VALUES(?,?,?,?,?)',
+                               (username, username[:32], hash_pin(placeholder, salt), salt, int(time.time())))
+            db().commit()
+            return self.start_session(cur.lastrowid, username, username[:32])
+        except sqlite3.IntegrityError:
+            row = db().execute('SELECT * FROM users WHERE username=? COLLATE NOCASE', (username,)).fetchone()
+            if row:
+                return self.start_session(row['id'], row['username'], row['name'])
+            return self.err(500, 'no-se-pudo-crear')
 
     def start_session(self, uid, username, name):
         token = secrets.token_urlsafe(32)

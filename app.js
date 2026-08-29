@@ -6491,7 +6491,7 @@ function renderGuide(){
 }
 $('#btnPrint').addEventListener('click', () => {
   sfx('click');
-  $('#printGuide').innerHTML = '<h1>📖 ActuarIQ · Guía de estudio · '+esc(subjectById(S.activeSubject).name)+'</h1>'
+  $('#printGuide').innerHTML = '<h1>📖 AprendeUTeca · Guía de estudio · '+esc(subjectById(S.activeSubject).name)+'</h1>'
     + $('#guideBody').innerHTML
         .replaceAll('class="lesson-card"','')
         .replaceAll('<h3>','<h2>').replaceAll('</h3>','</h2>')
@@ -6844,7 +6844,7 @@ const TITLES = [
     test:()=>!!S.earlyBird, cond:'???', hint:'Estudia muy temprano'},
   {id:'title-domador',     type:'title', rarity:'legendary', name:'Domador de Exámenes',     ico:'🎪', desc:'Tres exámenes con ≥90: los exámenes te temen.',
     test:()=>(S.examHistory||[]).filter(e=>e.score>=90).length>=3, cond:'Logra ≥90% en 3 exámenes diarios'},
-  {id:'title-leyenda',     type:'title', rarity:'legendary', secret:true, name:'Leyenda de ActuarIQ',     ico:'🏆', desc:'Acumulaste una fortuna en XP.',
+  {id:'title-leyenda',     type:'title', rarity:'legendary', secret:true, name:'Leyenda de AprendeUTeca',     ico:'🏆', desc:'Acumulaste una fortuna en XP.',
     test:()=>S.xp>=10000, cond:'???', hint:'Acumula una enormidad de XP'}
 ];
 /* Catálogo completo de la tienda */

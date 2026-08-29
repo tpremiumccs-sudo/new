@@ -113,24 +113,25 @@
       document.body.appendChild(gate);
     }
     document.documentElement.classList.add('gated');
-    let mode = 'login';
     const render = () => {
       gate.innerHTML =
-        '<div class="auth-card">'
-        + '<div class="auth-logo">🛡️</div>'
-        + '<h1>AprendeUTeca</h1>'
-        + '<p class="auth-sub">Tu progreso se guarda en el servidor:<br>entra con tu cuenta desde cualquier dispositivo.</p>'
+        '<div class="auth-card uteca">'
+        + '<div class="auth-head"><img class="auth-brand" src="assets/uteca-logo-white.png" alt="UTECA"></div>'
+        + '<div class="auth-body">'
+        + '<div class="auth-welcome">¡Bienvenido de nuevo!</div>'
+        + '<h1>Iniciar sesión</h1>'
+        + '<p class="auth-sub">Entra con tu usuario para guardar tu progreso en el servidor.</p>'
         + (notice ? '<div class="auth-notice">'+notice+'</div>' : '')
         + '<form id="authForm" autocomplete="off">'
-        + (mode==='register' ? '<label>Tu nombre<input id="aName" maxlength="32" placeholder="Como te verá el grupo" required></label>' : '')
-        + '<label>Usuario<input id="aUser" maxlength="24" placeholder="ej. oliver" required autocapitalize="none"></label>'
-        + '<label>PIN (mínimo 4)<input id="aPin" type="password" maxlength="64" placeholder="••••" required></label>'
+        + '<label>Usuario<input id="aUser" maxlength="40" placeholder="Usuario" required autocapitalize="none" autocomplete="username"></label>'
+        + '<label>Contraseña<input id="aPin" type="password" maxlength="64" placeholder="Contraseña" autocomplete="current-password"></label>'
+        + '<label class="auth-remember"><input type="checkbox" id="aRemember"><span>Recordar usuario</span></label>'
         + '<div class="auth-err hidden" id="aErr"></div>'
-        + '<button class="auth-btn" type="submit">'+(mode==='register'?'Crear cuenta y entrar':'Entrar')+'</button>'
+        + '<button class="auth-btn" type="submit">Entrar</button>'
         + '</form>'
-        + '<button class="auth-alt" id="aSwitch">'+(mode==='register'?'Ya tengo cuenta → entrar':'¿Primera vez? Crear cuenta')+'</button>'
+        + '<p class="auth-foot">AprendeUTeca · Comunidad UTECA</p>'
+        + '</div>'
         + '</div>';
-      gate.querySelector('#aSwitch').onclick = () => { mode = (mode==='register'?'login':'register'); notice=null; render(); };
       gate.querySelector('#authForm').onsubmit = async (ev) => {
         ev.preventDefault();
         const errEl = gate.querySelector('#aErr');
@@ -138,27 +139,23 @@
         const username = gate.querySelector('#aUser').value.trim();
         const pin = gate.querySelector('#aPin').value;
         const btn = gate.querySelector('.auth-btn');
+        if(!username){ errEl.textContent = 'Escribe tu usuario.'; errEl.classList.remove('hidden'); return; }
         btn.disabled = true; btn.textContent = 'Un momento…';
         try{
-          const payload = {username, pin};
-          if(mode === 'register') payload.name = gate.querySelector('#aName').value.trim();
-          const r = await api('POST', mode==='register' ? '/api/register' : '/api/login', payload);
+          const r = await api('POST', '/api/login', {username, pin});
           AQ.user = r.user;
           await enterApp();
         }catch(e){
           const msgs = {
-            'credenciales':'Usuario o PIN incorrectos.',
-            'usuario-ocupado':'Ese usuario ya existe. Prueba con otro o inicia sesión.',
-            'usuario-invalido':'El usuario debe tener 2-24 letras/números (sin espacios).',
-            'pin-corto':'El PIN necesita al menos 4 caracteres.',
+            'usuario-vacio':'Escribe tu usuario.',
             'demasiados-intentos':'Demasiados intentos. Espera 5 minutos.'
           };
-          errEl.textContent = msgs[e.data && e.data.error] || 'No se pudo conectar con el servidor. ¿Está encendido?';
+          errEl.textContent = msgs[e.data && e.data.error] || 'No se pudo conectar con el servidor. Intenta de nuevo.';
           errEl.classList.remove('hidden');
-          btn.disabled = false; btn.textContent = (mode==='register'?'Crear cuenta y entrar':'Entrar');
+          btn.disabled = false; btn.textContent = 'Entrar';
         }
       };
-      const first = gate.querySelector('input'); if(first) first.focus();
+      const first = gate.querySelector('#aUser'); if(first) first.focus();
     };
     render();
   }
