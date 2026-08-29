@@ -1,6 +1,6 @@
 "use strict";
 /* ============================================================================
-   net.js — capa de red y arranque con sesión (AprendeUTeca)
+   net.js — capa de red y arranque con sesión (AprendeUteca)
 
    El estado del alumno YA NO vive en localStorage: vive en el servidor.
    Este archivo corre ANTES que app.js y:
@@ -115,22 +115,23 @@
     document.documentElement.classList.add('gated');
     const render = () => {
       gate.innerHTML =
-        '<div class="auth-card uteca">'
-        + '<div class="auth-head"><img class="auth-brand" src="assets/uteca-logo-white.png" alt="UTECA"></div>'
-        + '<div class="auth-body">'
-        + '<div class="auth-welcome">¡Bienvenido de nuevo!</div>'
-        + '<h1>Iniciar sesión</h1>'
-        + '<p class="auth-sub">Entra con tu usuario para guardar tu progreso en el servidor.</p>'
+        '<div class="lms-card">'
+        + '<div class="lms-welcome">\u00a1Bienvenido de nuevo!</div>'
+        + '<img class="lms-logo" src="assets/Logo_Login.png" alt="UTECA">'
         + (notice ? '<div class="auth-notice">'+notice+'</div>' : '')
         + '<form id="authForm" autocomplete="off">'
-        + '<label>Usuario<input id="aUser" maxlength="40" placeholder="Usuario" required autocapitalize="none" autocomplete="username"></label>'
-        + '<label>Contraseña<input id="aPin" type="password" maxlength="64" placeholder="Contraseña" autocomplete="current-password"></label>'
-        + '<label class="auth-remember"><input type="checkbox" id="aRemember"><span>Recordar usuario</span></label>'
+        + '<div class="lms-title">Iniciar sesi\u00f3n</div>'
+        + '<input id="aUser" maxlength="40" placeholder="Usuario" required autocapitalize="none" autocomplete="username" aria-label="Usuario">'
+        + '<input id="aPin" type="password" maxlength="64" placeholder="Contrase\u00f1a" autocomplete="current-password" aria-label="Contrase\u00f1a">'
+        + '<label class="lms-remember"><input type="checkbox" id="aRemember"><span>Recordar usuario</span></label>'
         + '<div class="auth-err hidden" id="aErr"></div>'
+        + '<div class="lms-enter">'
+        + '<img src="assets/svg_leftArrowLogin.svg" alt="" aria-hidden="true">'
         + '<button class="auth-btn" type="submit">Entrar</button>'
-        + '</form>'
-        + '<p class="auth-foot">AprendeUTeca · Comunidad UTECA</p>'
+        + '<img src="assets/svg_rightArrowLogin.svg" alt="" aria-hidden="true">'
         + '</div>'
+        + '</form>'
+        + '<div class="lms-foot">AprendeUteca \u00b7 Comunidad UTECA \u00b7 Parte de la red de Grupo MVS</div>'
         + '</div>';
       gate.querySelector('#authForm').onsubmit = async (ev) => {
         ev.preventDefault();
@@ -143,6 +144,11 @@
         btn.disabled = true; btn.textContent = 'Un momento…';
         try{
           const r = await api('POST', '/api/login', {username, pin});
+          try{
+            const rm = gate.querySelector('#aRemember');
+            if(rm && rm.checked) localStorage.setItem('aq_remember_user', username);
+            else localStorage.removeItem('aq_remember_user');
+          }catch(_e){}
           AQ.user = r.user;
           await enterApp();
         }catch(e){
@@ -155,6 +161,10 @@
           btn.disabled = false; btn.textContent = 'Entrar';
         }
       };
+      try{
+        const saved = localStorage.getItem('aq_remember_user');
+        if(saved){ gate.querySelector('#aUser').value = saved; gate.querySelector('#aRemember').checked = true; }
+      }catch(_e){}
       const first = gate.querySelector('#aUser'); if(first) first.focus();
     };
     render();

@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="AprendeUTeca — Plataforma de la comunidad UTECA para aprender Cálculo Actuarial: lecciones, XP, insignias, exámenes y retos.">
-<title>AprendeUTeca · UTECA</title>
+<meta name="description" content="AprendeUteca — Plataforma de la comunidad UTECA para aprender Cálculo Actuarial: lecciones, XP, insignias, exámenes y retos.">
+<title>AprendeUteca · UTECA</title>
 <link rel="icon" href="assets/uteca-favicon-32.png">
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#ff026f">
@@ -17,8 +17,8 @@
 <body>
 <header class="top">
   <button class="logo" id="btnHome" title="Ir al inicio">
-    <img class="mark" src="assets/uteca-icon-270.png" alt="UTECA">
-    <span>AprendeUTeca<small>UTECA · Cálculo Actuarial</small></span>
+    <span class="mark"><img src="assets/uteca-icon-270.png" alt="UTECA"></span>
+    <span>AprendeUteca<small>UTECA · Cálculo Actuarial</small></span>
   </button>
   <span class="spacer"></span>
   <button class="chip subject" id="btnSubject" title="Cambiar de materia"><span class="icon" id="subjIcon">🛡️</span><b id="subjShort">Cálculo III</b> <span style="opacity:.55">▾</span></button>
@@ -28,19 +28,19 @@
   </div>
   <span class="chip hdr-badge hidden" id="hdrBadge" title="Insignia destacada"></span>
   <button class="iconbtn" id="btnProfile" title="Mi perfil y configuración" aria-label="Mi perfil y configuración">🎓</button>
-  <button class="iconbtn" id="btnShop" title="Tienda y colección" aria-label="Tienda y colección">🛒</button>
-  <button class="iconbtn" id="btnModes" title="Modos de juego" aria-label="Modos de juego">🎮</button>
-  <button class="iconbtn" id="btnTasks" title="Tareas y calendario" aria-label="Tareas y calendario" style="position:relative">📋<span id="taskBadge" class="task-badge hidden"></span></button>
-  <button class="chip hearts" id="btnHearts" title="Corazones (vidas)" style="cursor:pointer;border:none;font:inherit"><span class="icon">❤️</span><b id="heartsTxt">5</b></button>
-  <button class="chip streak" id="btnStreak" title="Racha, retos diarios/semanales y logros" style="position:relative;cursor:pointer;border:none;font:inherit"><span class="icon">🔥</span><b id="streakTxt">0</b><span id="streakDot" class="streak-dot hidden"></span></button>
+  <button class="iconbtn" id="btnShop" title="Tienda y colección" aria-label="Tienda y colección"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg></button>
+  <button class="iconbtn" id="btnModes" title="Modos de juego" aria-label="Modos de juego"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="6" x2="10" y1="11" y2="11"/><line x1="8" x2="8" y1="9" y2="13"/><line x1="15" x2="15.01" y1="12" y2="12"/><line x1="18" x2="18.01" y1="10" y2="10"/><path d="M17.32 5H6.68a4 4 0 0 0-3.978 3.59c-.006.052-.01.101-.017.152C2.604 9.416 2 14.456 2 16a3 3 0 0 0 3 3c1 0 1.5-.5 2-1l1.414-1.414A2 2 0 0 1 9.828 16h4.344a2 2 0 0 1 1.414.586L17 18c.5.5 1 1 2 1a3 3 0 0 0 3-3c0-1.545-.604-6.584-.685-7.258-.007-.05-.011-.1-.017-.151A4 4 0 0 0 17.32 5z"/></svg></button>
+  <button class="iconbtn" id="btnTasks" title="Tareas y calendario" aria-label="Tareas y calendario" style="position:relative"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M12 11h4"/><path d="M12 16h4"/><path d="M8 11h.01"/><path d="M8 16h.01"/></svg><span id="taskBadge" class="task-badge hidden"></span></button>
+  <button class="chip hearts" id="btnHearts" title="Corazones (vidas)" style="cursor:pointer;border:none;font:inherit"><span class="icon"><svg class="ic" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg></span><b id="heartsTxt">5</b></button>
+  <button class="chip streak" id="btnStreak" title="Racha, retos diarios/semanales y logros" style="position:relative;cursor:pointer;border:none;font:inherit"><span class="icon"><svg class="ic" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg></span><b id="streakTxt">0</b><span id="streakDot" class="streak-dot hidden"></span></button>
   <div class="more-wrap">
     <button class="iconbtn" id="btnMore" title="Más opciones" aria-label="Más opciones" aria-haspopup="true" aria-expanded="false">⋯</button>
     <div class="more-menu hidden" id="moreMenu">
-      <button class="more-item" id="btnBoard">🏆 Leaderboard</button>
-      <button class="more-item" id="btnStats">📊 Estadísticas</button>
-      <button class="more-item" id="btnGuide">🖨️ Guía de estudio</button>
-      <button class="more-item" id="btnSound" aria-pressed="true">🔊 Sonido</button>
-      <button class="more-item" id="btnTheme">🌙 Tema claro/oscuro</button>
+      <button class="more-item" id="btnBoard"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg> Leaderboard</button>
+      <button class="more-item" id="btnStats"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg> Estadísticas</button>
+      <button class="more-item" id="btnGuide"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 9V3a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v6"/><rect x="6" y="14" width="12" height="8" rx="1"/></svg> Guía de estudio</button>
+      <button class="more-item" id="btnSound" aria-pressed="true">Sonido</button>
+      <button class="more-item" id="btnTheme"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg> Tema claro/oscuro</button>
     </div>
   </div>
 </header>
@@ -53,25 +53,25 @@
       <h1 id="heroTitle">¡Bienvenido, futuro actuario! 👋</h1>
       <p id="heroDesc">Avanza por los módulos resolviendo retos. Necesitas <b>80%</b> para desbloquear el siguiente nivel. Gana XP, estrellas e insignias mientras dominas cada concepto.</p>
       <div class="actions">
-        <button class="btn onhero" id="btnContinue">▶ Continuar donde me quedé</button>
-        <button class="btn onhero" id="btnExam">📝 Examen diario</button>
-        <button class="btn ghost" id="btnFlash" style="background:rgba(255,255,255,.16); color:#fff; border-color:rgba(255,255,255,.35)">🃏 Flashcards de repaso</button>
-        <button class="btn ghost" id="btnBlitz" style="background:rgba(255,255,255,.16); color:#fff; border-color:rgba(255,255,255,.35)">⚡ Reto contrarreloj</button>
-        <button class="btn ghost" id="btnSudden" style="background:rgba(255,255,255,.16); color:#fff; border-color:rgba(255,255,255,.35)">💀 Muerte súbita</button>
-        <button class="btn ghost" id="btnReview" style="background:rgba(255,255,255,.16); color:#fff; border-color:rgba(255,255,255,.35)">🎯 Repaso mixto</button>
+        <button class="btn onhero" id="btnContinue"><svg class="ic" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="6 3 20 12 6 21 6 3"/></svg> Continuar donde me quedé</button>
+        <button class="btn onhero" id="btnExam">Examen diario</button>
+        <button class="btn ghost" id="btnFlash" style="background:rgba(255,255,255,.16); color:#fff; border-color:rgba(255,255,255,.35)"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z"/><path d="m22 17.65-9.17 4.16a2 2 0 0 1-1.66 0L2 17.65"/><path d="m22 12.65-9.17 4.16a2 2 0 0 1-1.66 0L2 12.65"/></svg> Flashcards de repaso</button>
+        <button class="btn ghost" id="btnBlitz" style="background:rgba(255,255,255,.16); color:#fff; border-color:rgba(255,255,255,.35)"><svg class="ic" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg> Reto contrarreloj</button>
+        <button class="btn ghost" id="btnSudden" style="background:rgba(255,255,255,.16); color:#fff; border-color:rgba(255,255,255,.35)"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12.5 17-.5-1-.5 1h1z"/><path d="M15 22a1 1 0 0 0 1-1v-1a2 2 0 0 0 1.56-3.25 8 8 0 1 0-11.12 0A2 2 0 0 0 8 20v1a1 1 0 0 0 1 1z"/><circle cx="15" cy="12" r="1"/><circle cx="9" cy="12" r="1"/></svg> Muerte súbita</button>
+        <button class="btn ghost" id="btnReview" style="background:rgba(255,255,255,.16); color:#fff; border-color:rgba(255,255,255,.35)"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg> Repaso mixto</button>
       </div>
     </div>
 
     <div class="stats-strip" id="homeStats"></div>
 
-    <div class="section-h"><h2 id="subjSectionTitle">📘 Unidad 1 · Fundamentos del Cálculo Actuarial</h2><span class="line"></span><span class="meta" id="modMeta"></span></div>
+    <div class="section-h"><h2 id="subjSectionTitle">Unidad 1 · Fundamentos del Cálculo Actuarial</h2><span class="line"></span><span class="meta" id="modMeta"></span></div>
     <div class="mgrid" id="moduleGrid"></div>
     <div id="futureUnits">
-      <div class="section-h" style="margin-top:30px"><h2>📗 Próximas unidades</h2><span class="line"></span></div>
+      <div class="section-h" style="margin-top:30px"><h2>Próximas unidades</h2><span class="line"></span></div>
       <div class="mgrid">
         <div class="mcard locked" style="--mc:var(--c2)">
-          <span class="lock" title="Disponible próximamente">🔒</span>
-          <div class="m-top"><span class="m-ico">📗</span><span><span class="m-num">Unidad 2</span><h3>Nuevos temas · Próximamente</h3></span></div>
+          <span class="lock" title="Disponible próximamente"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span>
+          <div class="m-top"><span class="m-ico"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg></span><span><span class="m-num">Unidad 2</span><h3>Nuevos temas · Próximamente</h3></span></div>
           <span class="m-desc">Se agregará con los siguientes temas del curso. Cada unidad tiene sus propios módulos y su propio examen diario: los temas no se mezclan entre unidades, salvo los que se comparten.</span>
           <span class="m-type">En preparación</span>
         </div>
@@ -87,7 +87,7 @@
     </div>
     <div class="lesson" id="lessonBody"></div>
     <div style="text-align:center; margin:22px 0">
-      <button class="btn" id="btnLessonStart" style="font-size:1.05rem; padding:14px 34px">🚀 Comenzar actividades</button>
+      <button class="btn" id="btnLessonStart" style="font-size:1.05rem; padding:14px 34px">Comenzar actividades</button>
     </div>
   </section>
 
@@ -108,12 +108,12 @@
   <section id="view-memo" class="hidden">
     <div class="session-top">
       <button class="btn ghost small back" data-nav="home">← Salir</button>
-      <span class="qcount">🧠 Memorama de conceptos</span>
+      <span class="qcount">Memorama de conceptos</span>
     </div>
     <div class="memo-hud">
-      <span>🎯 Pares: <b id="memoPairs">0/8</b></span>
-      <span>🔁 Intentos: <b id="memoTries">0</b></span>
-      <span>⏱️ <b id="memoTime">0:00</b></span>
+      <span>Pares: <b id="memoPairs">0/8</b></span>
+      <span>Intentos: <b id="memoTries">0</b></span>
+      <span>Tiempo: <b id="memoTime">0:00</b></span>
     </div>
     <div class="memo-grid" id="memoGrid"></div>
     <p class="q-help" style="text-align:center">Encuentra cada <b>concepto</b> con su <b>definición</b>. Menos intentos = mejor calificación.</p>
@@ -123,7 +123,7 @@
   <section id="view-escape" class="hidden">
     <div class="session-top">
       <button class="btn ghost small back" data-nav="home">← Salir</button>
-      <span class="qcount">🔐 Escape Room actuarial</span>
+      <span class="qcount">Escape Room actuarial</span>
     </div>
     <div class="esc-wrap" id="escBody"></div>
   </section>
@@ -132,7 +132,7 @@
   <section id="view-flash" class="hidden">
     <div class="session-top">
       <button class="btn ghost small back" data-nav="home">← Salir</button>
-      <span class="qcount">🃏 Flashcards de repaso</span>
+      <span class="qcount">Flashcards de repaso</span>
     </div>
     <div class="flash-wrap">
       <button class="flashcard" id="flashCard" title="Haz clic para voltear">
@@ -143,15 +143,15 @@
       </button>
       <div class="flash-count" id="flashCount"></div>
       <div class="flash-nav hidden" id="flashRate">
-        <button class="btn danger small" id="flashAgain">😵 Otra vez</button>
-        <button class="btn ghost small" id="flashHard">🙂 Difícil</button>
-        <button class="btn good small" id="flashEasy">😎 Fácil</button>
+        <button class="btn danger small" id="flashAgain">Otra vez</button>
+        <button class="btn ghost small" id="flashHard">Difícil</button>
+        <button class="btn good small" id="flashEasy">Fácil</button>
       </div>
       <div class="flash-nav">
         <button class="btn ghost small" id="flashPrev">← Anterior</button>
-        <button class="btn small" id="flashFlip">🔄 Voltear</button>
+        <button class="btn small" id="flashFlip">Voltear</button>
         <button class="btn ghost small" id="flashNext">Siguiente →</button>
-        <button class="btn ghost small" id="flashShuffle">🔀 Barajar</button>
+        <button class="btn ghost small" id="flashShuffle">Barajar</button>
       </div>
       <p class="q-help" style="text-align:center">🧠 Repetición espaciada: voltea la tarjeta y califícala. Las que falles volverán pronto; las fáciles descansarán varios días.</p>
     </div>
@@ -161,12 +161,12 @@
   <section id="view-blitz" class="hidden">
     <div class="session-top">
       <button class="btn ghost small back" id="btnBlitzQuit">← Salir</button>
-      <span class="qcount">⚡ Reto contrarreloj · +5 s por acierto · fallar resta cada vez más</span>
+      <span class="qcount">Reto contrarreloj · +5 s por acierto · fallar resta cada vez más</span>
     </div>
     <div style="text-align:center">
       <div class="blitz-timer" id="blitzTimer">60</div>
       <div class="blitz-bonus" id="blitzBonus" aria-live="polite"></div>
-      <div class="memo-hud"><span>✅ Aciertos: <b id="blitzOk">0</b></span><span>🔥 Racha: <b id="blitzCombo">0</b></span><span>💠 Mejor racha: <b id="blitzBest">0</b></span></div>
+      <div class="memo-hud"><span>Aciertos: <b id="blitzOk">0</b></span><span>Racha: <b id="blitzCombo">0</b></span><span>Mejor racha: <b id="blitzBest">0</b></span></div>
     </div>
     <div id="blitzHost" style="margin-top:14px"></div>
   </section>
@@ -175,10 +175,10 @@
   <section id="view-sudden" class="hidden">
     <div class="session-top">
       <button class="btn ghost small back" id="btnSuddenQuit">← Salir</button>
-      <span class="qcount">💀 Muerte súbita · un error y se acaba</span>
+      <span class="qcount">Muerte súbita · un error y se acaba</span>
     </div>
     <div style="text-align:center">
-      <div class="memo-hud"><span>🔥 Racha actual: <b id="sdCombo">0</b></span><span>💠 Mejor racha: <b id="sdBest">0</b></span></div>
+      <div class="memo-hud"><span>Racha actual: <b id="sdCombo">0</b></span><span>Mejor racha: <b id="sdBest">0</b></span></div>
     </div>
     <div id="sdHost" style="margin-top:14px"></div>
   </section>
@@ -187,7 +187,7 @@
   <section id="view-board" class="hidden">
     <div class="session-top">
       <button class="btn ghost small back" data-nav="home">← Salir</button>
-      <span class="qcount">🏆 Leaderboard</span>
+      <span class="qcount">Leaderboard</span>
     </div>
     <div id="boardBody"></div>
   </section>
@@ -196,13 +196,13 @@
   <section id="view-tasks" class="hidden">
     <div class="session-top">
       <button class="btn ghost small back" data-nav="home">← Salir</button>
-      <span class="qcount">📋 Tareas y calendario</span>
+      <span class="qcount">Tareas y calendario</span>
     </div>
     <div class="task-tabs" id="taskTabs">
-      <button class="btn small" data-ttab="activas">📋 Activas</button>
-      <button class="btn ghost small" data-ttab="vencidas">⌛ Vencidas</button>
-      <button class="btn ghost small" data-ttab="archivo">🗂️ Archivo</button>
-      <button class="btn ghost small" data-ttab="calendario">📅 Calendario</button>
+      <button class="btn small" data-ttab="activas">Activas</button>
+      <button class="btn ghost small" data-ttab="vencidas">Vencidas</button>
+      <button class="btn ghost small" data-ttab="archivo">Archivo</button>
+      <button class="btn ghost small" data-ttab="calendario">Calendario</button>
     </div>
     <div id="tasksBody"></div>
   </section>
@@ -211,7 +211,7 @@
   <section id="view-stats" class="hidden">
     <div class="session-top">
       <button class="btn ghost small back" data-nav="home">← Volver</button>
-      <span class="qcount">📊 Mi panel de progreso</span>
+      <span class="qcount">Mi panel de progreso</span>
     </div>
     <div id="statsBody"></div>
   </section>
@@ -220,9 +220,9 @@
   <section id="view-guide" class="hidden">
     <div class="session-top">
       <button class="btn ghost small back" data-nav="home">← Volver</button>
-      <span class="qcount">📖 Guía de estudio</span>
+      <span class="qcount">Guía de estudio</span>
       <span class="spacer" style="flex:1"></span>
-      <button class="btn small" id="btnPrint">🖨️ Imprimir / Guardar PDF</button>
+      <button class="btn small" id="btnPrint"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 9V3a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v6"/><rect x="6" y="14" width="12" height="8" rx="1"/></svg> Imprimir / Guardar PDF</button>
     </div>
     <div class="lesson" id="guideBody"></div>
   </section>
@@ -231,7 +231,7 @@
   <section id="view-levels" class="hidden">
     <div class="session-top">
       <button class="btn ghost small back" data-nav="home">← Volver</button>
-      <span class="qcount">⬆️ Niveles y recompensas</span>
+      <span class="qcount">Niveles y recompensas</span>
     </div>
     <div id="levelsBody"></div>
   </section>
@@ -240,7 +240,7 @@
   <section id="view-profile" class="hidden">
     <div class="session-top">
       <button class="btn ghost small back" data-nav="home">← Volver</button>
-      <span class="qcount">👤 Mi perfil y configuración</span>
+      <span class="qcount">Mi perfil y configuración</span>
     </div>
     <div id="profileBody"></div>
   </section>
@@ -249,11 +249,11 @@
   <section id="view-shop" class="hidden">
     <div class="session-top">
       <button class="btn ghost small back" data-nav="home">← Volver</button>
-      <span class="qcount">🛒 Tienda y colección</span>
+      <span class="qcount">Tienda y colección</span>
     </div>
     <div class="shop-tabs" id="shopTabs">
-      <button class="btn small" data-shtab="tienda">🛒 Tienda</button>
-      <button class="btn ghost small" data-shtab="coleccion">🎒 Mi colección</button>
+      <button class="btn small" data-shtab="tienda">Tienda</button>
+      <button class="btn ghost small" data-shtab="coleccion">Mi colección</button>
     </div>
     <div id="shopBody"></div>
   </section>
@@ -262,12 +262,34 @@
   <section id="view-modes" class="hidden">
     <div class="session-top">
       <button class="btn ghost small back" data-nav="home">← Volver</button>
-      <span class="qcount">🎮 Modos de juego</span>
+      <span class="qcount">Modos de juego</span>
     </div>
     <div id="modesBody"></div>
   </section>
 
 </main>
+
+<footer class="uteca-footer">
+  <div class="uf-inner">
+    <div class="uf-brand">
+      <img src="assets/uteca-logo-white.png" alt="Universidad UTECA">
+      <p>La universidad líder en <b>Comunicación y Entretenimiento</b> es parte de la red de Grupo MVS.</p>
+    </div>
+    <div class="uf-col">
+      <h4>Universidad</h4>
+      <a href="https://www.uteca.edu.mx/licenciaturas/" target="_blank" rel="noopener">Licenciaturas</a>
+      <a href="https://www.uteca.edu.mx/product/actuaria/" target="_blank" rel="noopener">Lic. en Actuaría</a>
+      <a href="https://www.uteca.edu.mx/becas/" target="_blank" rel="noopener">Becas</a>
+      <a href="https://www.uteca.edu.mx/blog/" target="_blank" rel="noopener">Blog</a>
+    </div>
+    <div class="uf-col">
+      <h4>Contacto</h4>
+      <p>Viaducto Presidente Miguel Alemán #255<br>Col. Roma Sur. Alcaldía Cuauhtémoc. CP 06760. CDMX</p>
+      <p>+52 (55) 5264 8520 · 800 36 UTECA/88322</p>
+    </div>
+  </div>
+  <div class="uf-bottom">Copyright © 2026 Grupo MVS — Todos los derechos reservados. AprendeUteca es un proyecto de estudio creado por la comunidad estudiantil.</div>
+</footer>
 
 <div id="modalHost"></div>
 <div id="toasts"></div>

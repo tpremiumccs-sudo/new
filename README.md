@@ -1,4 +1,4 @@
-# 🛡️ AprendeUTeca (ActuarIQ) · Plataforma interactiva multi-materia
+# 🛡️ AprendeUteca (ActuarIQ) · Plataforma interactiva multi-materia
 
 Aplicación web tipo **Duolingo académico** para aprender, recordar y practicar
 las materias del cuatrimestre. Publicada en **https://www.aprendeuteca.com**.

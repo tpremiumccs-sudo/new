@@ -1,4 +1,4 @@
-# 🚀 Despliegue — AprendeUTeca (www.aprendeuteca.com)
+# 🚀 Despliegue — AprendeUteca (www.aprendeuteca.com)
 
 La app vive en tu servidor local (`192.168.100.22`, usuario `oliver103`) y sale a
 internet por un **Cloudflare Tunnel** hacia `www.aprendeuteca.com` (ruta HTTP →
@@ -15,7 +15,7 @@ cd <carpeta-del-proyecto>                      # esta carpeta (aprendeuteca)
 Remove-Item -Recurse -Force .git -ErrorAction Ignore   # limpia restos si existen
 git init -b main
 git add -A
-git commit -m "AprendeUTeca v2: servidor con cuentas, arbol de lecciones, corazones y deploy"
+git commit -m "AprendeUteca v2: servidor con cuentas, arbol de lecciones, corazones y deploy"
 git remote add origin https://github.com/tpremiumccs-sudo/new.git
 git push -f origin main            # main pasa a ser la rama real del proyecto
 ```

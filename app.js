@@ -668,7 +668,7 @@ function renderHeader(){
   HDR.streakTxt.textContent = S.streak;
   if(HDR.streakDot){ const ready = missionsReadyCount(); HDR.streakDot.textContent = ready; HDR.streakDot.classList.toggle('hidden', ready===0); }
   HDR.btnProfile.innerHTML = avatarStack(activeProfile(), 26);
-  HDR.btnSound.textContent = S.sound ? '🔊 Sonido: activado' : '🔇 Sonido: apagado';
+  HDR.btnSound.textContent = S.sound ? 'Sonido: activado' : 'Sonido: apagado';
   HDR.btnSound.setAttribute('aria-pressed', S.sound);
   // insignia destacada en el encabezado
   ensureEquip();
@@ -733,38 +733,35 @@ function renderHome(){
   renderHeader();
   const subj = subjectById(S.activeSubject);
   const hasContent = MODULES.length > 0;
-  // marca de agua translúcida del hero según la materia activa
-  const heroEl = document.querySelector('#view-home .hero');
-  if(heroEl) heroEl.style.setProperty('--hero-emoji', '"'+(subj.wm||'🛡️📐')+'"');
   const o = overallStats();
   const dayXp = (S.dayXP && S.dayXP.d === todayKey()) ? S.dayXP.xp : 0;
   const goal = S.xpGoal || 50;
   const pend = pendingTasksCount();
   $('#homeStats').innerHTML =
-    tile('🏆','Avance en '+subj.short, Math.round(o.progress*100), '%', hasContent ? o.done+' de '+o.total+' módulos' : 'contenido en preparación') +
-    tile('🎯','Precisión', Math.round(o.acc*100), '%', o.answered+' respuestas en esta materia') +
-    tile('📈','Promedio', Math.round(o.avg), '%', S.history.length+' actividades') +
-    tile('⚡','XP total', S.xp, '', 'Nivel '+levelInfo().lvl+' · '+titleIco()+' '+currentTitle()) +
-    tile('📅','Objetivo de hoy', dayXp+'<span class="unit">/'+goal+' XP</span>', '', dayXp>=goal ? '¡Cumplido! ✅' : 'ajústalo en tu perfil') +
-    tile('🔥','Racha diaria', S.streak, S.streak===1?' día':' días', (S.lastDay===todayKey() ? '¡Ya estudiaste hoy! ✅' : '⚠️ Estudia hoy para mantenerla') + ((S.streakFreezes||0) ? ' · 🧊 '+S.streakFreezes+' congelador'+(S.streakFreezes===1?'':'es') : '')) +
-    tile('📋','Tareas pendientes', pend, '', pend ? 'revísalas en 📋 Tareas' : 'todo al día 🎉');
-  $('#subjSectionTitle').textContent = subj.icon+' '+subj.name;
+    tile('','Avance en '+subj.short, Math.round(o.progress*100), '%', hasContent ? o.done+' de '+o.total+' módulos' : 'contenido en preparación') +
+    tile('','Precisión', Math.round(o.acc*100), '%', o.answered+' respuestas en esta materia') +
+    tile('','Promedio', Math.round(o.avg), '%', S.history.length+' actividades') +
+    tile('','XP total', S.xp, '', 'Nivel '+levelInfo().lvl+' · '+currentTitle()) +
+    tile('','Objetivo de hoy', dayXp+'<span class="unit">/'+goal+' XP</span>', '', dayXp>=goal ? '¡Cumplido!' : 'ajústalo en tu perfil') +
+    tile('','Racha diaria', S.streak, S.streak===1?' día':' días', (S.lastDay===todayKey() ? '¡Ya estudiaste hoy!' : 'Estudia hoy para mantenerla') + ((S.streakFreezes||0) ? ' · '+S.streakFreezes+' congelador'+(S.streakFreezes===1?'':'es') : '')) +
+    tile('','Tareas pendientes', pend, '', pend ? 'revísalas en Tareas' : 'todo al día');
+  $('#subjSectionTitle').textContent = subj.name;
   $('#modMeta').textContent = hasContent ? o.done+' / '+o.total+' completados · se desbloquea con ≥ 80%' : 'en preparación';
   $('#futureUnits').classList.toggle('hidden', S.activeSubject !== 'ca3');
   // saludo según avance, personalizado con el perfil
   const pname = activeProfile().name.split(' ')[0];
-  $('#heroTitle').textContent = !hasContent ? '📚 '+subj.name
-    : o.done===0 ? '¡Bienvenido, '+pname+'! 👋'
-    : o.done===MODULES.length ? '🏅 ¡Dominaste todos los módulos, '+pname+'!'
-    : '¡Sigue así, '+pname+'! Vas '+o.done+' de '+o.total+' módulos 💪';
+  $('#heroTitle').textContent = !hasContent ? subj.name
+    : o.done===0 ? '¡Bienvenido, '+pname+'!'
+    : o.done===MODULES.length ? '¡Dominaste todos los módulos, '+pname+'!'
+    : '¡Sigue así, '+pname+'! Vas '+o.done+' de '+o.total+' módulos';
   $('#heroDesc').innerHTML = hasContent
     ? 'Avanza por los '+o.total+' módulos de <b>'+esc(subj.name)+'</b>. Necesitas <b>80%</b> para desbloquear el siguiente. Gana XP, estrellas e insignias.'
-    : 'Los módulos de <b>'+esc(subj.name)+'</b> están en preparación. Mientras tanto revisa sus 📋 tareas y su 📅 calendario de exámenes.';
+    : 'Los módulos de <b>'+esc(subj.name)+'</b> están en preparación. Mientras tanto revisa sus tareas y su calendario de exámenes.';
   // estado del examen diario
   const doneToday = S.examDay === todayKey();
   $('#btnExam').innerHTML = (doneToday && S.examHistory.length)
-    ? '📝 Examen de hoy: '+S.examHistory[0].score+'% ✓'
-    : '📝 Examen diario';
+    ? 'Examen de hoy: '+S.examHistory[0].score+'% ✓'
+    : 'Examen diario';
   // modos de juego activos/inactivos (configurables en el perfil); sin contenido no hay juegos
   const gm = S.gameModes || {};
   $('#btnContinue').classList.toggle('hidden', !hasContent);
@@ -845,7 +842,7 @@ function lessonPathHTML(){
   }).join('') + '</div>';
 }
 function tile(icon,label,value,unit,sub){
-  return '<div class="tile"><div class="t-label">'+icon+' '+label+'</div>'
+  return '<div class="tile"><div class="t-label">'+(icon?icon+' ':'')+label+'</div>'
     + '<div class="t-value">'+value+(unit?'<span class="unit">'+unit+'</span>':'')+'</div>'
     + '<div class="t-sub">'+sub+'</div></div>';
 }
@@ -5476,13 +5473,10 @@ function lbBoardPanelHTML(visible, myPos, total){
     + '<div class="q-actions" style="justify-content:flex-start;flex-wrap:wrap;margin-top:12px">'
     + (LB_SYNC_URL ? '<button class="btn small" id="lbUpload">⬆️ Subir mis stats al grupo</button>' : '')
     + '<button class="btn ghost small" id="lbRefresh">🔄 Actualizar</button>'
-    + '<button class="btn ghost small" id="lbExport">⬇️ Exportar JSON</button>'
-    + '<button class="btn ghost small" id="lbImport">⬆️ Importar JSON</button>'
-    + '<input type="file" id="lbImportFile" accept=".json,application/json" class="hidden">'
     + '</div>'
     + (LB_SYNC_URL
-        ? '<p class="q-help">🌐 <b>Sincronización en vivo activada.</b> Toca “⬆️ Subir mis stats” para aparecer en la tabla de todos; se actualiza por nombre.</p>'
-        : '<p class="q-help">🌐 La tabla se sincroniza con el archivo <code>leaderboard.json</code> publicado junto a la página cada vez que abres esta pantalla (o al tocar Actualizar).</p>')
+        ? '<p class="q-help"><b>Sincronización en vivo activada.</b> Toca “Subir mis stats” para aparecer en la tabla de todos; se actualiza por nombre.</p>'
+        : '<p class="q-help">La tabla se sincroniza con el servidor cada vez que abres esta pantalla (o al tocar Actualizar).</p>')
     + '</div>';
 }
 /* — Leaderboard: panel de administrador (solo perfil "Oliver") — */
@@ -5509,8 +5503,6 @@ function lbAdminPanelHTML(b){
         + '<button class="btn danger small" id="lbReset">🗑️ Resetear leaderboard</button>'
         + '</div>'
         + '<p class="q-help">El nivel se calcula solo a partir del XP. Usa ✏️ y 🗑️ en cada fila para editar o eliminar.</p>'
-        + '<p class="q-help">🌐 <b>Para publicar la tabla a todo el grupo:</b> toca “⬇️ Exportar JSON” (descarga <code>leaderboard.json</code>) y súbelo al repositorio de GitHub reemplazando el archivo <code>leaderboard.json</code> (Add file → Upload files). Al desplegarse, todos verán la tabla actualizada al abrir la página.</p>'
-        + '<p class="q-help">⚡ <b>Sincronización en vivo (opcional):</b> agrega un campo <code>"syncUrl": "…"</code> en <code>leaderboard.json</code> apuntando a tu servicio (p. ej. una Google Apps Script Web App). Con eso, cada alumno usa “⬆️ Subir mis stats” y la tabla se actualiza sola por nombre, sin que subas el JSON cada vez. '+(LB_SYNC_URL?'<b>Estado: activada ✅</b>':'<b>Estado: no configurada</b>')+'</p>'
         : '<p class="q-help">Escribe la contraseña y toca el botón para activar el modo administrador.</p>')
       + '</div>';
 }
@@ -5533,23 +5525,6 @@ function bindBoardEvents(){
   $('#lbSortSel').addEventListener('change', e => { lbSort = e.target.value; renderBoard(); });
   const lbUp = $('#lbUpload'); if(lbUp) lbUp.addEventListener('click', () => { sfx('click'); lbUploadSelf(); });
   $('#lbRefresh').addEventListener('click', () => { sfx('click'); lbMaybeFetch(true); });
-  $('#lbExport').addEventListener('click', () => {
-    downloadJSON('leaderboard.json', {app:'actuariq-board', version:1, exported:new Date().toISOString(), students:lbRanked(lbLoad())});
-    toast('⬇️ Descargado leaderboard.json: súbelo al repositorio para publicarlo'); sfx('ok');
-  });
-  $('#lbImport').addEventListener('click', () => $('#lbImportFile').click());
-  $('#lbImportFile').addEventListener('change', e => {
-    const file = e.target.files[0]; e.target.value = '';
-    if(!file) return;
-    readJSONFile(file, '❌ El archivo no es un JSON de leaderboard válido', payload => {
-      const inc = (payload && payload.app==='actuariq-board' && Array.isArray(payload.students)) ? payload.students
-        : (Array.isArray(payload) ? payload : null);
-      if(!inc) throw new Error('formato');
-      const changed = lbMergeStudents(inc, false); // importación manual: pisa lo local
-      renderBoard();
-      toast('⬆️ Importado: '+changed+' fila'+(changed===1?'':'s')+' aplicada'+(changed===1?'':'s')); sfx('unlock');
-    });
-  });
   $$('#boardBody [data-lbview]').forEach(btn => btn.addEventListener('click', () => { sfx('click'); lbShowStudent(btn.dataset.lbview); }));
   $$('#boardBody [data-lbedit]').forEach(btn => btn.addEventListener('click', () => { lbEditId = btn.dataset.lbedit; renderBoard(); }));
   $$('#boardBody [data-lbdel]').forEach(btn => btn.addEventListener('click', () => {
@@ -6068,11 +6043,11 @@ function checkBadges(){
 function statsTilesHTML(o, exams, exAvg){
   return '<div class="stats-strip">'
     + tile('✅','Módulos completados', o.done, '', 'de '+o.total)
-    + tile('📈','Promedio general', Math.round(o.avg), '%', S.history.length+' actividades')
-    + tile('🎯','Precisión', Math.round(o.acc*100), '%', o.answered+' respuestas')
-    + tile('⏱️','Tiempo estudiado', fmtDur(S.totalTime), '', 'acumulado')
-    + tile('⚡','XP', S.xp, '', 'Nivel '+levelInfo().lvl)
-    + tile('🔥','Racha', S.streak, S.streak===1?' día':' días', 'mejor blitz: '+S.bestBlitz+' aciertos · mejor racha: '+(S.bestBlitzCombo||0))
+    + tile('','Promedio general', Math.round(o.avg), '%', S.history.length+' actividades')
+    + tile('','Precisión', Math.round(o.acc*100), '%', o.answered+' respuestas')
+    + tile('','Tiempo estudiado', fmtDur(S.totalTime), '', 'acumulado')
+    + tile('','XP', S.xp, '', 'Nivel '+levelInfo().lvl)
+    + tile('','Racha', S.streak, S.streak===1?' día':' días', 'mejor blitz: '+S.bestBlitz+' aciertos · mejor racha: '+(S.bestBlitzCombo||0))
     + tile('📝','Exámenes diarios', exams.length, '', exams.length ? 'promedio '+exAvg+'%' : 'aún sin exámenes')
     + '</div>';
 }
@@ -6491,7 +6466,7 @@ function renderGuide(){
 }
 $('#btnPrint').addEventListener('click', () => {
   sfx('click');
-  $('#printGuide').innerHTML = '<h1>📖 AprendeUTeca · Guía de estudio · '+esc(subjectById(S.activeSubject).name)+'</h1>'
+  $('#printGuide').innerHTML = '<h1>📖 AprendeUteca · Guía de estudio · '+esc(subjectById(S.activeSubject).name)+'</h1>'
     + $('#guideBody').innerHTML
         .replaceAll('class="lesson-card"','')
         .replaceAll('<h3>','<h2>').replaceAll('</h3>','</h2>')
@@ -6844,7 +6819,7 @@ const TITLES = [
     test:()=>!!S.earlyBird, cond:'???', hint:'Estudia muy temprano'},
   {id:'title-domador',     type:'title', rarity:'legendary', name:'Domador de Exámenes',     ico:'🎪', desc:'Tres exámenes con ≥90: los exámenes te temen.',
     test:()=>(S.examHistory||[]).filter(e=>e.score>=90).length>=3, cond:'Logra ≥90% en 3 exámenes diarios'},
-  {id:'title-leyenda',     type:'title', rarity:'legendary', secret:true, name:'Leyenda de AprendeUTeca',     ico:'🏆', desc:'Acumulaste una fortuna en XP.',
+  {id:'title-leyenda',     type:'title', rarity:'legendary', secret:true, name:'Leyenda de AprendeUteca',     ico:'🏆', desc:'Acumulaste una fortuna en XP.',
     test:()=>S.xp>=10000, cond:'???', hint:'Acumula una enormidad de XP'}
 ];
 /* Catálogo completo de la tienda */
@@ -7246,14 +7221,6 @@ function renderProfile(){
     + toggleRow('prefConfetti','🎉 Confeti al aprobar', S.confetti !== false)
     + toggleRow('prefSteps','🧮 Mostrar el procedimiento también al acertar', !!S.stepsOnOk)
     + toggleRow('prefGuide','📖 Guía de estudio progresiva', S.guideProgressive !== false)
-    + '<hr style="border:none;border-top:1px solid var(--line);margin:14px 0">'
-    + '<label class="fld" style="margin-bottom:6px">🖼️ Logo de la página (este dispositivo)</label>'
-    + '<div class="q-actions" style="justify-content:flex-start;flex-wrap:wrap;align-items:center">'
-    + '<span style="width:40px;height:40px;border-radius:11px;overflow:hidden;display:inline-grid;place-items:center;background:linear-gradient(135deg,var(--accent),var(--c5));font-size:20px">'
-    + (getLogo() ? '<img src="'+getLogo()+'" alt="logo" style="width:100%;height:100%;object-fit:cover">' : '🛡️')+'</span>'
-    + '<button class="btn ghost small" id="btnLogoUp">📤 Subir logo</button>'
-    + (getLogo() ? '<button class="btn ghost small" id="btnLogoReset">↩️ Restablecer 🛡️</button>' : '')
-    + '<input type="file" id="logoFile" accept="image/*" class="hidden"></div>'
     + '</div>';
   // — Perfiles del dispositivo —
   html += '<div class="panel"><h3>👥 Perfiles en este dispositivo</h3>'
@@ -7266,7 +7233,7 @@ function renderProfile(){
       + '</div>').join('')
     + '<div class="answer-row"><input class="ainput" id="newProfName" placeholder="Nombre del nuevo perfil…" maxlength="24">'
     + '<button class="btn small" id="pfNew">＋ Crear</button></div>'
-    + '<p class="q-help">Cada perfil guarda su propio progreso en este navegador. Para llevarlo a otro dispositivo usa Exportar / Importar.</p></div>';
+    + '<p class="q-help">Cada perfil guarda su propio progreso en tu cuenta del servidor: entra con tu usuario desde cualquier dispositivo y ahí estará.</p></div>';
   // — Congeladores de racha —
   html += '<div class="panel"><h3>🧊 Congeladores de racha</h3>'
     + '<p style="font-size:.9rem;color:var(--ink2)">Un congelador salva tu racha 🔥 si te saltas un día (se usa solo cuando hace falta). Tienes <b>'+(S.streakFreezes||0)+'</b>.</p>'
@@ -7277,15 +7244,10 @@ function renderProfile(){
     + '</div>'
     + '<p class="q-help">Ganas +1 al reclamar el mensual y +1 cada vez que terminas un parcial de una materia (≥ 90% de sus módulos).</p></div>';
   // — Datos —
-  html += '<div class="panel"><h3>💾 Mis datos</h3>'
-    + '<p style="font-size:.85rem;color:var(--ink2)">Respaldo <b>total</b> en un archivo JSON: incluye <b>todos tus perfiles</b> y su progreso, el leaderboard y las tareas. Úsalo para guardar todo o moverlo a otro dispositivo.</p>'
-    + '<div class="q-actions" style="justify-content:flex-start;flex-wrap:wrap">'
-    + '<button class="btn" id="btnExport">⬇️ Exportar JSON</button>'
-    + '<button class="btn ghost" id="btnImport">⬆️ Importar JSON</button>'
-    + '<input type="file" id="importFile" accept=".json,application/json" class="hidden">'
-    + '</div>'
+  html += '<div class="panel"><h3>Mis datos</h3>'
+    + '<p style="font-size:.85rem;color:var(--ink2)">Tu progreso se guarda autom\u00e1ticamente en tu cuenta del servidor de AprendeUteca. No necesitas respaldos manuales: entra con tu usuario desde cualquier dispositivo y todo estar\u00e1 ah\u00ed.</p>'
     + '<hr style="border:none;border-top:1px solid var(--line);margin:16px 0">'
-    + '<button class="btn danger small" id="btnReset">🗑️ Reiniciar el progreso de este perfil</button></div>';
+    + '<button class="btn danger small" id="btnReset">Reiniciar el progreso de este perfil</button></div>';
   html += '</div>';
   $('#profileBody').innerHTML = html;
   $('#prefTheme').value = S.theme || '';
@@ -7315,21 +7277,11 @@ function renderProfile(){
   $('#prefSteps').addEventListener('change', e => { S.stepsOnOk = e.target.checked; save(); sfx('click'); });
   $('#prefGuide').addEventListener('change', e => { S.guideProgressive = e.target.checked; save(); sfx('click');
     toast(S.guideProgressive ? '📖 La guía se desbloqueará conforme avances' : '📖 Guía completa visible'); });
-  $('#btnLogoUp').addEventListener('click', () => $('#logoFile').click());
-  $('#logoFile').addEventListener('change', e => { if(e.target.files[0]) setLogoFromFile(e.target.files[0]); e.target.value=''; });
-  const lr = $('#btnLogoReset');
-  if(lr) lr.addEventListener('click', () => {
-    Store.remove(LOGOKEY);
-    applyLogo(); renderProfile(); toast('↩️ Logo restablecido'); sfx('click');
-  });
   const cf = $('#btnClaimFreeze');
   if(cf) cf.addEventListener('click', () => {
     if(claimMonthlyFreeze()){ toast('🧊 +1 congelador mensual. Ahora tienes '+S.streakFreezes+'.'); sfx('unlock'); renderProfile(); renderHeader(); }
     else { toast('🧊 Ya reclamaste el congelador de este mes.'); sfx('bad'); }
   });
-  $('#btnExport').addEventListener('click', exportData);
-  $('#btnImport').addEventListener('click', () => $('#importFile').click());
-  $('#importFile').addEventListener('change', e => { if(e.target.files[0]) importData(e.target.files[0]); e.target.value=''; });
   $('#btnReset').addEventListener('click', () => {
     if(!confirm('Esto borrará TODO el progreso del perfil "'+p.name+'" (XP, módulos, exámenes, insignias). ¿Continuar?')) return;
     if(!confirm('Última confirmación: el borrado no se puede deshacer. ¿Reiniciar?')) return;
@@ -7376,7 +7328,7 @@ function exportData(){
   toast('⬇️ Respaldo total exportado ('+(PROFILES.list||[]).length+' perfil'+((PROFILES.list||[]).length===1?'':'es')+')'); sfx('ok');
 }
 function importData(file){
-  readJSONFile(file, '❌ El archivo no es un respaldo válido de ActuarIQ', payload => {
+  readJSONFile(file, '❌ El archivo no es un respaldo válido de AprendeUteca', payload => {
     // — Respaldo TOTAL (formato nuevo) —
     if(payload && payload.app==='actuariq-backup' && payload.profiles && payload.states){
       if(!(payload.profiles.list && payload.profiles.list.length)) throw new Error('formato');
@@ -7484,7 +7436,7 @@ function applyLogo(){
   const mark = $('.logo .mark');
   if(!mark) return;
   if(d) mark.innerHTML = '<img src="'+d+'" alt="logo" style="width:100%;height:100%;object-fit:cover;border-radius:10px">';
-  else mark.textContent = '🛡️';
+  else mark.innerHTML = '<img src="assets/uteca-icon-270.png" alt="UTECA" style="width:100%;height:100%;object-fit:contain">';
 }
 /* Lee un archivo de imagen, lo recorta al cuadrado central, lo reescala a
    size×size y entrega el dataURL a onReady. Errores → toast + sonido. */
@@ -7527,12 +7479,12 @@ function showOnboarding(){
   let chosen = activeProfile().avatar;
   let chosenColor = S.accentColor || '';
   const COLORS = [
-    {v:'',        c:'#2a78d6', n:'Azul'},   {v:'#1baf7a', c:'#1baf7a', n:'Verde'},
+    {v:'',        c:'#ff026f', n:'Rosa UTECA'}, {v:'#1baf7a', c:'#1baf7a', n:'Verde'},
     {v:'#4a3aa7', c:'#4a3aa7', n:'Morado'}, {v:'#e34948', c:'#e34948', n:'Rojo'},
     {v:'#eb6834', c:'#eb6834', n:'Naranja'},{v:'#d55181', c:'#d55181', n:'Rosa'}
   ];
   const o = openModal('<div style="text-align:center"><div id="obPreview" style="display:flex;justify-content:center;margin-bottom:4px">'+avatarStack(activeProfile(), 68, {})+'</div>'
-    + '<h2 style="margin:.2em 0 .1em">¡Bienvenido a ActuarIQ!</h2>'
+    + '<h2 style="margin:.2em 0 .1em">¡Bienvenido a AprendeUteca!</h2>'
     + '<p style="color:var(--ink2);font-size:.88rem;margin-top:0">Tu plataforma de estudio del cuatrimestre. Personalízala en 20 segundos:</p></div>'
     + '<label class="fld">🙋 Tu nombre completo<input class="ainput" id="obName" placeholder="Nombre y apellido…" maxlength="30"></label>'
     + '<div class="fld">😀 Tu avatar (desbloquearás más al subir de nivel)'
@@ -7547,7 +7499,7 @@ function showOnboarding(){
     + '<div class="fld">🎨 Tu color favorito<div class="color-swatches" id="obColors">'
     + COLORS.map(c=>'<button class="sw'+(c.v===chosenColor?' on':'')+'" data-c="'+esc(c.v)+'" title="'+c.n+'" aria-label="'+c.n+'" style="background:'+c.c+'"></button>').join('')
     + '</div></div>'
-    + '<p class="q-help">Tu progreso, XP, insignias y recompensas se guardan en este navegador.</p>'
+    + '<p class="q-help">Tu progreso, XP, insignias y recompensas se guardan en tu cuenta: entra con tu usuario desde cualquier dispositivo.</p>'
     + '<div class="q-actions" style="justify-content:center"><button class="btn" id="obGo" style="font-size:1.02rem;padding:12px 34px">🚀 ¡Comenzar!</button></div>');
   o.querySelectorAll('#obAv .av').forEach(b => b.addEventListener('click', () => {
     chosen = b.dataset.av;

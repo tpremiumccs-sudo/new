@@ -119,7 +119,7 @@ header.top{
   background:linear-gradient(120deg,var(--accent) 0%,var(--c5) 100%);
   color:#fff; position:relative; overflow:hidden; animation:fadeUp .5s ease both;
 }
-.hero::after{content:var(--hero-emoji,"🛡️📐"); position:absolute; right:18px; top:50%; transform:translateY(-50%); font-size:64px; opacity:.25; letter-spacing:-14px}
+.hero::after{content:''; position:absolute; right:20px; top:50%; transform:translateY(-50%); width:130px; height:130px; background:url('assets/alebrije-uteca.webp') center/contain no-repeat; opacity:.45; pointer-events:none}
 .hero h1{font-size:clamp(1.4rem,3.4vw,2rem); margin-bottom:2px}
 .hero p{opacity:.92; max-width:640px; margin-bottom:14px}
 .hero .actions{display:flex; gap:10px; flex-wrap:wrap}
@@ -819,22 +819,70 @@ html.gated body > *:not(#authGate){display:none !important}
 
 
 /* ============ Identidad UTECA ============ */
-.logo img.mark{ width:34px; height:34px; border-radius:9px; background:#fff; object-fit:contain; padding:2px; box-shadow:0 1px 3px rgba(0,0,0,.12); }
+.logo .mark{ width:34px; height:34px; border-radius:9px; background:#fff; padding:2px; box-shadow:0 1px 3px rgba(0,0,0,.12); display:grid; place-items:center; overflow:hidden; }
+.logo .mark img{ width:100%; height:100%; object-fit:contain; }
 .logo small{ color:var(--accent); }
+svg.ic{ width:18px; height:18px; display:inline-block; vertical-align:-3px; }
+.iconbtn svg.ic{ vertical-align:middle; }
+.chip .icon svg.ic{ width:16px; height:16px; display:block; }
+.chip.hearts .icon svg.ic{ color:#ff026f; }
+.chip.streak .icon svg.ic{ color:#eb6834; }
+.more-item svg.ic{ width:16px; height:16px; flex:none; }
+.btn svg.ic{ width:16px; height:16px; margin-right:6px; }
+.mcard .lock svg.ic, .m-ico svg.ic{ width:20px; height:20px; }
 
-/* ---- Login estilo UTECA (acceso abierto, tarjeta siempre clara) ---- */
-#authGate{ background:linear-gradient(135deg,#ff026f 0%,#ff5aa0 45%,#39c4b8 100%); }
-.auth-card.uteca{ padding:0; overflow:hidden; border:none; background:#ffffff; box-shadow:0 24px 60px rgba(0,0,0,.28); }
-.auth-card.uteca .auth-head{ background:linear-gradient(135deg,#ff026f,#c30057); padding:24px; display:grid; place-items:center; }
-.auth-card.uteca .auth-brand{ height:42px; width:auto; }
-.auth-card.uteca .auth-body{ padding:26px 26px 28px; text-align:center; background:#ffffff; color:#14140f; }
-.auth-welcome{ color:#ff026f; font-weight:900; font-size:.95rem; }
-.auth-card.uteca h1{ margin:.1em 0 .3em; font-size:1.5rem; color:#14140f; }
-.auth-card.uteca .auth-sub{ margin-bottom:16px; color:#5a5a55; }
-.auth-card.uteca #authForm label{ display:block; text-align:left; font-size:.8rem; font-weight:700; color:#3a3a35; margin:10px 0 4px; }
-.auth-card.uteca #authForm input{ border-radius:999px; padding:13px 18px; border:1.5px solid #d7d7d2; background:#ffffff; color:#111111; }
-.auth-card.uteca #authForm input:focus{ border-color:#ff026f; box-shadow:0 0 0 3px #ffd6e8; }
-.auth-remember{ display:flex !important; align-items:center; gap:8px; text-align:left; font-weight:600 !important; color:#5a5a55 !important; margin:12px 0 0 !important; }
-.auth-remember input{ width:auto !important; }
-.auth-card.uteca .auth-btn{ border-radius:999px; box-shadow:0 4px 0 #c30057; }
-.auth-foot{ margin-top:16px; color:#9a9a92; font-size:.78rem; }
+/* ---- Login estilo LMS UTECA (fondo real del campus, tarjeta teal) ---- */
+#authGate{
+  background:#3a3a3a url('assets/Fondo_Full_Ini.png') center/cover no-repeat;
+  display:flex; align-items:center; justify-content:flex-end; padding:24px;
+}
+.lms-card{
+  width:min(400px,100%); margin-right:7vw;
+  background:linear-gradient(180deg,#12989c 0%,#0a6e73 100%);
+  border-radius:24px; padding:30px 34px 20px; text-align:center;
+  box-shadow:0 28px 70px rgba(0,0,0,.45); color:#fff;
+  font-family:'Lato',system-ui,sans-serif;
+}
+@media (max-width:900px){
+  #authGate{ justify-content:center; }
+  .lms-card{ margin-right:0; }
+}
+.lms-welcome{ color:#ffd100; font-weight:900; font-size:1.02rem; margin-bottom:12px; }
+.lms-logo{ width:170px; max-width:70%; height:auto; margin:0 auto 16px; display:block; filter:drop-shadow(0 2px 6px rgba(0,0,0,.25)); }
+.lms-title{ color:#ff9dc4; font-weight:900; font-size:.98rem; margin-bottom:12px; letter-spacing:.02em; }
+.lms-card #aUser, .lms-card #aPin{
+  display:block; width:100%; box-sizing:border-box; margin:0 0 12px;
+  padding:11px 16px; border-radius:999px; border:none;
+  background:#ffffff; color:#333; text-align:center; font:inherit; font-size:.98rem;
+}
+.lms-card #aUser::placeholder, .lms-card #aPin::placeholder{ color:#9aa7ad; }
+.lms-card #aUser:focus, .lms-card #aPin:focus{ outline:3px solid #ffd100; outline-offset:1px; }
+.lms-remember{ display:flex; gap:8px; justify-content:center; align-items:center; color:#eaf7f7; font-size:.86rem; margin:8px 0 2px; cursor:pointer; }
+.lms-remember input{ accent-color:#ff026f; width:15px; height:15px; }
+.lms-enter{ display:flex; align-items:center; justify-content:center; gap:12px; margin-top:14px; }
+.lms-enter img{ width:46px; height:auto; flex:none; }
+.lms-card .auth-btn{
+  width:auto; margin:0; padding:12px 36px; border:none; border-radius:16px;
+  background:#ff026f; color:#fff; font-weight:900; font-size:1.08rem; cursor:pointer;
+  box-shadow:0 5px 0 #b8004f; transition:transform .12s;
+}
+.lms-card .auth-btn:hover{ transform:translateY(-1px); }
+.lms-card .auth-btn:active{ transform:translateY(3px); box-shadow:none; }
+.lms-card .auth-btn:disabled{ opacity:.65; cursor:wait; }
+.lms-card .auth-err{ background:#fff; color:#c02424; border-radius:10px; padding:9px; font-size:.85rem; margin:6px 0; }
+.lms-card .auth-err.hidden{ display:none; }
+.lms-card .auth-notice{ background:#ffd100; color:#3a3200; border-radius:10px; padding:10px; font-size:.85rem; margin-bottom:12px; }
+.lms-foot{ margin-top:16px; color:rgba(255,255,255,.72); font-size:.68rem; }
+
+/* ---- Footer institucional UTECA ---- */
+.uteca-footer{ margin-top:48px; background:#0b3d40; color:#dff3f2; font-family:'Lato',system-ui,sans-serif; }
+:root[data-theme="dark"] .uteca-footer{ background:#092e30; }
+.uf-inner{ max-width:1100px; margin:0 auto; padding:34px 22px 22px; display:grid; grid-template-columns:1.4fr 1fr 1.2fr; gap:28px; }
+.uf-brand img{ width:130px; height:auto; margin-bottom:12px; }
+.uf-brand p{ font-size:.88rem; line-height:1.5; color:#bfe4e2; margin:0; }
+.uf-col h4{ margin:0 0 10px; font-size:.82rem; letter-spacing:.08em; text-transform:uppercase; color:#ffd100; }
+.uf-col a{ display:block; color:#dff3f2; text-decoration:none; font-size:.88rem; margin-bottom:7px; }
+.uf-col a:hover{ color:#ff9dc4; }
+.uf-col p{ font-size:.85rem; line-height:1.5; color:#bfe4e2; margin:0 0 8px; }
+.uf-bottom{ border-top:1px solid rgba(255,255,255,.14); padding:14px 22px; text-align:center; font-size:.76rem; color:#9fcecb; }
+@media (max-width:760px){ .uf-inner{ grid-template-columns:1fr; gap:20px; } }

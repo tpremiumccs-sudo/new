@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-AprendeUTeca / ActuarIQ — servidor de la app + API de persistencia.
+AprendeUteca / ActuarIQ — servidor de la app + API de persistencia.
 
 Sin dependencias externas: Python 3.8+ (http.server + sqlite3 + hashlib).
 Sirve los archivos estáticos de la app Y la API bajo /api/*.
@@ -101,7 +101,7 @@ VALID_USER = re.compile(r'^[a-zA-Z0-9_.\-áéíóúñÁÉÍÓÚÑ]{2,24}$')
 
 class Handler(BaseHTTPRequestHandler):
     protocol_version = 'HTTP/1.1'
-    server_version = 'AprendeUTeca/1.0'
+    server_version = 'AprendeUteca/1.0'
 
     # ---------- utilidades de respuesta ----------
     def _send(self, code, body: bytes, ctype='application/json; charset=utf-8', extra=None):
@@ -379,7 +379,7 @@ class Handler(BaseHTTPRequestHandler):
 def main():
     init_db()
     srv = ThreadingHTTPServer(('0.0.0.0', PORT), Handler)
-    print(f'AprendeUTeca sirviendo {ROOT} en http://0.0.0.0:{PORT} (db: {DBPATH})', flush=True)
+    print(f'AprendeUteca sirviendo {ROOT} en http://0.0.0.0:{PORT} (db: {DBPATH})', flush=True)
     srv.serve_forever()
 
 if __name__ == '__main__':
