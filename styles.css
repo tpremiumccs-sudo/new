@@ -57,7 +57,7 @@ header.top{
   background:color-mix(in srgb, var(--bg) 86%, transparent);
   border-bottom:1px solid var(--line);
   display:flex; align-items:center; gap:14px; flex-wrap:wrap;
-  padding:10px 20px; margin:0 -20px 22px;
+  padding:10px 20px; margin:0 0 22px;
 }
 .logo{display:flex; align-items:center; gap:10px; font-weight:800; font-size:1.15rem; letter-spacing:-.01em; cursor:pointer; background:none; border:none; padding:4px}
 .logo .mark{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--c5));display:grid;place-items:center;color:#fff;font-size:18px}
@@ -115,34 +115,35 @@ header.top{
 .lvlbox small{font-size:.7rem;color:var(--muted);font-weight:600}
 /* ============ Hero ============ */
 .hero{
-  border-radius:var(--radius); padding:26px 28px; margin-bottom:24px;
-  background:linear-gradient(120deg,var(--accent) 0%,var(--c5) 100%);
-  color:#fff; position:relative; overflow:hidden; animation:fadeUp .5s ease both;
+  border-radius:20px; padding:28px 30px; margin-bottom:24px;
+  background:var(--surface); border:2px solid var(--line);
+  color:var(--ink); position:relative; overflow:hidden; animation:fadeUp .5s ease both;
 }
-.hero::after{content:''; position:absolute; right:20px; top:50%; transform:translateY(-50%); width:130px; height:130px; background:url('assets/alebrije-uteca.webp') center/contain no-repeat; opacity:.45; pointer-events:none}
-.hero h1{font-size:clamp(1.4rem,3.4vw,2rem); margin-bottom:2px}
-.hero p{opacity:.92; max-width:640px; margin-bottom:14px}
+.hero h1{font-size:clamp(1.4rem,3.4vw,2rem); margin-bottom:2px; color:var(--ink)}
+.hero p{color:var(--ink2); max-width:640px; margin-bottom:16px}
 .hero .actions{display:flex; gap:10px; flex-wrap:wrap}
 /* ============ Botones ============ */
 .btn{
   display:inline-flex; align-items:center; justify-content:center; gap:8px;
-  border:none; border-radius:12px; padding:11px 20px; font-weight:700; font-size:.95rem;
+  border:none; border-radius:14px; padding:11px 20px; font-weight:800; font-size:.95rem;
   background:var(--accent); color:var(--accent-ink);
-  transition:transform .15s, box-shadow .2s, background .2s, opacity .2s;
+  box-shadow:0 4px 0 var(--accent-strong);
+  transition:transform .12s, box-shadow .12s, background .2s, opacity .2s, filter .15s;
   text-decoration:none;
 }
-.btn:hover{transform:translateY(-2px); box-shadow:0 6px 16px rgba(42,120,214,.35)}
-.btn:active{transform:translateY(0)}
-.btn.ghost{background:var(--surface); color:var(--ink); border:1px solid var(--border)}
-.btn.ghost:hover{box-shadow:var(--shadow); background:var(--surface2)}
-.btn.onhero{background:rgba(255,255,255,.94); color:#1c1c50}
-.btn.good{background:var(--good)}
-.btn.small{padding:7px 14px; font-size:.84rem; border-radius:10px}
+.btn:hover{transform:translateY(-1px); filter:brightness(1.06); box-shadow:0 5px 0 var(--accent-strong)}
+.btn:active{transform:translateY(3px); box-shadow:0 1px 0 var(--accent-strong); filter:none}
+.btn.ghost{background:var(--surface); color:var(--ink); border:2px solid var(--line); box-shadow:0 4px 0 var(--line)}
+.btn.ghost:hover{background:var(--surface2); filter:none; box-shadow:0 5px 0 var(--line)}
+.btn.onhero{background:var(--accent); color:#fff}
+.btn.good{background:var(--good); box-shadow:0 4px 0 #086108}
+.btn.small{padding:7px 14px; font-size:.84rem; border-radius:11px; box-shadow:0 3px 0 var(--accent-strong)}
+.btn.small.ghost{box-shadow:0 3px 0 var(--line)}
 .btn:disabled{opacity:.45; cursor:not-allowed; transform:none; box-shadow:none}
 /* ============ Stats strip (stat tiles) ============ */
 .stats-strip{display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px; margin-bottom:26px}
 .tile{
-  background:var(--surface); border:1px solid var(--border); border-radius:var(--radius);
+  background:var(--surface); border:2px solid var(--line); border-radius:18px;
   padding:14px 16px; animation:fadeUp .5s ease both;
 }
 .tile .t-label{font-size:.74rem; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--muted)}
@@ -637,7 +638,7 @@ details.coll-sec[open] > summary::before{transform:rotate(90deg)}
 .profile-row.active{border-color:var(--accent); background:color-mix(in srgb,var(--accent) 6%, var(--surface))}
 .profile-row .pr-av{font-size:22px}
 .profile-row .pr-name{flex:1; font-weight:700; font-size:.9rem; overflow:hidden; text-overflow:ellipsis}
-.btn.danger{background:var(--bad)}
+.btn.danger{background:var(--bad); box-shadow:0 4px 0 #8f2020}
 select.ainput{appearance:auto}
 .avatar-pick .av.locked{opacity:.45; cursor:not-allowed}
 #btnProfile svg{display:block; border-radius:50%}
@@ -670,7 +671,7 @@ select.ainput{appearance:auto}
 /* ============ Responsive ============ */
 @media (max-width:720px){
   .app{padding:0 14px 70px}
-  header.top{padding:10px 14px; margin:0 -14px 16px; gap:8px}
+  header.top{padding:10px 14px; margin:0 0 16px; gap:8px}
   .lvlbox .lvlbar{width:56px}
   .chip{padding:4px 10px; font-size:.78rem}
   .qcard{padding:18px}
@@ -834,6 +835,10 @@ svg.ic{ width:18px; height:18px; display:inline-block; vertical-align:-3px; }
 .more-item svg.ic{ width:16px; height:16px; flex:none; }
 .btn svg.ic{ width:16px; height:16px; margin-right:6px; }
 .mcard .lock svg.ic, .m-ico svg.ic{ width:20px; height:20px; }
+.lp-ico svg.ic{ width:26px; height:26px; color:#fff; display:block; }
+.lp-node.checkpoint .lp-ico svg.ic{ color:var(--gold); }
+.lp-node.done .lp-ico svg.ic{ color:#fff; }
+.iconbtn svg.ic{ width:17px; height:17px; }
 
 /* ---- Login estilo LMS UTECA (fondo real del campus, tarjeta teal) ---- */
 #authGate{
@@ -878,15 +883,4 @@ svg.ic{ width:18px; height:18px; display:inline-block; vertical-align:-3px; }
 .lms-card .auth-notice{ background:#ffd100; color:#3a3200; border-radius:10px; padding:10px; font-size:.85rem; margin-bottom:12px; }
 .lms-foot{ margin-top:16px; color:rgba(255,255,255,.72); font-size:.68rem; }
 
-/* ---- Footer institucional UTECA ---- */
-.uteca-footer{ margin-top:48px; background:#0b3d40; color:#dff3f2; font-family:'Lato',system-ui,sans-serif; }
-:root[data-theme="dark"] .uteca-footer{ background:#092e30; }
-.uf-inner{ max-width:1100px; margin:0 auto; padding:34px 22px 22px; display:grid; grid-template-columns:1.4fr 1fr 1.2fr; gap:28px; }
-.uf-brand img{ width:130px; height:auto; margin-bottom:12px; }
-.uf-brand p{ font-size:.88rem; line-height:1.5; color:#bfe4e2; margin:0; }
-.uf-col h4{ margin:0 0 10px; font-size:.82rem; letter-spacing:.08em; text-transform:uppercase; color:#ffd100; }
-.uf-col a{ display:block; color:#dff3f2; text-decoration:none; font-size:.88rem; margin-bottom:7px; }
-.uf-col a:hover{ color:#ff9dc4; }
-.uf-col p{ font-size:.85rem; line-height:1.5; color:#bfe4e2; margin:0 0 8px; }
-.uf-bottom{ border-top:1px solid rgba(255,255,255,.14); padding:14px 22px; text-align:center; font-size:.76rem; color:#9fcecb; }
-@media (max-width:760px){ .uf-inner{ grid-template-columns:1fr; gap:20px; } }
+.site-foot{ margin-top:44px; padding:22px 12px 28px; text-align:center; font-size:.78rem; color:var(--muted); border-top:1px solid var(--line); }

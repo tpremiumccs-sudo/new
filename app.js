@@ -81,6 +81,9 @@ const SUBJ_SVG = {
   'administracion-financiera': '<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 20V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/><rect width="20" height="14" x="2" y="6" rx="2"/></svg>'
 };
 const subjSVG = id => SUBJ_SVG[id] || (subjectById(id).icon || '');
+/* Mapa emoji->SVG para todo el chrome de la app */
+const EMOJI_SVG = {'🛡️':'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/></svg>','📉':'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="22 17 13.5 8.5 8.5 13.5 2 7"/><polyline points="16 17 22 17 22 11"/></svg>','📊':'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" x2="12" y1="20" y2="10"/><line x1="18" x2="18" y1="20" y2="4"/><line x1="6" x2="6" y1="20" y2="16"/></svg>','🎲':'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="12" height="12" x="2" y="10" rx="2" ry="2"/><path d="m17.92 14 3.5-3.5a2.24 2.24 0 0 0 0-3l-5-4.92a2.24 2.24 0 0 0-3 0L10 6"/><path d="M6 18h.01"/><path d="M10 14h.01"/><path d="M15 6h.01"/><path d="M18 9h.01"/></svg>','💼':'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 20V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/><rect width="20" height="14" x="2" y="6" rx="2"/></svg>','💊':'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z"/><path d="m8.5 8.5 7 7"/></svg>','🤝':'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>','🧾':'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></svg>','📈':'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>','💱':'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="8" r="6"/><path d="M18.09 10.37A6 6 0 1 1 10.34 18"/><path d="M7 6h1v4"/><path d="m16.71 13.88.7.71-2.82 2.82"/></svg>','🚗':'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><path d="M9 17h6"/><circle cx="17" cy="17" r="2"/></svg>','🚙':'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><path d="M9 17h6"/><circle cx="17" cy="17" r="2"/></svg>','🧠':'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5a3 3 0 1 0-5.997.125 4 4 0 0 0-2.526 5.77 4 4 0 0 0 .556 6.588A4 4 0 1 0 12 18Z"/><path d="M12 5a3 3 0 1 1 5.997.125 4 4 0 0 1 2.526 5.77 4 4 0 0 1-.556 6.588A4 4 0 1 1 12 18Z"/><path d="M12 5v13"/></svg>','🧮':'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="16" height="20" x="4" y="2" rx="2"/><line x1="8" x2="16" y1="6" y2="6"/><line x1="16" x2="16" y1="14" y2="18"/><path d="M16 10h.01"/><path d="M12 10h.01"/><path d="M8 10h.01"/><path d="M12 14h.01"/><path d="M8 14h.01"/><path d="M12 18h.01"/><path d="M8 18h.01"/></svg>','🔐':'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>','🔒':'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>','📋':'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M12 11h4"/><path d="M12 16h4"/><path d="M8 11h.01"/><path d="M8 16h.01"/></svg>','📐':'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21.3 15.3a2.4 2.4 0 0 1 0 3.4l-2.6 2.6a2.4 2.4 0 0 1-3.4 0L2.7 8.7a2.41 2.41 0 0 1 0-3.4l2.6-2.6a2.41 2.41 0 0 1 3.4 0Z"/><path d="m14.5 12.5 2-2"/><path d="m11.5 9.5 2-2"/><path d="m8.5 6.5 2-2"/><path d="m17.5 15.5 2-2"/></svg>','📏':'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21.3 15.3a2.4 2.4 0 0 1 0 3.4l-2.6 2.6a2.4 2.4 0 0 1-3.4 0L2.7 8.7a2.41 2.41 0 0 1 0-3.4l2.6-2.6a2.41 2.41 0 0 1 3.4 0Z"/><path d="m14.5 12.5 2-2"/><path d="m11.5 9.5 2-2"/><path d="m8.5 6.5 2-2"/><path d="m17.5 15.5 2-2"/></svg>','🔀':'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m18 14 4 4-4 4"/><path d="m18 2 4 4-4 4"/><path d="M2 18h1.973a4 4 0 0 0 3.3-1.7l5.454-8.6a4 4 0 0 1 3.3-1.7H22"/><path d="M2 6h1.972a4 4 0 0 1 3.6 2.2"/><path d="M22 18h-6.041a4 4 0 0 1-3.3-1.8l-.359-.45"/></svg>','🚶':'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 16v-2.38C4 11.5 2.97 10.5 3 8c.03-2.72 1.49-6 4.5-6C9.37 2 10 3.8 10 5.5c0 3.11-2 5.66-2 8.68V16a2 2 0 1 1-4 0Z"/><path d="M20 20v-2.38c0-2.12 1.03-3.12 1-5.62-.03-2.72-1.49-6-4.5-6C14.63 6 14 7.8 14 9.5c0 3.11 2 5.66 2 8.68V20a2 2 0 1 0 4 0Z"/><path d="M16 17h4"/><path d="M4 13h4"/></svg>','↩️':'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>','🔁':'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>','🔗':'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>','⛓️':'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>','🕸️':'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" x2="15.42" y1="13.51" y2="17.49"/><line x1="15.41" x2="8.59" y1="6.51" y2="10.49"/></svg>','🔢':'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="4" x2="20" y1="9" y2="9"/><line x1="4" x2="20" y1="15" y2="15"/><line x1="10" x2="8" y1="3" y2="21"/><line x1="16" x2="14" y1="3" y2="21"/></svg>','⏱️':'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>','🕘':'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>','🕓':'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>','🧩':'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19.439 7.85c-.049.322.059.648.289.878l1.568 1.568c.47.47.706 1.087.706 1.704s-.235 1.233-.706 1.704l-1.611 1.611a.98.98 0 0 1-.837.276c-.47-.07-.802-.48-.968-.925a2.501 2.501 0 1 0-3.214 3.214c.446.166.855.497.925.968a.979.979 0 0 1-.276.837l-1.61 1.61a2.404 2.404 0 0 1-1.705.707 2.402 2.402 0 0 1-1.704-.706l-1.568-1.568a1.026 1.026 0 0 0-.877-.29c-.493.074-.84.504-1.02.968a2.5 2.5 0 1 1-3.237-3.237c.464-.18.894-.527.967-1.02a1.026 1.026 0 0 0-.289-.877l-1.568-1.568A2.402 2.402 0 0 1 1.998 12c0-.617.236-1.234.706-1.704L4.23 8.77c.24-.24.581-.353.917-.303.515.077.877.528 1.073 1.01a2.5 2.5 0 1 0 3.259-3.259c-.482-.196-.933-.558-1.01-1.073-.05-.336.062-.676.303-.917l1.525-1.525A2.402 2.402 0 0 1 12 1.998c.617 0 1.234.236 1.704.706l1.568 1.568c.23.23.556.338.877.29.493-.074.84-.504 1.02-.968a2.5 2.5 0 1 1 3.237 3.237c-.464.18-.894.527-.967 1.02Z"/></svg>','🧭':'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>','🎯':'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>','🔬':'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 2v7.527a2 2 0 0 1-.211.896L4.72 20.55a1 1 0 0 0 .9 1.45h12.76a1 1 0 0 0 .9-1.45l-5.069-10.127A2 2 0 0 1 14 9.527V2"/><path d="M8.5 2h7"/><path d="M7 16h10"/></svg>','🧪':'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 2v7.527a2 2 0 0 1-.211.896L4.72 20.55a1 1 0 0 0 .9 1.45h12.76a1 1 0 0 0 .9-1.45l-5.069-10.127A2 2 0 0 1 14 9.527V2"/><path d="M8.5 2h7"/><path d="M7 16h10"/></svg>','⚖️':'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="M7 21h10"/><path d="M12 3v18"/><path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"/></svg>','📶':'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" x2="12" y1="20" y2="10"/><line x1="18" x2="18" y1="20" y2="4"/><line x1="6" x2="6" y1="20" y2="16"/></svg>','➕':'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="M12 5v14"/></svg>','🏅':'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7.21 15 2.66 7.14a2 2 0 0 1 .13-2.2L4.4 2.8A2 2 0 0 1 6 2h12a2 2 0 0 1 1.6.8l1.6 2.14a2 2 0 0 1 .14 2.2L16.79 15"/><path d="M11 12 5.12 2.2"/><path d="m13 12 5.88-9.8"/><path d="M8 7h8"/><circle cx="12" cy="17" r="5"/><path d="M12 18v-2h-.5"/></svg>','🥇':'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7.21 15 2.66 7.14a2 2 0 0 1 .13-2.2L4.4 2.8A2 2 0 0 1 6 2h12a2 2 0 0 1 1.6.8l1.6 2.14a2 2 0 0 1 .14 2.2L16.79 15"/><path d="M11 12 5.12 2.2"/><path d="m13 12 5.88-9.8"/><path d="M8 7h8"/><circle cx="12" cy="17" r="5"/><path d="M12 18v-2h-.5"/></svg>','💰':'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="8" r="6"/><path d="M18.09 10.37A6 6 0 1 1 10.34 18"/><path d="M7 6h1v4"/><path d="m16.71 13.88.7.71-2.82 2.82"/></svg>','🚨':'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 18v-6a5 5 0 1 1 10 0v6"/><path d="M5 21a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-1a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2z"/><path d="M21 12h1"/><path d="M18.5 4.5 18 5"/><path d="M2 12h1"/><path d="M12 2v1"/><path d="m4.929 4.929.707.707"/></svg>','📦':'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>','🏷️':'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z"/><circle cx="7.5" cy="7.5" r=".5" fill="currentColor"/></svg>','🏦':'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="3" x2="21" y1="22" y2="22"/><line x1="6" x2="6" y1="18" y2="11"/><line x1="10" x2="10" y1="18" y2="11"/><line x1="14" x2="14" y1="18" y2="11"/><line x1="18" x2="18" y1="18" y2="11"/><polygon points="12 2 20 7 4 7"/></svg>','🏢':'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="16" height="20" x="4" y="2" rx="2" ry="2"/><path d="M9 22v-4h6v4"/><path d="M8 6h.01"/><path d="M16 6h.01"/><path d="M12 6h.01"/><path d="M12 10h.01"/><path d="M12 14h.01"/><path d="M16 10h.01"/><path d="M16 14h.01"/><path d="M8 10h.01"/><path d="M8 14h.01"/></svg>','🗄️':'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5V19A9 3 0 0 0 21 19V5"/><path d="M3 12A9 3 0 0 0 21 12"/></svg>','💾':'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5V19A9 3 0 0 0 21 19V5"/><path d="M3 12A9 3 0 0 0 21 12"/></svg>','🖋️':'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/></svg>','❌':'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/></svg>','♾️':'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 12c-2-2.67-4-4-6-4a4 4 0 1 0 0 8c2 0 4-1.33 6-4Zm0 0c2 2.67 4 4 6 4a4 4 0 0 0 0-8c-2 0-4 1.33-6 4Z"/></svg>','🏁':'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" x2="4" y1="22" y2="15"/></svg>','🤺':'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="14.5 17.5 3 6 3 3 6 3 17.5 14.5"/><line x1="13" x2="19" y1="19" y2="13"/><line x1="16" x2="20" y1="16" y2="20"/><line x1="19" x2="21" y1="21" y2="19"/><polyline points="14.5 6.5 18 3 21 3 21 6 17.5 10"/><line x1="5" x2="9" y1="14" y2="18"/><line x1="7" x2="4" y1="17" y2="20"/><line x1="3" x2="5" y1="19" y2="21"/></svg>','📄':'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></svg>','🎓':'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z"/><path d="M22 10v6"/><path d="M6 12.5V16a6 3 0 0 0 12 0v-3.5"/></svg>','📚':'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg>','📖':'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg>','🏆':'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>','💠':'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h12l4 6-10 13L2 9Z"/><path d="M11 3 8 9l4 13 4-13-3-6"/><path d="M2 9h20"/></svg>','📝':'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/></svg>','📅':'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/></svg>','🔑':'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15.5 7.5 2.3 2.3a1 1 0 0 0 1.4 0l2.1-2.1a1 1 0 0 0 0-1.4L19 4"/><path d="m21 2-9.6 9.6"/><circle cx="7.5" cy="15.5" r="5.5"/></svg>','↔️':'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="18 8 22 12 18 16"/><polyline points="6 8 2 12 6 16"/><line x1="2" x2="22" y1="12" y2="12"/></svg>','👑':'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11.562 3.266a.5.5 0 0 1 .876 0L15.39 8.87a1 1 0 0 0 1.516.294L21.183 5.5a.5.5 0 0 1 .798.519l-2.834 10.246a1 1 0 0 1-.956.735H5.81a1 1 0 0 1-.957-.735L2.02 6.02a.5.5 0 0 1 .798-.519l4.276 3.664a1 1 0 0 0 1.516-.294z"/><path d="M5 21h14"/></svg>','⭐':'<svg class="ic" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"/></svg>','🎁':'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13"/><path d="M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"/><path d="M7.5 8a2.5 2.5 0 0 1 0-5A4.8 8 0 0 1 12 8a4.8 8 0 0 1 4.5-5 2.5 2.5 0 0 1 0 5"/></svg>','✨':'<svg class="ic" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/></svg>','🖼️':'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>','🌆':'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>','🎭':'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 11h.01"/><path d="M14 6h.01"/><path d="M18 6h.01"/><path d="M6.5 13.1h.01"/><path d="M22 5c0 9-4 12-6 12s-6-3-6-12c0-2 2-3 6-3s6 1 6 3"/><path d="M17.4 9.9c-.8.8-2 .8-2.8 0"/><path d="M10.1 7.1C9 7.2 7.7 7.7 6 8.6c-3.5 2-4.7 3.9-3.7 5.6 4.5 7.8 9.5 8.4 11.2 7.4.9-.5 1.9-2.1 1.9-4.7"/><path d="M9.1 16.5c.3-1.1 1.4-1.7 2.4-1.4"/></svg>','🎨':'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/></svg>','🎒':'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 10a4 4 0 0 1 8 0v10H4z"/><path d="M12 10a4 4 0 0 1 8 0v10h-8z"/><path d="M4 14h16"/></svg>','📷':'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>','🚫':'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="m4.9 4.9 14.2 14.2"/></svg>','✅':'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21.801 10A10 10 0 1 1 17 3.335"/><path d="m9 11 3 3L22 4"/></svg>','⏭️':'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="5 4 15 12 5 20 5 4"/><line x1="19" x2="19" y1="5" y2="19"/></svg>','🔓':'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/></svg>','💪':'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.4 14.4 9.6 9.6"/><path d="M18.657 21.485a2 2 0 1 1-2.829-2.828l-1.767 1.768a2 2 0 1 1-2.829-2.829l6.364-6.364a2 2 0 1 1 2.829 2.829l-1.768 1.767a2 2 0 1 1 2.828 2.829z"/><path d="m21.5 21.5-1.4-1.4"/><path d="M3.9 3.9 2.5 2.5"/><path d="M6.404 12.768a2 2 0 1 1-2.829-2.829l1.768-1.767a2 2 0 1 1 2.828-2.829l2.828 2.828"/></svg>','❔':'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>','❓':'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>','🥈':'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7.21 15 2.66 7.14a2 2 0 0 1 .13-2.2L4.4 2.8A2 2 0 0 1 6 2h12a2 2 0 0 1 1.6.8l1.6 2.14a2 2 0 0 1 .14 2.2L16.79 15"/><path d="M11 12 5.12 2.2"/><path d="m13 12 5.88-9.8"/><path d="M8 7h8"/><circle cx="12" cy="17" r="5"/><path d="M12 18v-2h-.5"/></svg>','🥉':'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7.21 15 2.66 7.14a2 2 0 0 1 .13-2.2L4.4 2.8A2 2 0 0 1 6 2h12a2 2 0 0 1 1.6.8l1.6 2.14a2 2 0 0 1 .14 2.2L16.79 15"/><path d="M11 12 5.12 2.2"/><path d="m13 12 5.88-9.8"/><path d="M8 7h8"/><circle cx="12" cy="17" r="5"/><path d="M12 18v-2h-.5"/></svg>','🎖️':'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7.21 15 2.66 7.14a2 2 0 0 1 .13-2.2L4.4 2.8A2 2 0 0 1 6 2h12a2 2 0 0 1 1.6.8l1.6 2.14a2 2 0 0 1 .14 2.2L16.79 15"/><path d="M11 12 5.12 2.2"/><path d="m13 12 5.88-9.8"/><path d="M8 7h8"/><circle cx="12" cy="17" r="5"/><path d="M12 18v-2h-.5"/></svg>','💯':'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>','🎡':'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>','🎱':'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>','⏳':'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>','⌛':'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>','⚡':'<svg class="ic" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg>','💀':'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12.5 17-.5-1-.5 1h1z"/><path d="M15 22a1 1 0 0 0 1-1v-1a2 2 0 0 0 1.56-3.25 8 8 0 1 0-11.12 0A2 2 0 0 0 8 20v1a1 1 0 0 0 1 1z"/><circle cx="15" cy="12" r="1"/><circle cx="9" cy="12" r="1"/></svg>','🃏':'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z"/><path d="m22 17.65-9.17 4.16a2 2 0 0 1-1.66 0L2 17.65"/><path d="m22 12.65-9.17 4.16a2 2 0 0 1-1.66 0L2 12.65"/></svg>','👥':'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>','↔':'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="18 8 22 12 18 16"/><polyline points="6 8 2 12 6 16"/><line x1="2" x2="22" y1="12" y2="12"/></svg>','↔️':'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="18 8 22 12 18 16"/><polyline points="6 8 2 12 6 16"/><line x1="2" x2="22" y1="12" y2="12"/></svg>','🎉':'<svg class="ic" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/></svg>'};
+const ico = e => EMOJI_SVG[e] || e;
 /* Claves del estado que pertenecen a la materia activa (se intercambian al
    cambiar de materia; el resto del estado es global) */
 const SUBJ_KEYS = ['modules','history','concepts','examDay','examHistory','flashSRS','subjXP'];
@@ -222,20 +225,20 @@ function addXP(n){
   const after = levelOf(S.xp);
   if(!S.dayXP.goalHit && S.dayXP.xp >= (S.xpGoal||50)){
     S.dayXP.goalHit = true;
-    toast('🎯 ¡Objetivo diario de XP cumplido!');
+    toast('¡Objetivo diario de XP cumplido!');
   }
   save();
   if(typeof checkRewards === 'function') checkRewards();   // desbloquea recompensas al cruzar su XP
   scheduleLbPush();                                        // 🏆 leaderboard al día sin pasos manuales
   renderHeader();
   if(after > before){
-    toast('🎉 ¡Subiste al nivel '+after+'!'); sfx('unlock');
+    toast('¡Subiste al nivel '+after+'!'); sfx('unlock');
     LEVEL_REWARDS.filter(r => r.lvl > before && r.lvl <= after).forEach(r => {
       const parts = [];
       if(r.title) parts.push('título “'+r.title+'”');
       if(r.avatars) parts.push('avatares '+r.avatars.join(' '));
       if(r.custom) parts.push(r.custom.toLowerCase());
-      if(parts.length) setTimeout(()=>toast('🔓 Nivel '+r.lvl+' desbloquea: '+parts.join(' · '), 4200), 900);
+      if(parts.length) setTimeout(()=>toast('Nivel '+r.lvl+' desbloquea: '+parts.join(' · '), 4200), 900);
     });
   }
 }
@@ -277,7 +280,7 @@ function gainHeart(n, reason){
   S.hearts = Math.min(HEART_MAX, S.hearts + (n||1));
   if(S.hearts >= HEART_MAX) S.heartsLast = 0;
   save(); renderHearts();
-  toast('❤️ +1 corazón'+(reason ? ' por '+reason : '')+' ('+S.hearts+'/'+HEART_MAX+')');
+  toast('+1 corazón'+(reason ? ' por '+reason : '')+' ('+S.hearts+'/'+HEART_MAX+')');
   return true;
 }
 function heartsBarHTML(){
@@ -307,15 +310,15 @@ function openHeartsModal(){
     + '<div style="font-size:3rem">'+(h===0?'💔':'❤️')+'</div>'
     + '<h2 style="margin:6px 0">'+(h===0 ? '¡Te quedaste sin corazones!' : 'Corazones: '+h+'/'+HEART_MAX)+'</h2>'
     + heartsBarHTML()
-    + (h < HEART_MAX ? '<p style="color:var(--ink2)">⏳ Siguiente corazón en <b>'+fmtMins(msToNextHeart())+'</b> (1 cada '+HEART_REGEN_MIN+' min).</p>' : '<p style="color:var(--ink2)">Estás al máximo. 💪</p>')
+    + (h < HEART_MAX ? '<p style="color:var(--ink2)">Siguiente corazón en <b>'+fmtMins(msToNextHeart())+'</b> (1 cada '+HEART_REGEN_MIN+' min).</p>' : '<p style="color:var(--ink2)">Estás al máximo. 💪</p>')
     + '<p style="color:var(--ink2);font-size:.9rem">Fallar en una lección de módulo cuesta 1 corazón.<br>🎯 Termina un <b>modo de práctica con ≥80%</b> y recuperas 1.<br>Los modos de práctica no gastan corazones.</p>'
     + '<div class="q-actions" style="justify-content:center">'
-    + (h===0 ? '<button class="btn good" id="hPractice">🎯 Practicar para recuperar</button>' : '')
+    + (h===0 ? '<button class="btn good" id="hPractice">Practicar para recuperar</button>' : '')
     + '<button class="btn ghost" id="hClose">Cerrar</button>'
     + '</div></div>');
   o.querySelector('#hClose').onclick = ()=>{ sfx('click'); closeModal(); };
   const hp = o.querySelector('#hPractice');
-  if(hp) hp.onclick = ()=>{ sfx('click'); closeModal(); goHome(); renderModes(); showView('modes'); toast('🎯 Elige un modo de práctica: con ≥80% recuperas un corazón'); };
+  if(hp) hp.onclick = ()=>{ sfx('click'); closeModal(); goHome(); renderModes(); showView('modes'); toast('Elige un modo de práctica: con ≥80% recuperas un corazón'); };
 }
 /* Fin de lección por falta de corazones: cierra con lo acumulado */
 function outOfHeartsEnd(){
@@ -323,7 +326,7 @@ function outOfHeartsEnd(){
     + '<div style="font-size:3rem">💔</div>'
     + '<h2 style="margin:6px 0">Sin corazones</h2>'
     + '<p style="color:var(--ink2)">La lección termina aquí, pero tu avance de esta sesión se registra.</p>'
-    + '<div class="q-actions" style="justify-content:center"><button class="btn" id="ohRes">🏁 Ver resultado</button></div></div>');
+    + '<div class="q-actions" style="justify-content:center"><button class="btn" id="ohRes">Ver resultado</button></div></div>');
   o.querySelector('#ohRes').onclick = ()=>{ sfx('click'); closeModal(); if(SES) finishActive(); };
 }
 function logStudyDay(){
@@ -346,14 +349,14 @@ function touchStreak(){
     const missed = gap - 1;                                             // días saltados
     if(missed > 0 && (S.streakFreezes||0) >= missed){                   // 🧊 se cubren con congeladores
       S.streakFreezes -= missed; S.streak += 1; S.everUsedFreeze = true;
-      toast('🧊 Se usó '+(missed===1?'1 congelador':missed+' congeladores')+' para salvar tu racha ('+S.streak+' días). Quedan '+S.streakFreezes+'.');
+      toast('Se usó '+(missed===1?'1 congelador':missed+' congeladores')+' para salvar tu racha ('+S.streak+' días). Quedan '+S.streakFreezes+'.');
       sfx('unlock');
     } else {
       S.streak = 1;                                                     // sin congeladores suficientes: se reinicia
     }
   }
   S.lastDay = today; save();
-  if(S.streak>1) toast('🔥 Racha de '+S.streak+' días. ¡Sigue así!');
+  if(S.streak>1) toast('Racha de '+S.streak+' días. ¡Sigue así!');
 }
 /* 🧊 Congelador mensual: 1 gratis por mes calendario (CDMX). Devuelve true si se otorgó. */
 function claimMonthlyFreeze(){
@@ -378,7 +381,7 @@ function checkParcialFreezes(){
       if(done/total >= 0.9){
         S.parcialFreezeAwarded[key] = true;
         S.streakFreezes = (S.streakFreezes||0) + 1; granted++;
-        toast('🧊 ¡Terminaste el '+g.name+' de '+sx.short+' (≥90%)! +1 congelador de racha.');
+        toast('¡Terminaste el '+g.name+' de '+sx.short+' (≥90%)! +1 congelador de racha.');
         sfx('unlock');
       }
     });
@@ -388,7 +391,7 @@ function checkParcialFreezes(){
 }
 
 /* ==================== Retos diarios / semanales (misiones) ====================
-   Viven en el hub del icono de racha 🔥. El progreso se mide por deltas contra
+   Viven en el hub del icono de racha. El progreso se mide por deltas contra
    una "línea base" capturada al inicio de cada día/semana (CDMX), más contadores
    que ya existen (dayXP, examDay, studyLog). Al completar un reto se reclama su
    XP una sola vez. No dependen de enganchar cada pregunta: basta un save(). */
@@ -443,7 +446,7 @@ function claimMission(scope, id){
   if(claimed[id] || missionCur(def) < def.goal) return;
   claimed[id] = true; save();
   addXP(def.xp);                 // addXP guarda y refresca el encabezado
-  toast('🎉 Reto '+(scope==='w'?'semanal':'diario')+' completado: '+def.name+' · +'+def.xp+' XP'); sfx('unlock');
+  toast('Reto '+(scope==='w'?'semanal':'diario')+' completado: '+def.name+' · +'+def.xp+' XP'); sfx('unlock');
   openStreakHub(scope==='w'?'weekly':'daily');
 }
 function modState(id){ return S.modules[id] || {best:0, stars:0, attempts:0, done:false}; }
@@ -682,7 +685,7 @@ function renderHeader(){
   // insignia destacada en el encabezado
   ensureEquip();
   const bd = S.equip.badge ? BADGES.find(b=>b.id===S.equip.badge) : null;
-  if(bd){ HDR.hdrBadge.textContent = bd.ico; HDR.hdrBadge.title = 'Insignia destacada: '+bd.name; HDR.hdrBadge.classList.remove('hidden'); }
+  if(bd){ HDR.hdrBadge.innerHTML = ico(bd.ico); HDR.hdrBadge.title = 'Insignia destacada: '+bd.name; HDR.hdrBadge.classList.remove('hidden'); }
   else HDR.hdrBadge.classList.add('hidden');
   const subj = subjectById(S.activeSubject);
   HDR.subjIcon.innerHTML = subjSVG(subj.id);
@@ -703,10 +706,10 @@ function openSubjectPicker(){
       + '<br><small style="color:var(--muted);font-weight:600">'
       + (mods.length ? done+'/'+mods.length+' módulos · '+(d.subjXP||0)+' XP' : 'Contenido en preparación · tareas y calendario disponibles')
       + '</small></span>'
-      + (active ? '<span class="tag dom">✔ Activa</span>' : '')
+      + (active ? '<span class="tag dom">Activa</span>' : '')
       + '</button>';
   }).join('');
-  const o = openModal('<h2 style="margin-top:0">📚 Mis materias · 6.º cuatrimestre</h2>'
+  const o = openModal('<h2 style="margin-top:0">Mis materias · 6.º cuatrimestre</h2>'
     + '<p style="color:var(--ink2);font-size:.88rem">Cada materia guarda su propio avance, exámenes y estadísticas. El XP, nivel, racha y recompensas son globales.</p>'
     + cards
     + '<div class="q-actions" style="justify-content:center"><button class="btn ghost" id="subjClose">Cerrar</button></div>');
@@ -784,13 +787,13 @@ function renderHome(){
     $('#moduleGrid').innerHTML = '<div class="mcard locked" style="--mc:var(--c5)">'
       + '<span class="lock">🚧</span>'
       + '<div class="m-top"><span class="m-ico">'+subjSVG(subj.id)+'</span><span><span class="m-num">Próximamente</span><h3>'+esc(subj.name)+'</h3></span></div>'
-      + '<span class="m-desc">Los módulos y quizzes de esta materia se agregarán pronto. Mientras tanto ya puedes consultar sus tareas 📋 y su calendario de exámenes 📅.</span>'
+      + '<span class="m-desc">Los módulos y quizzes de esta materia se agregarán pronto. Mientras tanto ya puedes consultar sus tareas y su calendario de exámenes.</span>'
       + '<span class="m-type">En preparación</span></div>';
     return;
   }
   $('#moduleGrid').innerHTML = lessonPathHTML();
   $$('#moduleGrid .lp-node[data-mod]:not(.locked)').forEach(c => c.addEventListener('click', ()=>{ sfx('click'); openModule(+c.dataset.mod); }));
-  $$('#moduleGrid .lp-node.locked[data-mod]').forEach(c => c.addEventListener('click', ()=>{ sfx('bad'); toast('🔒 Consigue ≥80% en el módulo anterior para desbloquear éste.'); }));
+  $$('#moduleGrid .lp-node.locked[data-mod]').forEach(c => c.addEventListener('click', ()=>{ sfx('bad'); toast('Consigue ≥80% en el módulo anterior para desbloquear éste.'); }));
   const cur = $('#moduleGrid .lp-node.current');
   if(cur && S.history.length) setTimeout(()=>cur.scrollIntoView({behavior:'smooth', block:'center'}), 150);
 }
@@ -819,7 +822,7 @@ function lessonPathHTML(){
       + '<button class="'+cls+'" data-mod="'+m.id+'" style="--mc:'+colors[m.id % colors.length]+'" '
       + 'title="Módulo '+(m.id+1)+': '+esc(m.name)+(locked?' (bloqueado)':'')+'" aria-label="Módulo '+(m.id+1)+': '+esc(m.name)+'">'
       + (isCur ? '<span class="lp-start">EMPEZAR</span>' : '')
-      + '<span class="lp-ico">'+(locked ? '🔒' : (st.done ? m.icon : m.icon))+'</span>'
+      + '<span class="lp-ico">'+ico(locked ? '🔒' : m.icon)+'</span>'
       + (st.done ? '<span class="lp-check">✓</span>' : '')
       + (!locked && !st.done && st.attempts ? '<span class="lp-best">'+st.best+'%</span>' : '')
       + '</button>'
@@ -833,7 +836,7 @@ function lessonPathHTML(){
     const x = OFF[step++ % OFF.length];
     return '<div class="lp-row" style="--x:'+x+'">'
       + '<div class="lp-node checkpoint'+(complete?' done':'')+'" title="'+esc(g.name)+': '+done+'/'+total+' módulos">'
-      + '<span class="lp-ico">'+(complete?'🏆':'🛡️')+'</span>'
+      + '<span class="lp-ico">'+ico(complete?'🏆':'🛡️')+'</span>'
       + (complete ? '<span class="lp-check">✓</span>' : '')
       + '</div>'
       + '<div class="lp-label"><b>'+(complete ? '¡'+esc(g.name)+' completado!' : 'Checkpoint · '+esc(g.name))+'</b>'
@@ -858,7 +861,7 @@ function tile(icon,label,value,unit,sub){
 function isUnlocked(id){ return id===0 || modState(id-1).best >= 80; }
 $('#btnContinue').addEventListener('click', ()=>{
   sfx('click');
-  if(!MODULES.length){ toast('🚧 Esta materia aún no tiene módulos.'); return; }
+  if(!MODULES.length){ toast('Esta materia aún no tiene módulos.'); return; }
   const next = MODULES.find(m => isUnlocked(m.id) && !modState(m.id).done) || MODULES[0];
   openModule(next.id);
 });
@@ -883,7 +886,7 @@ function launchModule(m){
   startSession(m.id);
 }
 function showLesson(m){
-  $('#lessonTitleTop').textContent = m.icon+' '+m.name+' · mini lección';
+  $('#lessonTitleTop').textContent = m.name+' · mini lección';
   $('#lessonBody').innerHTML = m.lesson;
   $('#btnLessonStart').onclick = ()=>{ sfx('click'); startSession(m.id); };
   showView('lesson');
@@ -971,9 +974,9 @@ function showFeedback(q, ok, frac, xp, detailHtml){
   const card = $('#qHost .qcard');
   const fb = document.createElement('div');
   fb.className = 'fb ' + (ok ? 'ok' : 'bad');
-  let inner = '<div class="fb-head">' + (ok ? '✅ ¡Correcto!' : (frac>0 ? '🟠 Casi ('+Math.round(frac*100)+'% de aciertos)' : '❌ Incorrecto'))
+  let inner = '<div class="fb-head">' + (ok ? '¡Correcto!' : (frac>0 ? '🟠 Casi ('+Math.round(frac*100)+'% de aciertos)' : '❌ Incorrecto'))
     + '<span class="xp-gain">+'+xp+' XP</span></div>';
-  if(!ok && q.correctText) inner += '<div class="fb-exp">✔️ <b>Respuesta correcta:</b> '+q.correctText+'</div>';
+  if(!ok && q.correctText) inner += '<div class="fb-exp"><b>Respuesta correcta:</b> '+q.correctText+'</div>';
   if(detailHtml) inner += detailHtml;
   if(!ok && q.explain) inner += '<div class="fb-exp" style="margin-top:6px">📌 '+q.explain+'</div>';
   if(q.steps && !ok) inner += '<div style="margin-top:10px;font-size:.85rem;font-weight:800">🧮 Solución paso a paso:</div><ol class="steps">'+q.steps.map(s=>'<li>'+s+'</li>').join('')+'</ol>';
@@ -984,12 +987,12 @@ function showFeedback(q, ok, frac, xp, detailHtml){
   const act = document.createElement('div'); act.className = 'q-actions';
   const btn = document.createElement('button'); btn.className = 'btn';
   const endless = SES.mode && SES.mode.endless;
-  btn.textContent = endless ? 'Siguiente →' : ((SES.i+1 < SES.qs.length) ? 'Continuar →' : 'Ver resultados 🏁');
+  btn.textContent = endless ? 'Siguiente →' : ((SES.i+1 < SES.qs.length) ? 'Continuar →' : 'Ver resultados');
   btn.onclick = ()=>{ sfx('click'); advanceSession(); };
   act.appendChild(btn); card.appendChild(act);
   if(endless){
     const stop = document.createElement('button'); stop.className = 'btn ghost';
-    stop.textContent = '🏁 Terminar';
+    stop.textContent = 'Terminar';
     stop.onclick = ()=>{ sfx('click'); finishActive(); };
     act.appendChild(stop);
   }
@@ -1029,9 +1032,9 @@ function renderResult(m, score, stars, xp, sec, recap, passed, unlockedNext){
   const okCount = recap.filter(r=>r.ok).length;
   const starHtml = [1,2,3].map(i=>'<span class="'+(i<=stars?'':'off')+'">★</span>').join('');
   let html = '<div class="result-card">'
-    + '<div class="big-ico">'+(score===100?'🏆':passed?'🎉':'📚')+'</div>'
+    + '<div class="big-ico">'+(score===100?ico('🏆'):passed?ico('🎉'):ico('📚'))+'</div>'
     + '<h2>'+(score===100?'¡Perfecto!':passed?'¡Módulo aprobado!':'Sigue practicando')+'</h2>'
-    + '<div class="r-sub">'+m.icon+' '+m.name+'</div>'
+    + '<div class="r-sub">'+ico(m.icon)+' '+m.name+'</div>'
     + '<div class="r-stars">'+starHtml+'</div>'
     + '<div class="r-score-ring"><svg width="130" height="130">'
     + '<circle cx="65" cy="65" r="'+R+'" fill="none" stroke="var(--surface3)" stroke-width="12"/>'
@@ -1041,14 +1044,14 @@ function renderResult(m, score, stars, xp, sec, recap, passed, unlockedNext){
     + '<div class="r-meta"><span><b>'+okCount+'/'+recap.length+'</b>aciertos</span>'
     + '<span><b>+'+xp+'</b>XP</span><span><b>'+fmtDur(sec)+'</b>tiempo</span></div>'
     + (passed
-        ? (unlockedNext ? '<p style="font-weight:700;color:var(--good-text)">🔓 ¡Desbloqueaste el siguiente módulo!</p>' : '')
+        ? (unlockedNext ? '<p style="font-weight:700;color:var(--good-text)">¡Desbloqueaste el siguiente módulo!</p>' : '')
         : '<p style="font-weight:600;color:var(--ink2);font-size:.9rem">Necesitas <b>80%</b> para aprobar. Revisa el repaso y vuelve a intentarlo: los ejercicios cambian cada vez. 💪</p>')
     + '<div class="q-actions" style="justify-content:center">'
-    + '<button class="btn ghost" id="rHome">🏠 Inicio</button>'
-    + '<button class="btn'+(passed?' ghost':'')+'" id="rRetry">🔄 Reintentar</button>'
+    + '<button class="btn ghost" id="rHome">Inicio</button>'
+    + '<button class="btn'+(passed?' ghost':'')+'" id="rRetry">Reintentar</button>'
     + (passed && m.id+1 < MODULES.length && isUnlocked(m.id+1) ? '<button class="btn good" id="rNext">Siguiente módulo →</button>' : '')
     + '</div></div>';
-  if(recap.length) html += reviewSectionHTML(recap, '📋 Repaso de la sesión');
+  if(recap.length) html += reviewSectionHTML(recap, 'Repaso de la sesión');
   $('#view-result').innerHTML = html;
   showView('result');
   if(recap.length) bindReview();
@@ -1086,7 +1089,7 @@ RENDER.mc = (q, card) => {
 /* --- Verdadero / Falso --- */
 RENDER.tf = (q, card) => {
   const wrap = document.createElement('div'); wrap.className = 'tf-row';
-  [['✅ Verdadero', true], ['❌ Falso', false]].forEach(([label, val]) => {
+  [['Verdadero', true], ['Falso', false]].forEach(([label, val]) => {
     const b = document.createElement('button'); b.className = 'opt'; b.textContent = label;
     b.onclick = () => {
       wrap.querySelectorAll('.opt').forEach(o => o.disabled = true);
@@ -1757,21 +1760,21 @@ function buildM5(){
 }
 /* ==================== Lecciones (Módulos 6-8) ==================== */
 const LESSON_INF = [
-'<div class="lesson-card"><h3>📈 ¿Qué es la inflación?</h3><p>Es el <b>aumento generalizado y sostenido</b> de los precios de bienes y servicios en una economía. No es que UN producto suba: es que el nivel general de precios sube, y por lo tanto el dinero pierde <b>poder adquisitivo</b> (con los mismos pesos compras menos).</p></div>',
-'<div class="lesson-card"><h3>🔍 Causas principales</h3><ul><li><b>Inflación de demanda:</b> la gente quiere comprar más de lo que la economía produce.</li><li><b>Inflación de costos:</b> suben los insumos (energía, salarios, materias primas) y las empresas trasladan ese costo a los precios.</li><li><b>Inflación monetaria:</b> se emite dinero en exceso respecto a la producción.</li></ul></div>',
-'<div class="lesson-card"><h3>⚠️ Consecuencias</h3><ul><li>El dinero pierde poder adquisitivo.</li><li>El ahorro sin intereses se “derrite”.</li><li>Se dificulta planear a largo plazo.</li><li>Los contratos a valores fijos quedan desactualizados.</li></ul></div>',
-'<div class="lesson-card"><h3>🛡️ Efecto sobre los seguros</h3><table><tr><th>Elemento</th><th>Efecto de la inflación</th></tr><tr><td><b>Sumas aseguradas</b></td><td>Se vuelven insuficientes: reponer el bien cuesta más que cuando se contrató. Por eso se <b>indexan</b> (p. ej., en UDIS).</td></tr><tr><td><b>Primas</b></td><td>Suben: reparaciones, honorarios médicos y refacciones cuestan más, así que la severidad esperada crece.</td></tr><tr><td><b>Indemnizaciones</b></td><td>El costo de los siniestros aumenta con los precios; pagar el mismo daño cuesta más cada año.</td></tr></table></div>'
+'<div class="lesson-card"><h3>¿Qué es la inflación?</h3><p>Es el <b>aumento generalizado y sostenido</b> de los precios de bienes y servicios en una economía. No es que UN producto suba: es que el nivel general de precios sube, y por lo tanto el dinero pierde <b>poder adquisitivo</b> (con los mismos pesos compras menos).</p></div>',
+'<div class="lesson-card"><h3>Causas principales</h3><ul><li><b>Inflación de demanda:</b> la gente quiere comprar más de lo que la economía produce.</li><li><b>Inflación de costos:</b> suben los insumos (energía, salarios, materias primas) y las empresas trasladan ese costo a los precios.</li><li><b>Inflación monetaria:</b> se emite dinero en exceso respecto a la producción.</li></ul></div>',
+'<div class="lesson-card"><h3>Consecuencias</h3><ul><li>El dinero pierde poder adquisitivo.</li><li>El ahorro sin intereses se “derrite”.</li><li>Se dificulta planear a largo plazo.</li><li>Los contratos a valores fijos quedan desactualizados.</li></ul></div>',
+'<div class="lesson-card"><h3>Efecto sobre los seguros</h3><table><tr><th>Elemento</th><th>Efecto de la inflación</th></tr><tr><td><b>Sumas aseguradas</b></td><td>Se vuelven insuficientes: reponer el bien cuesta más que cuando se contrató. Por eso se <b>indexan</b> (p. ej., en UDIS).</td></tr><tr><td><b>Primas</b></td><td>Suben: reparaciones, honorarios médicos y refacciones cuestan más, así que la severidad esperada crece.</td></tr><tr><td><b>Indemnizaciones</b></td><td>El costo de los siniestros aumenta con los precios; pagar el mismo daño cuesta más cada año.</td></tr></table></div>'
 ].join('');
 const LESSON_DEV = [
-'<div class="lesson-card"><h3>💱 ¿Qué es la devaluación?</h3><p>Es la <b>pérdida de valor de la moneda de un país frente a otras divisas</b>. Ejemplo: si el tipo de cambio pasa de $17 a $20 pesos por dólar, el peso se devaluó: ahora se necesitan más pesos para comprar el mismo dólar.</p></div>',
-'<div class="lesson-card"><h3>🆚 Diferencia con la inflación</h3><table><tr><th></th><th>Inflación</th><th>Devaluación</th></tr><tr><td><b>¿Qué pierde valor?</b></td><td>El dinero frente a los <b>bienes internos</b></td><td>La moneda frente a <b>otras divisas</b></td></tr><tr><td><b>Se mide con…</b></td><td>Índices de precios (INPC)</td><td>El tipo de cambio</td></tr><tr><td><b>Ejemplo</b></td><td>La canasta básica sube 7% en el año</td><td>El dólar pasa de $17 a $20</td></tr></table><p>Ojo: suelen relacionarse — una devaluación encarece lo importado y puede <b>causar</b> inflación.</p></div>',
-'<div class="lesson-card"><h3>🛡️ ¿Y en los seguros?</h3><p>Si el peso se devalúa, las <b>refacciones importadas</b>, equipos médicos y tratamientos en el extranjero cuestan más pesos → la <b>severidad</b> sube → las primas tienden a subir. Las pólizas en dólares protegen contra este riesgo cambiario.</p></div>'
+'<div class="lesson-card"><h3>¿Qué es la devaluación?</h3><p>Es la <b>pérdida de valor de la moneda de un país frente a otras divisas</b>. Ejemplo: si el tipo de cambio pasa de $17 a $20 pesos por dólar, el peso se devaluó: ahora se necesitan más pesos para comprar el mismo dólar.</p></div>',
+'<div class="lesson-card"><h3>Diferencia con la inflación</h3><table><tr><th></th><th>Inflación</th><th>Devaluación</th></tr><tr><td><b>¿Qué pierde valor?</b></td><td>El dinero frente a los <b>bienes internos</b></td><td>La moneda frente a <b>otras divisas</b></td></tr><tr><td><b>Se mide con…</b></td><td>Índices de precios (INPC)</td><td>El tipo de cambio</td></tr><tr><td><b>Ejemplo</b></td><td>La canasta básica sube 7% en el año</td><td>El dólar pasa de $17 a $20</td></tr></table><p>Ojo: suelen relacionarse — una devaluación encarece lo importado y puede <b>causar</b> inflación.</p></div>',
+'<div class="lesson-card"><h3>¿Y en los seguros?</h3><p>Si el peso se devalúa, las <b>refacciones importadas</b>, equipos médicos y tratamientos en el extranjero cuestan más pesos → la <b>severidad</b> sube → las primas tienden a subir. Las pólizas en dólares protegen contra este riesgo cambiario.</p></div>'
 ].join('');
 const LESSON_DEP = [
-'<div class="lesson-card"><h3>🚗 ¿Qué es la depreciación?</h3><p>Es la <b>pérdida de valor de un activo</b> (auto, maquinaria, equipo) por el <b>uso, el paso del tiempo o la obsolescencia</b>. Un auto nuevo pierde valor en cuanto sale de la agencia.</p></div>',
-'<div class="lesson-card"><h3>🚙 Depreciación de automóviles</h3><p>Los autos suelen perder entre <b>10% y 20% de su valor cada año</b> (más en el primero). Por eso, en seguros de autos la indemnización por pérdida total se basa en el <b>valor comercial</b> del vehículo al momento del siniestro, no en lo que costó nuevo.</p></div>',
-'<div class="lesson-card"><h3>🧾 Depreciación contable (línea recta)</h3><p>En contabilidad, el costo del activo se reparte entre los años de su vida útil:</p><div class="formula">Depreciación anual = (Costo − Valor residual) ÷ Vida útil</div><p>El <b>valor en libros</b> tras k años = Costo − k × Depreciación anual.</p></div>',
-'<div class="lesson-card"><h3>🆚 No confundir</h3><table><tr><th>Fenómeno</th><th>¿Qué pierde valor?</th></tr><tr><td><b>Depreciación</b></td><td>Un <b>activo</b> (auto, máquina) por uso/tiempo</td></tr><tr><td><b>Devaluación</b></td><td>La <b>moneda</b> frente a otras divisas</td></tr><tr><td><b>Inflación</b></td><td>El <b>dinero</b> frente a los bienes (suben los precios)</td></tr></table></div>'
+'<div class="lesson-card"><h3>¿Qué es la depreciación?</h3><p>Es la <b>pérdida de valor de un activo</b> (auto, maquinaria, equipo) por el <b>uso, el paso del tiempo o la obsolescencia</b>. Un auto nuevo pierde valor en cuanto sale de la agencia.</p></div>',
+'<div class="lesson-card"><h3>Depreciación de automóviles</h3><p>Los autos suelen perder entre <b>10% y 20% de su valor cada año</b> (más en el primero). Por eso, en seguros de autos la indemnización por pérdida total se basa en el <b>valor comercial</b> del vehículo al momento del siniestro, no en lo que costó nuevo.</p></div>',
+'<div class="lesson-card"><h3>Depreciación contable (línea recta)</h3><p>En contabilidad, el costo del activo se reparte entre los años de su vida útil:</p><div class="formula">Depreciación anual = (Costo − Valor residual) ÷ Vida útil</div><p>El <b>valor en libros</b> tras k años = Costo − k × Depreciación anual.</p></div>',
+'<div class="lesson-card"><h3>No confundir</h3><table><tr><th>Fenómeno</th><th>¿Qué pierde valor?</th></tr><tr><td><b>Depreciación</b></td><td>Un <b>activo</b> (auto, máquina) por uso/tiempo</td></tr><tr><td><b>Devaluación</b></td><td>La <b>moneda</b> frente a otras divisas</td></tr><tr><td><b>Inflación</b></td><td>El <b>dinero</b> frente a los bienes (suben los precios)</td></tr></table></div>'
 ].join('');
 
 /* --- Módulo 6: Inflación --- */
@@ -3510,11 +3513,11 @@ function npLabQuestion(){
   let distract = npShuffle(NP_TESTS.filter(t=>t.id!==sc.m)).slice(0,3);
   const options = npShuffle([{t:correct.name, ok:true}, ...distract.map(t=>({t:t.name, ok:false}))]);
   return { type:'mc', topic:'np_fund', stage:'lab',
-    prompt:'<b>🧪 Laboratorio No Paramétrico.</b> '+sc.s+'<br>¿Qué prueba usarías?',
+    prompt:'<b>Laboratorio No Paramétrico.</b> '+sc.s+'<br>¿Qué prueba usarías?',
     options, explain:'La prueba adecuada es: <b>'+correct.name+'</b>.', correctText:correct.name };
 }
 function startNPLab(){
-  if(S.activeSubject!=='estadistica-no-parametrica'){ toast('🧪 El Laboratorio No Paramétrico está en Estadística No Paramétrica.'); sfx('bad'); return; }
+  if(S.activeSubject!=='estadistica-no-parametrica'){ toast('El Laboratorio No Paramétrico está en Estadística No Paramétrica.'); sfx('bad'); return; }
   const qs = []; for(let i=0;i<10;i++) qs.push(npLabQuestion());
   startMode({ id:'nplab', title:'🧪 Laboratorio No Paramétrico', icon:'🧪', qs,
     introToast:'🧪 Identifica la prueba correcta para cada escenario.' });
@@ -3907,7 +3910,7 @@ EXAM_REVIEWS_BY_SUBJECT['administracion-financiera'] = { pending:true, subject:'
 
 /* ---- Juego: Director Financiero (secuencia de decisiones con las fórmulas de los módulos) ---- */
 function startDirectorFinanciero(){
-  if(S.activeSubject!=='administracion-financiera'){ toast('🏢 El Director Financiero está en Administración Financiera.'); sfx('bad'); return; }
+  if(S.activeSubject!=='administracion-financiera'){ toast('El Director Financiero está en Administración Financiera.'); sfx('bad'); return; }
   // una empresa con parámetros válidos; cada decisión usa una fórmula ya implementada
   const r = afPick([0.25,0.275,0.30]); const i = afPick([0.10,0.115,0.12]); const D=afPick([1000,1500,2000]); const C=afPick([2000,2500,3000]); const t=0.30;
   const roe=(r+(r-i)*(D/C))*(1-t);
@@ -3916,7 +3919,7 @@ function startDirectorFinanciero(){
   const wD=D/(D+C), wC=C/(D+C), Rd=i, Re=afPick([0.15,0.18]); const wacc=wD*Rd*(1-t)+wC*Re;
   const FLE0=afPick([800,1000,1200]), g=afPick([0.02,0.03]); const vf=FLE0*(1+g)/(wacc-g);
   const qs = afShuffle([
-    { type:'numeric', topic:'af_rent', tol:0.005, stage:'cfo', prompt:'<b>🏢 Director Financiero — Decisión 1 (apalancamiento).</b> Con r='+r+', i='+i+', D='+D+', C='+C+', t='+t+', ¿cuál es el ROE = [r+(r−i)(D/C)](1−t)?', answer:roe, correctText:afR(roe,4).toString(), explain:'ROE apalancado.', steps:['ROE = ['+r+'+('+r+'−'+i+')('+D+'/'+C+')]·0.7 = '+afR(roe,4)] },
+    { type:'numeric', topic:'af_rent', tol:0.005, stage:'cfo', prompt:'<b>Director Financiero — Decisión 1 (apalancamiento).</b> Con r='+r+', i='+i+', D='+D+', C='+C+', t='+t+', ¿cuál es el ROE = [r+(r−i)(D/C)](1−t)?', answer:roe, correctText:afR(roe,4).toString(), explain:'ROE apalancado.', steps:['ROE = ['+r+'+('+r+'−'+i+')('+D+'/'+C+')]·0.7 = '+afR(roe,4)] },
     { type:'numeric', topic:'af_insolvencia', tol:0.005, stage:'cfo', prompt:'<b>Decisión 2 (liquidez).</b> Con L₀='+L0+', μT='+muT+', σ='+sig+', T='+T+', calcula P(insolvencia)=1−Φ(λ), λ=(L₀+μT)/(σ√T).', answer:pins, correctText:afR(pins,4).toString(), explain:'Riesgo de insolvencia.', steps:['λ = '+afR(lam,4), 'P = 1−Φ(λ) = '+afR(pins,4)] },
     { type:'numeric', topic:'af_inventario', tol:0.5, stage:'cfo', prompt:'<b>Decisión 3 (inventario).</b> Con D='+Dd+', C_o='+Co+', C_m='+Cm+', ¿cuál es el lote económico Q*=√(2DC_o/C_m)?', answer:Q, correctText:afR(Q,4).toString(), explain:'EOQ.', steps:['Q* = √(2·'+Dd+'·'+Co+'/'+Cm+') = '+afR(Q,4)] },
     { type:'numeric', topic:'af_wacc', tol:0.003, stage:'cfo', prompt:'<b>Decisión 4 (costo de capital).</b> Con D='+D+', C='+C+', R_d='+Rd+', R_e='+Re+', t='+t+', calcula el WACC.', answer:wacc, correctText:afR(wacc,5).toString(), explain:'WACC ponderado.', steps:['WACC = (D/A_T)R_d(1−t)+(C/A_T)R_e = '+afR(wacc,5)] },
@@ -4029,13 +4032,13 @@ function startEscape(){
 }
 function renderEscape(){
   const solved = ESC.puzzles.filter(p=>p.solved).length;
-  let html = '<div class="esc-story"><h2>🕵️ El expediente perdido</h2>'
+  let html = '<div class="esc-story"><h2>El expediente perdido</h2>'
     + '<p>Eres el nuevo <b>analista actuarial</b> de Aseguradora Delta. El director dejó una póliza urgente dentro de la caja fuerte… y las 4 llaves están escondidas detrás de acertijos actuariales. Resuelve cada sala para obtener su código.</p>'
-    + '<p style="font-weight:700">🔑 Llaves obtenidas: '+solved+' / 4</p></div>';
+    + '<p style="font-weight:700">Llaves obtenidas: '+solved+' / 4</p></div>';
   html += '<div class="doors">' + ESC.puzzles.map((p,i) =>
     '<div class="door'+(p.solved?' solved':'')+'" data-p="'+i+'" role="button" tabindex="0">'
     + '<div class="d-ico">'+(p.solved?'🔑':p.icon)+'</div><h4>'+p.title+'</h4>'
-    + '<div class="d-state">'+(p.solved ? '✔ Resuelta' : 'Haz clic para entrar')+'</div>'
+    + '<div class="d-state">'+(p.solved ? 'Resuelta' : 'Haz clic para entrar')+'</div>'
     + (p.solved ? '<div class="d-code">CÓDIGO: '+p.code+'</div>' : '')
     + '</div>').join('') + '</div>';
   if(solved === 4){
@@ -4043,7 +4046,7 @@ function renderEscape(){
       + '<p style="font-size:.9rem;color:var(--ink2)">Introduce los 4 códigos <b>en orden</b> (sala 1 → sala 4). Si alguno es incorrecto, la caja no abrirá.</p>'
       + '<div class="code-row">' + [0,1,2,3].map(i =>
           '<input class="code-in" id="code'+i+'" inputmode="decimal" placeholder="Código '+(i+1)+'" aria-label="Código '+(i+1)+'">').join('') + '</div>'
-      + '<button class="btn" id="btnSafe" style="font-size:1rem">🗝️ Abrir la caja fuerte</button></div>';
+      + '<button class="btn" id="btnSafe" style="font-size:1rem">Abrir la caja fuerte</button></div>';
   } else {
     html += '<div class="safe locked-visual"><div class="dial">🔒</div><h3>La caja fuerte</h3>'
       + '<p style="font-size:.9rem;color:var(--ink2)">Consigue las 4 llaves para intentar abrirla.</p></div>';
@@ -4059,12 +4062,12 @@ function renderEscape(){
 function openPuzzle(i){
   sfx('click');
   const p = ESC.puzzles[i];
-  const o = openModal('<h3 style="display:flex;gap:8px;align-items:center">'+p.icon+' '+p.title+'</h3>'
+  const o = openModal('<h3 style="display:flex;gap:8px;align-items:center">'+ico(p.icon)+' '+p.title+'</h3>'
     + '<p style="font-size:.93rem">'+p.prompt+'</p>'
     + '<div class="answer-row"><input class="ainput" id="pzIn" inputmode="decimal" placeholder="Código…"><button class="btn" id="pzGo">Probar</button></div>'
     + '<div id="pzFb"></div>'
     + '<div class="q-actions" style="justify-content:space-between">'
-    + '<button class="btn ghost small" id="pzHint">💡 Pista (−8 pts)</button>'
+    + '<button class="btn ghost small" id="pzHint">Pista (−8 pts)</button>'
     + '<button class="btn ghost small" id="pzClose">Cerrar</button></div>');
   const inp = o.querySelector('#pzIn'); inp.focus();
   const tryIt = () => {
@@ -4072,7 +4075,7 @@ function openPuzzle(i){
     if(raw==='' || isNaN(+raw)) return;
     if(Math.abs(+raw - p.code) <= 0.01){
       p.solved = true; sfx('unlock'); closeModal();
-      toast('🔑 ¡Llave de “'+p.title+'” obtenida!');
+      toast('¡Llave de “'+p.title+'” obtenida!');
       renderEscape();
       if(ESC.puzzles.every(x=>x.solved)) setTimeout(()=>{ const s=$('#escSafe'); if(s) s.scrollIntoView({behavior:'smooth'}); }, 300);
     } else {
@@ -4096,11 +4099,11 @@ function trySafe(){
   if(!ok){
     ESC.wrongSafe++; sfx('bad');
     safe.classList.remove('shake'); void safe.offsetWidth; safe.classList.add('shake');
-    toast('🚨 La caja no abre: revisa los códigos y su orden.');
+    toast('La caja no abre: revisa los códigos y su orden.');
     return;
   }
   safe.classList.add('open-anim');
-  safe.querySelector('.dial').textContent = '🎉';
+  safe.querySelector('.dial').innerHTML = ico('🎉');
   sfx('win'); confetti(120);
   const sec = (Date.now()-ESC.t0)/1000;
   const score = clamp(100 - 4*ESC.wrongAns - 8*ESC.hints - 5*ESC.wrongSafe, 55, 100);
@@ -4149,7 +4152,7 @@ function renderFlash(){
   $('#flashBack').textContent = g.d;
   const c = srsDueCounts();
   const r = srsOf(g.t);
-  const state = !r ? '🆕 nueva' : (r.due <= Date.now() ? '🔴 por repasar' : '✅ al día');
+  const state = !r ? '🆕 nueva' : (r.due <= Date.now() ? 'por repasar' : 'al día');
   $('#flashCount').textContent = 'Tarjeta '+(FL.i+1)+' de '+FL.deck.length+' ('+state+') · 🔴 '+c.due+' por repasar · 🆕 '+c.fresh+' nuevas';
 }
 function flashFlip(){
@@ -4187,7 +4190,7 @@ $('#flashHard').addEventListener('click', () => rateFlash('hard'));
 $('#flashEasy').addEventListener('click', () => rateFlash('easy'));
 $('#flashPrev').addEventListener('click', () => { sfx('click'); FL.i = (FL.i-1+FL.deck.length)%FL.deck.length; renderFlash(); });
 $('#flashNext').addEventListener('click', () => { sfx('click'); FL.i = (FL.i+1)%FL.deck.length; renderFlash(); });
-$('#flashShuffle').addEventListener('click', () => { sfx('click'); FL.deck = shuffle(FL.deck); FL.i=0; renderFlash(); toast('🔀 Mazo barajado'); });
+$('#flashShuffle').addEventListener('click', () => { sfx('click'); FL.deck = shuffle(FL.deck); FL.i=0; renderFlash(); toast('Mazo barajado'); });
 $('#btnFlash').addEventListener('click', () => { sfx('click'); touchStreak(); startFlash(); });
 
 /* ==================== Reto contrarreloj ==================== */
@@ -4228,7 +4231,7 @@ function buildBlitzPool(){
   });
   // verdadero / falso de varios módulos
   [].concat(TF_M1, TF_INF, TF_DEV, TF_DEP).forEach(it => {
-    pool.push({ prompt: it.s, options: [{t:'✅ Verdadero', ok:it.a},{t:'❌ Falso', ok:!it.a}] });
+    pool.push({ prompt: it.s, options: [{t:'Verdadero', ok:it.a},{t:'Falso', ok:!it.a}] });
   });
   // identificar el fenómeno económico
   PHENO.forEach(it => {
@@ -4276,7 +4279,7 @@ function blitzNext(){
         timerEl.classList.toggle('low', BL.t <= 10);
         const bonusEl = $('#blitzBonus');
         if(gained > 0){
-          bonusEl.textContent = '+'+gained+' s ⚡';
+          bonusEl.textContent = '+'+gained+' s';
           bonusEl.style.color = 'var(--good-text)';
           bonusEl.classList.remove('pop-anim'); void bonusEl.offsetWidth; bonusEl.classList.add('pop-anim');
         }
@@ -4312,10 +4315,10 @@ function endBlitz(){
   addXP(xp); S.totalTime += 60; save(); touchStreak(); checkBadges(); checkRewards(); renderHeader();
   sfx(res.ok >= 8 ? 'win' : 'bad');
   if(res.ok >= 10) confetti(60);
-  const o = openModal('<div style="text-align:center"><div style="font-size:48px">⚡</div>'
+  const o = openModal('<div style="text-align:center"><div style="font-size:48px"><svg class="ic" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg></div>'
     + '<h2>'+res.ok+' aciertos en el contrarreloj</h2>'
-    + '<p style="color:var(--ink2)">'+res.total+' preguntas respondidas · 🔥 Mejor racha: <b>'+res.bestCombo+'</b> · <b style="color:var(--accent)">+'+xp+' XP</b> · Mejor marca: <b>'+S.bestBlitz+'</b></p>'
-    + '<div class="q-actions" style="justify-content:center"><button class="btn ghost" id="blz2">🔄 Otra ronda</button><button class="btn" id="blz1">Aceptar</button></div></div>');
+    + '<p style="color:var(--ink2)">'+res.total+' preguntas respondidas · Mejor racha: <b>'+res.bestCombo+'</b> · <b style="color:var(--accent)">+'+xp+' XP</b> · Mejor marca: <b>'+S.bestBlitz+'</b></p>'
+    + '<div class="q-actions" style="justify-content:center"><button class="btn ghost" id="blz2">Otra ronda</button><button class="btn" id="blz1">Aceptar</button></div></div>');
   o.querySelector('#blz1').addEventListener('click', () => { closeModal(); goHome(); });
   o.querySelector('#blz2').addEventListener('click', () => { closeModal(); startBlitz(); });
 }
@@ -4369,7 +4372,7 @@ function endSudden(){
   const o = openModal('<div style="text-align:center"><div style="font-size:48px">💀</div>'
     + '<h2>Racha de '+res.best+'</h2>'
     + '<p style="color:var(--ink2)">Un error termina la racha · <b style="color:var(--accent)">+'+xp+' XP</b> · Mejor marca: <b>'+S.bestSudden+'</b></p>'
-    + '<div class="q-actions" style="justify-content:center"><button class="btn ghost" id="sd2">🔄 Otra ronda</button><button class="btn" id="sd1">Aceptar</button></div></div>');
+    + '<div class="q-actions" style="justify-content:center"><button class="btn ghost" id="sd2">Otra ronda</button><button class="btn" id="sd1">Aceptar</button></div></div>');
   o.querySelector('#sd1').addEventListener('click', () => { closeModal(); goHome(); });
   o.querySelector('#sd2').addEventListener('click', () => { closeModal(); startSudden(); });
 }
@@ -4379,11 +4382,11 @@ $('#btnSuddenQuit').addEventListener('click', () => { sfx('click'); SD=null; goH
 /* ==================== Repaso mixto ==================== */
 function startReview(){
   const pool = MODULES.filter(m => m.build && isUnlocked(m.id)).flatMap(m => m.build());
-  if(pool.length < 5){ toast('🎯 Desbloquea más módulos para tener variedad en el repaso mixto.'); return; }
+  if(pool.length < 5){ toast('Desbloquea más módulos para tener variedad en el repaso mixto.'); return; }
   touchStreak();
   SES = { id:'review', review:true, qs: shuffle(pool).slice(0,10), i:0, pts:0, xp:0, t0:Date.now(), recap:[] };
   showView('session'); renderQ();
-  toast('🎯 Repaso mixto: 10 preguntas variadas de tus módulos desbloqueados, sin presión de tiempo.');
+  toast('Repaso mixto: 10 preguntas variadas de tus módulos desbloqueados, sin presión de tiempo.');
 }
 function finishReview(){
   const n = SES.qs.length;
@@ -4404,7 +4407,7 @@ function renderReviewResult(score, xp, sec, recap){
   const passed = score>=80;
   const okCount = recap.filter(r=>r.ok).length;
   let html = '<div class="result-card">'
-    + '<div class="big-ico">'+(score===100?'🏆':passed?'🎉':'📚')+'</div>'
+    + '<div class="big-ico">'+(score===100?ico('🏆'):passed?ico('🎉'):ico('📚'))+'</div>'
     + '<h2>Repaso mixto terminado</h2>'
     + '<div class="r-sub">🎯 Repaso mixto · práctica libre</div>'
     + '<div class="r-score-ring"><svg width="130" height="130">'
@@ -4416,10 +4419,10 @@ function renderReviewResult(score, xp, sec, recap){
     + '<span><b>+'+xp+'</b>XP</span><span><b>'+fmtDur(sec)+'</b>tiempo</span></div>'
     + '<p style="font-size:.85rem;color:var(--ink2)">Este repaso no cuenta para las estrellas de los módulos: es solo práctica libre.</p>'
     + '<div class="q-actions" style="justify-content:center">'
-    + '<button class="btn ghost" id="rHome">🏠 Inicio</button>'
-    + '<button class="btn" id="rAgain">🔄 Otro repaso</button>'
+    + '<button class="btn ghost" id="rHome">Inicio</button>'
+    + '<button class="btn" id="rAgain">Otro repaso</button>'
     + '</div></div>';
-  if(recap.length) html += reviewSectionHTML(recap, '📋 Repaso de la sesión');
+  if(recap.length) html += reviewSectionHTML(recap, 'Repaso de la sesión');
   $('#view-result').innerHTML = html;
   showView('result');
   if(recap.length) bindReview();
@@ -4443,7 +4446,7 @@ function weakTopics(){
 /* Motor genérico de sesión de preguntas (reutiliza renderQ/settle/showFeedback) */
 function startMode(cfg){
   const qs = cfg.qs || (cfg.endless ? [cfg.next()] : (cfg.build ? cfg.build() : null));
-  if(!cfg.endless && (!qs || qs.length < 1)){ toast('🚧 Este modo aún no tiene preguntas para esta materia.'); sfx('bad'); return; }
+  if(!cfg.endless && (!qs || qs.length < 1)){ toast('Este modo aún no tiene preguntas para esta materia.'); sfx('bad'); return; }
   touchStreak();
   SES = { id:'mode', mode:cfg, qs, i:0, pts:0, xp:0, t0:Date.now(), recap:[], exam: !!cfg.hideAnswers };
   showView('session'); renderQ();
@@ -4485,10 +4488,10 @@ function renderModeResult(cfg, score, xp, sec, recap){
     + '<div class="r-meta"><span><b>'+okCount+'/'+recap.length+'</b>aciertos</span>'
     + '<span><b>+'+xp+'</b>XP</span><span><b>'+fmtDur(sec)+'</b>tiempo</span></div>'
     + '<div class="q-actions" style="justify-content:center">'
-    + '<button class="btn ghost" id="rHome">🏠 Inicio</button>'
-    + '<button class="btn ghost" id="rModes">🎮 Modos</button>'
-    + '<button class="btn" id="rAgain">🔄 Otra vez</button></div></div>';
-  if(recap.length) html += reviewSectionHTML(recap, '📋 Revisión');
+    + '<button class="btn ghost" id="rHome">Inicio</button>'
+    + '<button class="btn ghost" id="rModes">Modos</button>'
+    + '<button class="btn" id="rAgain">Otra vez</button></div></div>';
+  if(recap.length) html += reviewSectionHTML(recap, 'Revisión');
   $('#view-result').innerHTML = html;
   showView('result');
   if(recap.length) bindReview();
@@ -4509,13 +4512,13 @@ function startErrorReview(){
 function startWrongOnly(){
   const ex = (S.examHistory||[])[0];
   const topics = (ex && ex.failedTopics) || [];
-  if(!topics.length){ toast('🎉 No hay incorrectas recientes. Presenta un examen diario primero.'); sfx('bad'); return; }
+  if(!topics.length){ toast('No hay incorrectas recientes. Presenta un examen diario primero.'); sfx('bad'); return; }
   const pool = subjPool().filter(q => topics.includes(q.topic));
   startMode({id:'wrong', title:'Solo incorrectas', icon:'❌', qs: shuffle(pool.length?pool:subjPool()).slice(0,10),
     introToast:'❌ A vencer lo que fallaste en tu último examen.'});
 }
-function startInfinite(){ startMode({id:'infinite', title:'Práctica infinita', icon:'♾️', endless:true, next:()=>pick(subjPool()), introToast:'♾️ Practica sin fin. Toca “🏁 Terminar” cuando quieras.'}); }
-function startCarrera(){ startMode({id:'carrera', title:'Carrera de XP', icon:'🏁', endless:true, target:100, next:()=>pick(subjPool()), introToast:'🏁 ¡Llega a 100 XP lo antes posible!'}); }
+function startInfinite(){ startMode({id:'infinite', title:'Práctica infinita', icon:'♾️', endless:true, next:()=>pick(subjPool()), introToast:'Practica sin fin. Toca “Terminar” cuando quieras.'}); }
+function startCarrera(){ startMode({id:'carrera', title:'Carrera de XP', icon:'🏁', endless:true, target:100, next:()=>pick(subjPool()), introToast:'¡Llega a 100 XP lo antes posible!'}); }
 
 /* ==================== Reto entre compañeros ====================
    Sin servidor en tiempo real: el reto viaja en un CÓDIGO que se comparte.
@@ -4554,21 +4557,21 @@ async function copyToClipboard(text){
 }
 const RETO_SUBJECTS = () => SUBJECTS.filter(s => (MODULES_BY_SUBJECT[s.id]||[]).some(m=>m.build));
 function openRetoHub(){
-  const o = openModal('<h2 style="margin-top:0">🤺 Reto entre compañeros</h2>'
+  const o = openModal('<h2 style="margin-top:0">Reto entre compañeros</h2>'
     + '<p style="color:var(--ink2);font-size:.92rem">Mismas preguntas para los dos: quien saque más, gana. Todo viaja en un código que se comparte (no necesitas internet).</p>'
-    + '<div class="q-actions" style="justify-content:center;flex-wrap:wrap"><button class="btn" id="retoCreate">➕ Crear un reto</button>'
-    + '<button class="btn ghost" id="retoRespond">📥 Responder un reto</button></div>');
+    + '<div class="q-actions" style="justify-content:center;flex-wrap:wrap"><button class="btn" id="retoCreate">Crear un reto</button>'
+    + '<button class="btn ghost" id="retoRespond">Responder un reto</button></div>');
   o.querySelector('#retoCreate').addEventListener('click', ()=>{ sfx('click'); retoCreateForm(); });
   o.querySelector('#retoRespond').addEventListener('click', ()=>{ sfx('click'); retoRespondForm(); });
 }
 function retoCreateForm(){
   const subs = RETO_SUBJECTS();
-  const o = openModal('<h2 style="margin-top:0">➕ Crear un reto</h2>'
+  const o = openModal('<h2 style="margin-top:0">Crear un reto</h2>'
     + '<label class="q-help" style="display:block;margin-bottom:4px">Materia</label>'
     + '<select class="ainput" id="retoSubj">'+subs.map(s=>'<option value="'+s.id+'"'+(s.id===S.activeSubject?' selected':'')+'>'+esc(s.name)+'</option>').join('')+'</select>'
     + '<label class="q-help" style="display:block;margin:10px 0 4px">Número de preguntas</label>'
     + '<select class="ainput" id="retoN"><option value="6">6</option><option value="8" selected>8</option><option value="10">10</option><option value="12">12</option></select>'
-    + '<div class="q-actions" style="justify-content:flex-end;margin-top:14px"><button class="btn ghost" id="retoBack">← Volver</button><button class="btn" id="retoGo">🎮 Jugar mi reto</button></div>');
+    + '<div class="q-actions" style="justify-content:flex-end;margin-top:14px"><button class="btn ghost" id="retoBack">Volver</button><button class="btn" id="retoGo">Jugar mi reto</button></div>');
   o.querySelector('#retoBack').addEventListener('click', ()=>{ sfx('click'); openRetoHub(); });
   o.querySelector('#retoGo').addEventListener('click', ()=>{
     const subject = o.querySelector('#retoSubj').value;
@@ -4579,14 +4582,14 @@ function retoCreateForm(){
   });
 }
 function retoRespondForm(){
-  const o = openModal('<h2 style="margin-top:0">📥 Responder un reto</h2>'
+  const o = openModal('<h2 style="margin-top:0">Responder un reto</h2>'
     + '<p class="q-help">Pega el código que te compartió tu compañero.</p>'
     + '<textarea class="ainput" id="retoCode" rows="3" placeholder="AIQ1…" style="width:100%;resize:vertical;font-family:ui-monospace,monospace"></textarea>'
-    + '<div class="q-actions" style="justify-content:flex-end;margin-top:12px"><button class="btn ghost" id="retoBack">← Volver</button><button class="btn" id="retoAccept">✅ Aceptar reto</button></div>');
+    + '<div class="q-actions" style="justify-content:flex-end;margin-top:12px"><button class="btn ghost" id="retoBack">Volver</button><button class="btn" id="retoAccept">Aceptar reto</button></div>');
   o.querySelector('#retoBack').addEventListener('click', ()=>{ sfx('click'); openRetoHub(); });
   o.querySelector('#retoAccept').addEventListener('click', ()=>{
     const data = challengeDecode(o.querySelector('#retoCode').value);
-    if(!data){ toast('❌ Código de reto no válido'); sfx('bad'); return; }
+    if(!data){ toast('Código de reto no válido'); sfx('bad'); return; }
     closeModal(); sfx('click');
     startChallenge({subject:data.s, seed:data.seed, n:data.n, mode:'respond', rivalName:data.by||'Tu rival', rivalScore:+data.sc||0});
   });
@@ -4594,7 +4597,7 @@ function retoRespondForm(){
 function startChallenge(cfg){
   if(cfg.subject !== S.activeSubject) switchSubject(cfg.subject);   // contexto de la materia del reto
   const qs = challengePool(cfg.subject, cfg.seed, cfg.n);
-  if(!qs.length){ toast('🚧 Esa materia no tiene preguntas para el reto.'); sfx('bad'); return; }
+  if(!qs.length){ toast('Esa materia no tiene preguntas para el reto.'); sfx('bad'); return; }
   const subj = subjectById(cfg.subject);
   const intro = cfg.mode==='respond'
     ? '🤺 Reto de '+esc(cfg.rivalName)+' ('+cfg.rivalScore+'%). ¡Supéralo!'
@@ -4621,14 +4624,14 @@ function retoResult(cfg, myScore){
   }
   const o = openModal('<h2 style="margin-top:0">'+head+'</h2>'+body
     + '<textarea class="ainput" id="retoOut" rows="3" readonly style="width:100%;resize:vertical;font-family:ui-monospace,monospace">'+esc(code)+'</textarea>'
-    + '<div class="q-actions" style="justify-content:flex-end;margin-top:12px"><button class="btn ghost" id="retoDone">Cerrar</button><button class="btn" id="retoCopy">📋 Copiar código</button></div>');
-  o.querySelector('#retoCopy').addEventListener('click', async ()=>{ const ok=await copyToClipboard(code); toast(ok?'📋 Código copiado':'Selecciona y copia el código'); sfx(ok?'ok':'bad'); });
+    + '<div class="q-actions" style="justify-content:flex-end;margin-top:12px"><button class="btn ghost" id="retoDone">Cerrar</button><button class="btn" id="retoCopy">Copiar código</button></div>');
+  o.querySelector('#retoCopy').addEventListener('click', async ()=>{ const ok=await copyToClipboard(code); toast(ok?'Código copiado':'Selecciona y copia el código'); sfx(ok?'ok':'bad'); });
   o.querySelector('#retoDone').addEventListener('click', ()=>{ sfx('click'); closeModal(); });
 }
 function openModulePicker(){
   const avail = MODULES.filter(m => m.build && isUnlocked(m.id));
-  if(!avail.length){ toast('🔒 Desbloquea módulos para el quiz clásico.'); return; }
-  const o = openModal('<h2 style="margin-top:0">📝 Quiz clásico</h2><p style="color:var(--ink2);font-size:.9rem">Elige el módulo que quieres practicar.</p>'
+  if(!avail.length){ toast('Desbloquea módulos para el quiz clásico.'); return; }
+  const o = openModal('<h2 style="margin-top:0">Quiz clásico</h2><p style="color:var(--ink2);font-size:.9rem">Elige el módulo que quieres practicar.</p>'
     + avail.map(m => '<button class="profile-row" style="width:100%;text-align:left" data-mod="'+m.id+'"><span class="pr-av">'+m.icon+'</span><span class="pr-name">'+esc(m.name)+'</span></button>').join('')
     + '<div class="q-actions" style="justify-content:center"><button class="btn ghost" id="mpClose">Cerrar</button></div>');
   o.querySelectorAll('[data-mod]').forEach(b => b.addEventListener('click', () => { closeModal(); openModule(+b.dataset.mod); }));
@@ -4642,8 +4645,8 @@ function miniAsk(host, q, cb){
   host.appendChild(card);
   const done = (ok, chosenShown) => {
     const fb = document.createElement('div'); fb.className = 'fb '+(ok?'ok':'bad');
-    fb.innerHTML = '<div class="fb-head">'+(ok?'✅ ¡Correcto!':'❌ Incorrecto')+'</div>'
-      + (!ok && q.correctText ? '<div class="fb-exp">✔️ Respuesta: '+q.correctText+'</div>' : '');
+    fb.innerHTML = '<div class="fb-head">'+(ok?'¡Correcto!':'❌ Incorrecto')+'</div>'
+      + (!ok && q.correctText ? '<div class="fb-exp">Respuesta: '+q.correctText+'</div>' : '');
     card.appendChild(fb);
     S.totalAnswered = (S.totalAnswered||0)+1; trackConcept(q.topic, ok);
     sfx(ok?'ok':'bad');
@@ -4657,7 +4660,7 @@ function miniAsk(host, q, cb){
     card.appendChild(wrap);
   } else if(q.type==='tf'){
     const wrap=document.createElement('div'); wrap.className='tf-row';
-    [['✅ Verdadero',true],['❌ Falso',false]].forEach(([lb,val])=>{ const b=document.createElement('button'); b.className='opt'; b.textContent=lb;
+    [['Verdadero',true],['Falso',false]].forEach(([lb,val])=>{ const b=document.createElement('button'); b.className='opt'; b.textContent=lb;
       b.onclick=()=>{ wrap.querySelectorAll('.opt').forEach(o=>o.disabled=true); const ok=val===q.answer; b.classList.add(ok?'correct':'wrong'); done(ok); };
       wrap.appendChild(b); });
     card.appendChild(wrap);
@@ -4676,16 +4679,16 @@ function miniAsk(host, q, cb){
 /* — Ruleta de preguntas — */
 function startRuleta(){
   const mods = MODULES.filter(m => m.build && isUnlocked(m.id));
-  if(!mods.length){ toast('🔒 Desbloquea módulos para la ruleta.'); return; }
+  if(!mods.length){ toast('Desbloquea módulos para la ruleta.'); return; }
   touchStreak();
   let idx = 0, spinning = false, round = 0, ok = 0, xp = 0;
   const rounds = 6;
   const host = $('#modesBody');
   const draw = () => {
-    host.innerHTML = '<div class="panel" style="text-align:center"><button class="btn ghost small" id="ruBack" style="float:left">← Modos</button>'
-      + '<h3>🎡 Ruleta de preguntas</h3><p class="q-help">Ronda '+(round+1)+' de '+rounds+' · ✅ '+ok+'</p>'
-      + '<div id="ruWheel" style="font-size:1.4rem;font-weight:800;min-height:2em;display:grid;place-items:center;border:2px dashed var(--line);border-radius:14px;margin:10px 0;padding:14px">'+mods[idx].icon+' '+esc(mods[idx].name)+'</div>'
-      + '<button class="btn" id="ruSpin">🎡 ¡Girar!</button></div><div id="ruQ"></div>';
+    host.innerHTML = '<div class="panel" style="text-align:center"><button class="btn ghost small" id="ruBack" style="float:left">Modos</button>'
+      + '<h3>Ruleta de preguntas</h3><p class="q-help">Ronda '+(round+1)+' de '+rounds+' · '+ok+' correctas</p>'
+      + '<div id="ruWheel" style="font-size:1.4rem;font-weight:800;min-height:2em;display:grid;place-items:center;border:2px dashed var(--line);border-radius:14px;margin:10px 0;padding:14px">'+ico(mods[idx].icon)+' '+esc(mods[idx].name)+'</div>'
+      + '<button class="btn" id="ruSpin">¡Girar!</button></div><div id="ruQ"></div>';
     $('#ruBack').onclick = ()=>{ sfx('click'); renderModes(); };
     $('#ruSpin').onclick = spin;
   };
@@ -4694,7 +4697,7 @@ function startRuleta(){
     let ticks = ri(14,24);
     const iv = setInterval(() => {
       idx = (idx+1) % mods.length;
-      $('#ruWheel').innerHTML = mods[idx].icon+' '+esc(mods[idx].name);
+      $('#ruWheel').innerHTML = ico(mods[idx].icon)+' '+esc(mods[idx].name);
       if(--ticks<=0){ clearInterval(iv); spinning=false; ask(); }
     }, 80);
   };
@@ -4705,7 +4708,7 @@ function startRuleta(){
       if(correct){ ok++; xp += 10; }
       round++;
       if(round >= rounds){ addXP(xp); if(!S.modeStats)S.modeStats={}; const ms=S.modeStats.ruleta||(S.modeStats.ruleta={plays:0,best:0}); ms.plays++; ms.best=Math.max(ms.best,ok); save(); checkRewards(); renderHeader();
-        host.innerHTML = '<div class="result-card"><div class="big-ico">🎡</div><h2>Ruleta terminada</h2><p style="font-weight:700">✅ '+ok+' de '+rounds+' · +'+xp+' XP</p><div class="q-actions" style="justify-content:center"><button class="btn ghost" id="ruHome">🏠 Inicio</button><button class="btn" id="ruAgain">🔄 Otra vez</button></div></div>';
+        host.innerHTML = '<div class="result-card"><div class="big-ico"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg></div><h2>Ruleta terminada</h2><p style="font-weight:700">'+ok+' de '+rounds+' · +'+xp+' XP</p><div class="q-actions" style="justify-content:center"><button class="btn ghost" id="ruHome">Inicio</button><button class="btn" id="ruAgain">Otra vez</button></div></div>';
         $('#ruHome').onclick=()=>{sfx('click');goHome();}; $('#ruAgain').onclick=()=>{sfx('click');startRuleta();};
         if(ok>=rounds*0.7){ sfx('win'); confetti(40);} }
       else draw();
@@ -4716,14 +4719,14 @@ function startRuleta(){
 /* — Jeopardy por temas — */
 function startJeopardy(){
   const mods = shuffle(MODULES.filter(m => m.build && isUnlocked(m.id))).slice(0,4);
-  if(mods.length<3){ toast('🔒 Desbloquea al menos 3 módulos para Jeopardy.'); return; }
+  if(mods.length<3){ toast('Desbloquea al menos 3 módulos para Jeopardy.'); return; }
   touchStreak();
   const vals = [100,200,300];
   const used = {}; let score = 0, answered = 0, total = mods.length*vals.length;
   const host = $('#modesBody');
   const draw = () => {
-    let html = '<div class="panel"><button class="btn ghost small" id="jBack">← Modos</button>'
-      + '<h3 style="display:inline-block;margin-left:8px">🎯 Jeopardy · '+score+' pts</h3>'
+    let html = '<div class="panel"><button class="btn ghost small" id="jBack">Modos</button>'
+      + '<h3 style="display:inline-block;margin-left:8px">Jeopardy · '+score+' pts</h3>'
       + '<div style="overflow-x:auto"><table class="hist-table" style="min-width:420px"><tr>'+mods.map(m=>'<th style="text-align:center">'+m.icon+'<br>'+esc(m.name.split(' ')[0])+'</th>').join('')+'</tr>';
     vals.forEach(v => { html += '<tr>'+mods.map((m,ci)=>{ const key=ci+'-'+v; return '<td style="text-align:center">'+(used[key]?'<span style="opacity:.3">—</span>':'<button class="btn small" data-cell="'+key+'">'+v+'</button>')+'</td>'; }).join('')+'</tr>'; });
     html += '</table></div><p class="q-help">Elige una casilla, responde y suma puntos.</p></div><div id="jQ"></div>';
@@ -4735,7 +4738,7 @@ function startJeopardy(){
       $$('#modesBody [data-cell]').forEach(x=>x.disabled=true);
       miniAsk($('#jQ'), q, (ok)=>{ used[b.dataset.cell]=true; answered++; if(ok) score += +v;
         if(answered>=total){ const xp=Math.round(score/10); addXP(xp); if(!S.modeStats)S.modeStats={}; const ms=S.modeStats.jeopardy||(S.modeStats.jeopardy={plays:0,best:0}); ms.plays++; ms.best=Math.max(ms.best,score); save(); checkRewards(); renderHeader();
-          host.innerHTML='<div class="result-card"><div class="big-ico">🎯</div><h2>Jeopardy terminado</h2><p style="font-weight:700">'+score+' puntos · +'+xp+' XP</p><div class="q-actions" style="justify-content:center"><button class="btn ghost" id="jHome">🏠 Inicio</button><button class="btn" id="jAgain">🔄 Otra vez</button></div></div>';
+          host.innerHTML='<div class="result-card"><div class="big-ico"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></div><h2>Jeopardy terminado</h2><p style="font-weight:700">'+score+' puntos · +'+xp+' XP</p><div class="q-actions" style="justify-content:center"><button class="btn ghost" id="jHome">Inicio</button><button class="btn" id="jAgain">Otra vez</button></div></div>';
           $('#jHome').onclick=()=>{sfx('click');goHome();}; $('#jAgain').onclick=()=>{sfx('click');startJeopardy();}; if(score>=total*100){sfx('win');confetti(50);} }
         else draw(); });
     }));
@@ -4756,14 +4759,14 @@ function startBingo(){
     return n;
   };
   const draw = () => {
-    host.innerHTML = '<div class="panel"><button class="btn ghost small" id="biBack">← Modos</button>'
-      + '<h3 style="display:inline-block;margin-left:8px">🎱 Bingo de conceptos</h3>'
+    host.innerHTML = '<div class="panel"><button class="btn ghost small" id="biBack">Modos</button>'
+      + '<h3 style="display:inline-block;margin-left:8px">Bingo de conceptos</h3>'
       + '<p class="q-help">Se describe un concepto: toca el que corresponda en tu tablero. Completa líneas para ganar.</p>'
       + '<div class="panel" style="text-align:center;background:var(--surface2)"><b id="biClue">'+(current?esc(current.s):'Toca “Cantar” para empezar')+'</b></div>'
       + '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:10px 0">'
       + concepts.map((g,i)=>'<button class="btn '+(marked[i]?'good':'ghost')+' small" data-bi="'+i+'" style="min-height:52px;font-size:.72rem">'+(marked[i]?'✔ ':'')+esc(g.t)+'</button>').join('')
       + '</div>'
-      + '<div class="q-actions" style="justify-content:center"><button class="btn" id="biCall">📢 Cantar concepto</button></div>'
+      + '<div class="q-actions" style="justify-content:center"><button class="btn" id="biCall">Cantar concepto</button></div>'
       + '<p class="q-help" style="text-align:center">Líneas: '+lines()+' · Aciertos: '+hits+'</p></div>';
     $('#biBack').onclick=()=>{ sfx('click'); renderModes(); };
     $('#biCall').onclick = () => {
@@ -4776,13 +4779,13 @@ function startBingo(){
       const i = +b.dataset.bi; if(marked[i]) return;
       if(concepts[i].t === current.t){ marked[i]=true; hits++; sfx('ok'); current=null;
         if(lines()>=3 || marked.every(Boolean)){ finishBingo(); return; } draw(); }
-      else { sfx('bad'); toast('❌ Ese no era. El concepto sigue en juego.'); }
+      else { sfx('bad'); toast('Ese no era. El concepto sigue en juego.'); }
     }));
   };
   const finishBingo = () => {
     const xp = hits*4 + lines()*10;
     addXP(xp); if(!S.modeStats)S.modeStats={}; const ms=S.modeStats.bingo||(S.modeStats.bingo={plays:0,best:0}); ms.plays++; ms.best=Math.max(ms.best,lines()); save(); checkRewards(); renderHeader();
-    host.innerHTML='<div class="result-card"><div class="big-ico">🎱</div><h2>¡Bingo!</h2><p style="font-weight:700">'+lines()+' líneas · '+hits+' aciertos · +'+xp+' XP</p><div class="q-actions" style="justify-content:center"><button class="btn ghost" id="biHome">🏠 Inicio</button><button class="btn" id="biAgain">🔄 Otra vez</button></div></div>';
+    host.innerHTML='<div class="result-card"><div class="big-ico"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></div><h2>¡Bingo!</h2><p style="font-weight:700">'+lines()+' líneas · '+hits+' aciertos · +'+xp+' XP</p><div class="q-actions" style="justify-content:center"><button class="btn ghost" id="biHome">Inicio</button><button class="btn" id="biAgain">Otra vez</button></div></div>';
     $('#biHome').onclick=()=>{sfx('click');goHome();}; $('#biAgain').onclick=()=>{sfx('click');startBingo();};
     if(lines()>=3){ sfx('win'); confetti(50); }
   };
@@ -4792,20 +4795,20 @@ function startBingo(){
 function startCodigo(){
   touchStreak();
   const clues = shuffle(subjPool().filter(q => q.type==='numeric' && Number.isFinite(q.answer))).slice(0,3);
-  if(clues.length<3){ toast('🔒 Desbloquea más módulos de cálculo para el código secreto.'); return; }
+  if(clues.length<3){ toast('Desbloquea más módulos de cálculo para el código secreto.'); return; }
   const host = $('#modesBody');
   let solved = 0, wrong = 0;
   const digits = clues.map(q => Math.abs(Math.round(q.answer)) % 10);   // último dígito de cada resultado
   const draw = () => {
-    host.innerHTML = '<div class="panel"><button class="btn ghost small" id="coBack">← Modos</button>'
-      + '<h3 style="display:inline-block;margin-left:8px">🔑 Código secreto</h3>'
+    host.innerHTML = '<div class="panel"><button class="btn ghost small" id="coBack">Modos</button>'
+      + '<h3 style="display:inline-block;margin-left:8px">Código secreto</h3>'
       + '<p class="q-help">Resuelve los 3 cálculos. El <b>último dígito</b> de cada resultado forma el código de la caja.</p>'
       + clues.map((q,i)=>'<div class="cal-exam"><span class="ce-date">Pista '+(i+1)+'</span><span style="flex:1">'+q.prompt.replace(/<[^>]*>/g,'')+'</span>'
           + '<span class="due-chip'+(i<solved?' soon':'')+'">'+(i<solved?'✔ '+digits[i]:'🔒')+'</span></div>').join('')
       + '<div id="coQ"></div>'
-      + (solved>=3 ? '<div class="panel" style="text-align:center;margin-top:10px"><h4>🔐 Ingresa el código de 3 dígitos</h4>'
+      + (solved>=3 ? '<div class="panel" style="text-align:center;margin-top:10px"><h4>Ingresa el código de 3 dígitos</h4>'
           + '<input class="ainput" id="coCode" inputmode="numeric" maxlength="3" style="max-width:140px;text-align:center;font-size:1.4rem;letter-spacing:6px" placeholder="•••">'
-          + '<div class="q-actions" style="justify-content:center"><button class="btn" id="coOpen">🔓 Abrir</button></div></div>' : '')
+          + '<div class="q-actions" style="justify-content:center"><button class="btn" id="coOpen">Abrir</button></div></div>' : '')
       + '</div>';
     $('#coBack').onclick=()=>{ sfx('click'); renderModes(); };
     if(solved<3){
@@ -4814,9 +4817,9 @@ function startCodigo(){
       $('#coOpen').onclick = () => {
         const val = ($('#coCode').value||'').replace(/\D/g,'');
         if(val === digits.join('')){ const xp = clamp(60 - wrong*6, 20, 60); addXP(xp); if(!S.modeStats)S.modeStats={}; const ms=S.modeStats.codigo||(S.modeStats.codigo={plays:0,best:0}); ms.plays++; ms.best=Math.max(ms.best,xp); save(); checkRewards(); renderHeader(); sfx('win'); confetti(80);
-          host.innerHTML='<div class="result-card"><div class="big-ico">🎉</div><h2>¡Caja abierta!</h2><p style="font-weight:700">Código '+digits.join('')+' · +'+xp+' XP</p><div class="q-actions" style="justify-content:center"><button class="btn ghost" id="coHome">🏠 Inicio</button><button class="btn" id="coAgain">🔄 Otra vez</button></div></div>';
+          host.innerHTML='<div class="result-card"><div class="big-ico"></div><h2>¡Caja abierta!</h2><p style="font-weight:700">Código '+digits.join('')+' · +'+xp+' XP</p><div class="q-actions" style="justify-content:center"><button class="btn ghost" id="coHome">Inicio</button><button class="btn" id="coAgain">Otra vez</button></div></div>';
           $('#coHome').onclick=()=>{sfx('click');goHome();}; $('#coAgain').onclick=()=>{sfx('click');startCodigo();}; }
-        else { sfx('bad'); toast('🚨 Código incorrecto. Revisa los últimos dígitos.'); }
+        else { sfx('bad'); toast('Código incorrecto. Revisa los últimos dígitos.'); }
       };
     }
   };
@@ -4824,27 +4827,27 @@ function startCodigo(){
 }
 /* — Todos contra todos (por turnos en el mismo dispositivo) — */
 function startHotseat(){
-  const o = openModal('<h2 style="margin-top:0">👥 Todos contra todos</h2>'
+  const o = openModal('<h2 style="margin-top:0">Todos contra todos</h2>'
     + '<p style="color:var(--ink2);font-size:.9rem">Por turnos en el mismo dispositivo. ¿Cuántos jugadores?</p>'
     + '<div class="q-actions" style="justify-content:center">'+[2,3,4].map(n=>'<button class="btn" data-n="'+n+'">'+n+' jugadores</button>').join('')+'</div>');
   o.querySelectorAll('[data-n]').forEach(b => b.addEventListener('click', ()=>{ const n=+b.dataset.n; closeModal(); hotseatSetup(n); }));
 }
 function hotseatSetup(n){
   const host = $('#modesBody'); showView('modes');
-  host.innerHTML = '<div class="panel"><h3>👥 Nombres de los jugadores</h3>'
+  host.innerHTML = '<div class="panel"><h3>Nombres de los jugadores</h3>'
     + Array.from({length:n}).map((_,i)=>'<label class="fld">Jugador '+(i+1)+'<input class="ainput hsname" maxlength="14" value="Jugador '+(i+1)+'"></label>').join('')
-    + '<div class="q-actions"><button class="btn" id="hsGo">▶ Empezar (5 preguntas c/u)</button></div></div>';
+    + '<div class="q-actions"><button class="btn" id="hsGo">Empezar (5 preguntas c/u)</button></div></div>';
   $('#hsGo').onclick = () => {
     const names = $$('.hsname').map(i=>i.value.trim()||'Jugador');
     const rounds = 5, pool = simplePool();
-    if(pool.length<3){ toast('🔒 Desbloquea más módulos.'); return; }
+    if(pool.length<3){ toast('Desbloquea más módulos.'); return; }
     const scores = names.map(()=>0);
     let turn = 0, round = 0;
     const nextTurn = () => {
       if(round>=rounds && turn===0){ return finishHot(); }
       const q = pick(pool);
-      host.innerHTML = '<div class="panel"><button class="btn ghost small" id="hsBack">← Modos</button>'
-        + '<h3 style="display:inline-block;margin-left:8px">👥 Turno de '+esc(names[turn])+'</h3>'
+      host.innerHTML = '<div class="panel"><button class="btn ghost small" id="hsBack">Modos</button>'
+        + '<h3 style="display:inline-block;margin-left:8px">Turno de '+esc(names[turn])+'</h3>'
         + '<p class="q-help">Ronda '+(round+1)+' de '+rounds+' · '+names.map((nm,i)=>esc(nm)+': '+scores[i]).join(' · ')+'</p><div id="hsQ"></div></div>';
       $('#hsBack').onclick=()=>{ sfx('click'); renderModes(); };
       miniAsk($('#hsQ'), q, (ok)=>{ if(ok) scores[turn] += 10;
@@ -4853,9 +4856,9 @@ function hotseatSetup(n){
     const finishHot = () => {
       const order = names.map((nm,i)=>({nm, s:scores[i]})).sort((a,b)=>b.s-a.s);
       addXP(20); save(); renderHeader();
-      host.innerHTML = '<div class="result-card"><div class="big-ico">🏆</div><h2>Resultados</h2>'
-        + order.map((p,i)=>'<div class="profile-row"><span class="pr-av">'+(i===0?'🥇':i===1?'🥈':i===2?'🥉':'🎯')+'</span><span class="pr-name">'+esc(p.nm)+'</span><b>'+p.s+' pts</b></div>').join('')
-        + '<div class="q-actions" style="justify-content:center"><button class="btn ghost" id="hsHome">🏠 Inicio</button><button class="btn" id="hsAgain">🔄 Otra vez</button></div></div>';
+      host.innerHTML = '<div class="result-card"><div class="big-ico"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg></div><h2>Resultados</h2>'
+        + order.map((p,i)=>'<div class="profile-row"><span class="pr-av">'+(i===0?ico('🥇'):i===1?ico('🥈'):i===2?ico('🥉'):ico('🎯'))+'</span><span class="pr-name">'+esc(p.nm)+'</span><b>'+p.s+' pts</b></div>').join('')
+        + '<div class="q-actions" style="justify-content:center"><button class="btn ghost" id="hsHome">Inicio</button><button class="btn" id="hsAgain">Otra vez</button></div></div>';
       $('#hsHome').onclick=()=>{sfx('click');goHome();}; $('#hsAgain').onclick=()=>{sfx('click');startHotseat();}; sfx('win'); confetti(60);
     };
     nextTurn();
@@ -4872,7 +4875,7 @@ const MODE_RUN = {
      • 📄 Examen real → el examen tal cual del profesor (solo donde el alumno lo
        envió: Procesos 2.º parcial y No Paramétrica 2.º parcial). Se califica al
        final, como en el examen de verdad.
-     • 📖 Repaso de módulos (Estudio) / 📝 Examen de práctica (Simulación) →
+     • Repaso de módulos (Estudio) / Examen de práctica (Simulación) →
        preguntas GENERADAS con los temas del parcial. Esta es la diferencia real:
        el modo examen real usa el examen del profesor; el de módulos, práctica. */
 /* Modelos que se pueden «reconocer» en cada parcial de Procesos */
@@ -4903,7 +4906,7 @@ function qReconoceModelo(parcial){
   opts = shuffle(opts).slice(0, Math.min(3, opts.length));
   const options = shuffle([{t:correct.name, ok:true}, ...opts.map(m=>({t:m.name, ok:false}))]);
   return { type:'mc', topic:'pe_'+(parcial===1?'markov':'poisson'), stage:'reconoce',
-    prompt:'<b>🔎 Reconoce el modelo.</b> '+esc0.s+'<br>¿Qué modelo debes usar?',
+    prompt:'<b>Reconoce el modelo.</b> '+esc0.s+'<br>¿Qué modelo debes usar?',
     options, explain:'El modelo adecuado es: <b>'+correct.name+'</b>.', correctText:correct.name };
 }
 /* Caso final tipo examen: varios incisos ligados con el mismo contexto (Poisson) */
@@ -5029,7 +5032,7 @@ function startRepasoExamen(){
   const sid = S.activeSubject, subj = subjectById(sid);
   const groups = subjectGroups(sid);
   if(!groups || !groups.length || !(MODULES_BY_SUBJECT[sid]||[]).some(m=>m.build)){
-    toast('🚧 El Repaso Examen aún no está disponible en esta materia.'); sfx('bad'); return;
+    toast('El Repaso Examen aún no está disponible en esta materia.'); sfx('bad'); return;
   }
   const modList = MODULES_BY_SUBJECT[sid] || [];
   const cards = groups.map((g, gi) => {
@@ -5039,13 +5042,13 @@ function startRepasoExamen(){
       + '<b>'+esc(g.name)+'</b>'
       + '<small style="font-weight:600;color:var(--muted)">'+nMods+' módulo'+(nMods===1?'':'s')+' con práctica</small>'
       + (real ? '<small style="font-weight:700;color:var(--good-text)">📄 Examen real disponible</small>'
-              : '<small style="font-weight:600;color:var(--muted)">📝 Examen de práctica generado</small>')
+              : '<small style="font-weight:600;color:var(--muted)">Examen de práctica generado</small>')
       + '</button>';
   }).join('');
-  const o = openModal('<h2 style="margin-top:0">🎓 Repaso Examen · '+esc(subj.name)+'</h2>'
+  const o = openModal('<h2 style="margin-top:0">Repaso Examen · '+esc(subj.name)+'</h2>'
     + '<p style="color:var(--ink2);font-size:.9rem">Elige el parcial que quieres preparar:</p>'
     + '<div class="repaso-grid">'+cards+'</div>'
-    + '<p class="q-help" style="margin-top:8px">📄 <b>Examen real</b>: el examen tal cual del profesor. 📝 <b>Repaso de módulos</b>: preguntas generadas con los temas del parcial.</p>');
+    + '<p class="q-help" style="margin-top:8px">📄 <b>Examen real</b>: el examen tal cual del profesor. <b>Repaso de módulos</b>: preguntas generadas con los temas del parcial.</p>');
   o.querySelectorAll('[data-gi]').forEach(b => b.addEventListener('click', () => repasoGroupMenu(sid, +b.dataset.gi)));
 }
 function repasoGroupMenu(sid, gi){
@@ -5054,33 +5057,33 @@ function repasoGroupMenu(sid, gi){
   let cards = '';
   if(real){
     cards += '<button class="btn repaso-card" data-act="real" style="flex-direction:column;align-items:flex-start;gap:4px;text-align:left">'
-      + '<b>📄 Examen real</b><small style="font-weight:600;color:var(--good-text)">'+esc(real.note)+' Se califica al final, como el examen del profesor.</small></button>';
+      + '<b>Examen real</b><small style="font-weight:600;color:var(--good-text)">'+esc(real.note)+' Se califica al final, como el examen del profesor.</small></button>';
   }
   cards += '<button class="btn repaso-card'+(real?' ghost':'')+'" data-act="estudio" style="flex-direction:column;align-items:flex-start;gap:4px;text-align:left">'
-      + '<b>📖 Repaso de módulos · Estudio</b><small style="font-weight:600;color:var(--muted)">Preguntas generadas con retroalimentación, fórmula y procedimiento tras cada respuesta.</small></button>'
+      + '<b>Repaso de módulos · Estudio</b><small style="font-weight:600;color:var(--muted)">Preguntas generadas con retroalimentación, fórmula y procedimiento tras cada respuesta.</small></button>'
     + '<button class="btn repaso-card ghost" data-act="simulacion" style="flex-direction:column;align-items:flex-start;gap:4px;text-align:left">'
-      + '<b>📝 Examen de práctica · Simulación</b><small style="font-weight:600;color:var(--muted)">Preguntas generadas mezcladas; las respuestas se revelan al final.</small></button>';
+      + '<b>Examen de práctica · Simulación</b><small style="font-weight:600;color:var(--muted)">Preguntas generadas mezcladas; las respuestas se revelan al final.</small></button>';
   const o = openModal('<h2 style="margin-top:0">'+esc(subj.short)+' · '+esc(g.name)+'</h2>'
     + (real ? '<p class="q-help" style="margin:0 0 6px">Este parcial tiene el <b>examen real</b> del profesor y también un repaso generado.</p>'
             : '<p class="q-help" style="margin:0 0 6px">Aún no hay examen real de este parcial; practica con un examen generado de sus temas.</p>')
     + '<div class="repaso-grid">'+cards+'</div>'
-    + '<div class="q-actions" style="justify-content:center;margin-top:6px"><button class="btn ghost small" id="repBack">← Volver</button></div>');
+    + '<div class="q-actions" style="justify-content:center;margin-top:6px"><button class="btn ghost small" id="repBack">Volver</button></div>');
   o.querySelector('#repBack').addEventListener('click', () => { closeModal(); startRepasoExamen(); });
   o.querySelectorAll('[data-act]').forEach(b => b.addEventListener('click', () => {
     const act = b.dataset.act; closeModal();
     if(act==='real'){
       const qs = real.build();
-      if(!qs || !qs.length){ toast('🚧 Examen real no disponible.'); sfx('bad'); return; }
+      if(!qs || !qs.length){ toast('Examen real no disponible.'); sfx('bad'); return; }
       startMode({ id:'examreal_'+sid+'_'+gi, title:'📄 Examen real · '+g.name, icon:'📄', qs,
         hideAnswers:true, introToast:'📄 Examen real del profesor. Se califica al final; luego revisa cada respuesta con su procedimiento.' });
       return;
     }
     const qs = repasoPool(sid, g.mods, parcialNum, true);
-    if(!qs.length){ toast('🚧 Aún no hay preguntas para este parcial.'); sfx('bad'); return; }
+    if(!qs.length){ toast('Aún no hay preguntas para este parcial.'); sfx('bad'); return; }
     const titulo = 'Repaso · '+g.name+' · '+(act==='estudio'?'Estudio':'Simulación');
     startMode({ id:'repaso_'+sid+'_'+gi+'_'+act, title:titulo, icon:'🎓', qs,
       hideAnswers: act==='simulacion',
-      introToast: act==='estudio' ? '📖 Modo estudio: revisa la solución en cada pregunta.' : '📝 Simulación: las respuestas se revelan al final.' });
+      introToast: act==='estudio' ? 'Modo estudio: revisa la solución en cada pregunta.' : 'Simulación: las respuestas se revelan al final.' });
   }));
 }
 
@@ -5121,7 +5124,7 @@ function modeAvailable(m){
 function renderModes(){
   const hasContent = MODULES.length>0;
   const cats = [...new Set(GAME_MODES.map(m=>m.cat))];
-  let html = '<div class="panel"><h3>🎮 Elige un modo de juego</h3>'
+  let html = '<div class="panel"><h3>Elige un modo de juego</h3>'
     + '<p class="q-help">Cada modo suma XP, registra tus errores y actualiza tus estadísticas de '+esc(subjectById(S.activeSubject).short)+'.'
     + (hasContent?'':' Esta materia aún no tiene contenido de práctica; prueba con Cálculo Actuarial III.')+'</p></div>';
   cats.forEach(cat => {
@@ -5131,8 +5134,8 @@ function renderModes(){
         const ok = modeAvailable(m);
         const colors = {Quiz:'var(--c1)',Exámenes:'var(--c5)',Rapidez:'var(--c8)',Repaso:'var(--c2)','Práctica':'var(--c3)',Juegos:'var(--c6)',Multijugador:'var(--c7)'};
         return '<button class="mode-card'+(ok?'':' locked')+'" style="--mc:'+(colors[cat]||'var(--accent)')+'" data-mode="'+m.id+'"'+(ok?'':' disabled')+'>'
-          + '<span class="mo-cat">'+cat+'</span><span class="mo-ico">'+m.ico+'</span><h4>'+esc(m.name)+'</h4><p>'+esc(m.desc)+'</p>'
-          + (ok?'':'<span class="mo-cat" style="color:var(--muted)">🔒 '+(m.needs==='ca3'?'Solo en Cálculo III':m.needs==='repaso'?'Requiere módulos del curso':'Requiere contenido')+'</span>')
+          + '<span class="mo-cat">'+cat+'</span><span class="mo-ico">'+ico(m.ico)+'</span><h4>'+esc(m.name)+'</h4><p>'+esc(m.desc)+'</p>'
+          + (ok?'':'<span class="mo-cat" style="color:var(--muted)">'+ico('🔒')+' '+(m.needs==='ca3'?'Solo en Cálculo III':m.needs==='repaso'?'Requiere módulos del curso':'Requiere contenido')+'</span>')
           + '</button>';
       }).join('') + '</div>';
   });
@@ -5309,49 +5312,49 @@ async function lbFetchRemote(){
    existe ese nombre con MÁS XP, el servidor rechaza (y la app también avisa
    antes de enviar) para que nadie pise las stats de otro con un nombre ajeno. */
 async function lbUploadSelf(){
-  if(!LB_SYNC_URL){ toast('🔧 La sincronización en vivo aún no está configurada.'); sfx('bad'); return; }
+  if(!LB_SYNC_URL){ toast('La sincronización en vivo aún no está configurada.'); sfx('bad'); return; }
   const b = lbSyncSelf();
   const me = b.students.find(s => s.pid === PROFILES.active); if(!me) return;
   // pre-chequeo local: ¿ya hay otra fila con mi mismo nombre y más XP?
   const rival = b.students.find(s => s.pid !== PROFILES.active
     && (s.name||'').trim().toLowerCase() === (me.name||'').trim().toLowerCase()
     && (s.xp||0) > (me.xp||0));
-  if(rival){ toast('🚫 Alguien más ya tiene mejores stats con ese nombre.'); sfx('bad'); return; }
+  if(rival){ toast('Alguien más ya tiene mejores stats con ese nombre.'); sfx('bad'); return; }
   const row = { name:me.name, xp:me.xp, lvl:me.lvl, mods:me.mods, streak:me.streak, avg:me.avg,
     avatar:me.avatar, avatarMode:(me.avatarMode==='custom'?'custom':'emoji'), custom:me.custom||null,
     frame:me.frame||null, title:me.title||'', badge:me.badge||null, acc:me.acc||[], bg:me.bg||null, updated:Date.now() };
   try{
-    toast('⬆️ Subiendo tus stats…');
+    toast('Subiendo tus stats…');
     const res = await fetch(LB_SYNC_URL, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify(row) });
     if(!res.ok) throw new Error('http '+res.status);
     let data = null; try{ data = await res.json(); }catch(e){}
     if(data && data.error === 'lower'){
-      toast('🚫 '+(data.message || 'Alguien más ya tiene mejores stats con ese nombre.')); sfx('bad');
+      toast(''+(data.message || 'Alguien más ya tiene mejores stats con ese nombre.')); sfx('bad');
       lbFetchedAt = 0; lbMaybeFetch(true);           // refresca para mostrar las stats reales
       return;
     }
-    toast('✅ ¡Stats subidas! El grupo ya te ve.'); sfx('unlock');
+    toast('¡Stats subidas! El grupo ya te ve.'); sfx('unlock');
     lbFetchedAt = 0; lbMaybeFetch(true);
-  }catch(e){ toast('❌ No se pudo subir. Revisa tu conexión o la URL de sincronización.'); sfx('bad'); }
+  }catch(e){ toast('No se pudo subir. Revisa tu conexión o la URL de sincronización.'); sfx('bad'); }
 }
 function lbMaybeFetch(force){
   if(!force && Date.now() - lbFetchedAt < 60000) return;
   lbFetchedAt = Date.now();
   lbFetchRemote().then(n => {
-    if(n > 0){ renderBoard(); toast('🌐 Leaderboard sincronizado: '+n+' fila'+(n===1?'':'s')+' actualizada'+(n===1?'':'s')); }
+    if(n > 0){ renderBoard(); toast('Leaderboard sincronizado: '+n+' fila'+(n===1?'':'s')+' actualizada'+(n===1?'':'s')); }
     else if(force) toast(n === -1 ? '🌐 No se pudo descargar la tabla compartida' : '🌐 Ya estás al día');
   });
 }
 function lbMotivation(pos, total){
   if(!pos) return '🎯 Aparece en la tabla completando actividades para ganar XP.';
-  if(pos===1) return '👑 ¡Eres el número 1! Defiende tu corona con la racha diaria.';
+  if(pos===1) return '¡Eres el número 1! Defiende tu corona con la racha diaria.';
   if(pos<=3) return '🥈 ¡Estás en el podio! El primer lugar está a unos cuantos XP.';
   if(pos <= Math.ceil(total/2)) return '💪 Vas en la parte alta de la tabla. ¡Sigue sumando XP!';
   return '🚀 Cada actividad suma XP. ¡Tú puedes escalar posiciones!';
 }
 /* — Leaderboard: fila de un estudiante (la propia usa el equipo real) — */
 function lbRowHTML(s, i){
-  const medal = i===0?'🥇':i===1?'🥈':i===2?'🥉':'';
+  const medal = i===0?ico('🥇'):i===1?ico('🥈'):i===2?ico('🥉'):'';
   const isMe = s.pid===PROFILES.active;
   const eqOv = isMe ? ensureEquip() : {frame:s.frame||null, acc:s.acc||[], bg:s.bg||null, effect:null};
   const title = isMe ? currentTitle() : (s.title||'');
@@ -5372,8 +5375,8 @@ function lbRowHTML(s, i){
     + '<td class="num"><b>'+(s.xp||0).toLocaleString()+'</b></td>'
     + '<td class="num">'+(s.lvl||1)+'</td>'
     + '<td class="num">'+(s.avg!=null?s.avg+'%':'—')+'</td>'
-    + '<td class="num">'+(s.streak||0)+' 🔥</td>'
-    + (lbAdminOn ? '<td><button class="btn ghost small" data-lbedit="'+esc(s.pid)+'">✏️</button> <button class="btn ghost small" data-lbdel="'+esc(s.pid)+'">🗑️</button></td>' : '')
+    + '<td class="num">'+(s.streak||0)+'</td>'
+    + (lbAdminOn ? '<td><button class="btn ghost small" data-lbedit="'+esc(s.pid)+'"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/></svg></button> <button class="btn ghost small" data-lbdel="'+esc(s.pid)+'"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg></button></td>' : '')
     + '</tr>';
 }
 /* — Leaderboard: modal con las stats de un estudiante (al tocar su avatar o nombre).
@@ -5398,7 +5401,7 @@ function lbShowStudent(pid){
   const tIco = isMe ? titleIco() : titleIcoByName(title);
   const badgeId = isMe ? (S.equip&&S.equip.badge) : s.badge;
   const bd = badgeId ? BADGES.find(b=>b.id===badgeId) : null;
-  const medal = pos===1?'🥇':pos===2?'🥈':pos===3?'🥉':'';
+  const medal = pos===1?ico('🥇'):pos===2?ico('🥈'):pos===3?ico('🥉'):'';
   const tile = (label, value, sub) => '<div class="tile"><div class="t-label">'+label+'</div><div class="t-value">'+value+'</div>'+(sub?'<div class="t-sub">'+sub+'</div>':'')+'</div>';
   openModal(
     '<div class="lbs-head">'
@@ -5408,16 +5411,16 @@ function lbShowStudent(pid){
         + '<div style="color:var(--ink2);font-size:.9rem;margin-top:2px">'+(medal?medal+' ':'')+'Puesto #'+pos+' de '+ranked.length+(isMe?' · <b>eres tú</b>':'')+'</div></div>'
     + '</div>'
     + '<div class="lbs-tiles">'
-      + tile('⚡ Nivel', lvl, 'Faltan '+toNext.toLocaleString()+' XP para el '+(lvl+1))
-      + tile('✨ XP total', (s.xp||0).toLocaleString())
+      + tile('Nivel', lvl, 'Faltan '+toNext.toLocaleString()+' XP para el '+(lvl+1))
+      + tile('XP total', (s.xp||0).toLocaleString())
       + tile('✅ Módulos', (s.mods||0)+(totalMods?' <span class="unit">/ '+totalMods+'</span>':''), 'completados en todas las materias')
       + tile('📈 Promedio', s.avg!=null? s.avg+'%' : '—', 'de sus exámenes')
-      + tile('🔥 Racha', (s.streak||0), (s.streak===1?'día':'días')+' seguidos')
+      + tile('Racha', (s.streak||0), (s.streak===1?'día':'días')+' seguidos')
     + '</div>'
     + '<div class="lbs-bar"><span style="width:'+Math.round(frac*100)+'%"></span></div>'
-    + '<p class="q-help" style="margin-top:10px">🕒 Última actualización: '+(s.updated?fmtDate(s.updated):'—')+'</p>'
+    + '<p class="q-help" style="margin-top:10px">Última actualización: '+(s.updated?fmtDate(s.updated):'—')+'</p>'
     + '<div class="q-actions" style="justify-content:flex-end;margin-top:14px;flex-wrap:wrap">'
-      + (!isMe && board.students.some(x=>x.pid===PROFILES.active) ? '<button class="btn ghost" id="lbsCompare" data-pid="'+esc(s.pid)+'">⚖️ Comparar con el mío</button>' : '')
+      + (!isMe && board.students.some(x=>x.pid===PROFILES.active) ? '<button class="btn ghost" id="lbsCompare" data-pid="'+esc(s.pid)+'">Comparar con el mío</button>' : '')
       + '<button class="btn" id="lbsClose">Cerrar</button></div>'
   );
   const c = document.getElementById('lbsClose'); if(c) c.addEventListener('click', ()=>{ sfx('click'); closeModal(); });
@@ -5441,7 +5444,7 @@ function lbCompare(pid){
     ['⚡ Nivel', me.lvl||levelOf(me.xp||0), other.lvl||levelOf(other.xp||0), 'high'],
     ['✅ Módulos', me.mods||0, other.mods||0, 'high'],
     ['📈 Promedio', me.avg!=null?me.avg:0, other.avg!=null?other.avg:0, 'high'],
-    ['🔥 Racha', me.streak||0, other.streak||0, 'high'],
+    ['Racha', me.streak||0, other.streak||0, 'high'],
     ['🏆 Puesto', posOf(PROFILES.active), posOf(pid), 'low']
   ];
   const fmtV = (label,v) => label==='📈 Promedio' ? v+'%' : label==='🏆 Puesto' ? '#'+v : (+v).toLocaleString();
@@ -5451,17 +5454,17 @@ function lbCompare(pid){
     if(aWin) myWins++; if(bWin) otherWins++;
     return '<tr><td class="'+(aWin?'cmp-win':'')+'">'+fmtV(label,a)+'</td><th>'+label+'</th><td class="'+(bWin?'cmp-win':'')+'">'+fmtV(label,b)+'</td></tr>';
   }).join('');
-  const verdict = myWins>otherWins ? '🎉 Vas arriba, '+esc((me.name||'tú').split(' ')[0])+'.'
+  const verdict = myWins>otherWins ? 'Vas arriba, '+esc((me.name||'tú').split(' ')[0])+'.'
     : otherWins>myWins ? '💪 '+esc((other.name||'').split(' ')[0])+' va arriba. ¡A darle!'
     : '🤝 Empate técnico.';
   openModal(
-    '<h2 style="margin-top:0">⚖️ Comparación</h2>'
+    '<h2 style="margin-top:0">Comparación</h2>'
     + '<table class="cmp-table"><tr>'
       + '<th style="text-align:center">'+avOf(me,true)+'<br><b>'+esc(me.name||'Tú')+'</b></th><th></th>'
       + '<th style="text-align:center">'+avOf(other,false)+'<br><b>'+esc(other.name||'—')+'</b></th></tr>'
     + body + '</table>'
     + '<p class="lb-motiv" style="text-align:center">'+verdict+' ('+myWins+' – '+otherWins+')</p>'
-    + '<div class="q-actions" style="justify-content:flex-end;margin-top:6px"><button class="btn ghost" id="cmpBack">← Volver</button><button class="btn" id="cmpClose">Cerrar</button></div>'
+    + '<div class="q-actions" style="justify-content:flex-end;margin-top:6px"><button class="btn ghost" id="cmpBack">Volver</button><button class="btn" id="cmpClose">Cerrar</button></div>'
   );
   const bk = document.getElementById('cmpBack'); if(bk) bk.addEventListener('click', ()=>{ sfx('click'); lbShowStudent(pid); });
   const cl = document.getElementById('cmpClose'); if(cl) cl.addEventListener('click', ()=>{ sfx('click'); closeModal(); });
@@ -5480,8 +5483,8 @@ function lbBoardPanelHTML(visible, myPos, total){
     + '</table>'
     + '<p class="lb-motiv">'+lbMotivation(myPos, total)+'</p>'
     + '<div class="q-actions" style="justify-content:flex-start;flex-wrap:wrap;margin-top:12px">'
-    + (LB_SYNC_URL ? '<button class="btn small" id="lbUpload">⬆️ Subir mis stats al grupo</button>' : '')
-    + '<button class="btn ghost small" id="lbRefresh">🔄 Actualizar</button>'
+    + (LB_SYNC_URL ? '<button class="btn small" id="lbUpload">Subir mis stats al grupo</button>' : '')
+    + '<button class="btn ghost small" id="lbRefresh">Actualizar</button>'
     + '</div>'
     + (LB_SYNC_URL
         ? '<p class="q-help"><b>Sincronización en vivo activada.</b> Toca “Subir mis stats” para aparecer en la tabla de todos; se actualiza por nombre.</p>'
@@ -5491,9 +5494,9 @@ function lbBoardPanelHTML(visible, myPos, total){
 /* — Leaderboard: panel de administrador (solo perfil "Oliver") — */
 function lbAdminPanelHTML(b){
   const editing = lbEditId ? b.students.find(s=>s.pid===lbEditId) : null;
-  return '<div class="panel" style="margin-top:16px"><h3>🛠️ Panel de administrador</h3>'
+  return '<div class="panel" style="margin-top:16px"><h3>Panel de administrador</h3>'
       + '<div class="q-actions" style="justify-content:flex-start;flex-wrap:wrap">'
-      + '<button class="btn small'+(lbAdminOn?'':' ghost')+'" id="lbAdminToggle">'+(lbAdminOn?'🟢 Modo administrador: ON':'⚪ Modo administrador: OFF')+'</button>'
+      + '<button class="btn small'+(lbAdminOn?'':' ghost')+'" id="lbAdminToggle">'+(lbAdminOn?'Modo administrador: ON':'Modo administrador: OFF')+'</button>'
       + (lbAdminOn ? '' : '<input class="ainput" id="lbAdminPass" type="password" placeholder="Contraseña de administrador" style="max-width:220px">')
       + '</div>'
       + (lbAdminOn ?
@@ -5508,8 +5511,8 @@ function lbAdminPanelHTML(b){
         + '<div class="q-actions" style="justify-content:flex-start;flex-wrap:wrap">'
         + '<button class="btn small" id="lbfSave">'+(editing?'💾 Guardar cambios':'➕ Agregar')+'</button>'
         + (editing?'<button class="btn ghost small" id="lbfCancel">Cancelar</button>':'')
-        + '<button class="btn ghost small" id="lbSort">↕️ Ordenar por XP</button>'
-        + '<button class="btn danger small" id="lbReset">🗑️ Resetear leaderboard</button>'
+        + '<button class="btn ghost small" id="lbSort">Ordenar por XP</button>'
+        + '<button class="btn danger small" id="lbReset">Resetear leaderboard</button>'
         + '</div>'
         + '<p class="q-help">El nivel se calcula solo a partir del XP. Usa ✏️ y 🗑️ en cada fila para editar o eliminar.</p>'
         : '<p class="q-help">Escribe la contraseña y toca el botón para activar el modo administrador.</p>')
@@ -5520,7 +5523,7 @@ function renderBoard(){
   const rankedXP = lbRanked(board);
   const myPos = rankedXP.findIndex(s => s.pid === PROFILES.active) + 1;   // la posición oficial es por XP
   // aviso de "subiste de rango" comparando con la última posición conocida
-  if(myPos && S.lbRank && myPos < S.lbRank){ toast('📈 ¡Subiste de rango! Ahora eres #'+myPos); confetti(45); sfx('unlock'); }
+  if(myPos && S.lbRank && myPos < S.lbRank){ toast('¡Subiste de rango! Ahora eres #'+myPos); confetti(45); sfx('unlock'); }
   if(myPos && myPos !== S.lbRank){ S.lbRank = myPos; save(); }
   const shown = lbSorted(board, lbSort);     // orden mostrado (elegido por el usuario)
   const visible = shown.filter(s => !lbFilterQ || (s.name||'').toLowerCase().includes(lbFilterQ.toLowerCase()));
@@ -5544,17 +5547,17 @@ function bindBoardEvents(){
     if(!confirm('¿Eliminar a "'+s.name+'" del leaderboard?')) return;
     bd.students = bd.students.filter(x=>x.pid!==s.pid);
     lbSave(bd); if(lbEditId===s.pid) lbEditId=null;
-    renderBoard(); toast('🗑️ Estudiante eliminado'); sfx('click');
+    renderBoard(); toast('Estudiante eliminado'); sfx('click');
   }));
   const at = $('#lbAdminToggle');
   if(at) at.addEventListener('click', async () => {
     if(lbAdminOn){ lbAdminOn = false; lbEditId = null; sfx('click'); renderBoard(); return; }
     // siempre exige la contraseña al activar el modo administrador
     const pass = ($('#lbAdminPass') && $('#lbAdminPass').value) || '';
-    if(!pass){ toast('🔑 Escribe la contraseña de administrador'); sfx('bad'); return; }
+    if(!pass){ toast('Escribe la contraseña de administrador'); sfx('bad'); return; }
     const good = await lbCheckPass(pass);
-    if(!good){ toast('❌ Contraseña incorrecta'); sfx('bad'); return; }
-    lbAdminOn = true; sfx('unlock'); toast('🛠️ Modo administrador activado'); renderBoard();
+    if(!good){ toast('Contraseña incorrecta'); sfx('bad'); return; }
+    lbAdminOn = true; sfx('unlock'); toast('Modo administrador activado'); renderBoard();
   });
   const fs = $('#lbfSave');
   if(fs) fs.addEventListener('click', () => {
@@ -5567,30 +5570,30 @@ function bindBoardEvents(){
       if(ent){
         if(ent.pid === PROFILES.active){ toast('Tu propia fila se sincroniza con tu progreso real; no se edita a mano.'); lbEditId=null; renderBoard(); return; }
         Object.assign(ent, {name:name.slice(0,24), xp, lvl:levelOf(xp), streak:Math.max(0,+$('#lbfStreak').value||0), mods:clamp(+$('#lbfMods').value||0,0,MODULES.length), updated:Date.now()});
-        toast('💾 Estudiante actualizado');
+        toast('Estudiante actualizado');
       }
       lbEditId = null;
     } else {
       bd.students.push({pid:'m'+Date.now().toString(36), name:name.slice(0,24), avatar:'🎓', xp, lvl:levelOf(xp), streak:Math.max(0,+$('#lbfStreak').value||0), mods:clamp(+$('#lbfMods').value||0,0,MODULES.length), updated:Date.now()});
-      toast('➕ Estudiante agregado');
+      toast('Estudiante agregado');
     }
     lbSave(bd); sfx('ok'); renderBoard();
   });
   const fc = $('#lbfCancel');
   if(fc) fc.addEventListener('click', () => { lbEditId = null; renderBoard(); });
   const so = $('#lbSort');
-  if(so) so.addEventListener('click', () => { const bd = lbLoad(); bd.students = lbRanked(bd); lbSave(bd); renderBoard(); toast('↕️ Ordenado por XP'); sfx('click'); });
+  if(so) so.addEventListener('click', () => { const bd = lbLoad(); bd.students = lbRanked(bd); lbSave(bd); renderBoard(); toast('Ordenado por XP'); sfx('click'); });
   const rs = $('#lbReset');
   if(rs) rs.addEventListener('click', () => {
     if(!confirm('¿Borrar TODO el leaderboard? Tu fila se volverá a crear con tu progreso actual.')) return;
-    lbSave({students:[]}); lbEditId=null; renderBoard(); toast('🗑️ Leaderboard reiniciado'); sfx('bad');
+    lbSave({students:[]}); lbEditId=null; renderBoard(); toast('Leaderboard reiniciado'); sfx('bad');
   });
 }
 $('#btnBoard').addEventListener('click', () => { sfx('click'); renderBoard(); showView('board'); lbMaybeFetch(); });
 
 /* ==================== Tareas y calendario de exámenes ====================
    SEED_TASKS / SEED_CALENDAR: el administrador puede editarlos directamente
-   aquí en el HTML (y publicar) o desde su panel dentro de la vista 📋.
+   aquí en el HTML (y publicar) o desde su panel dentro de la vista de Tareas.
    Formato de tarea:
    {id, title, subject:'ca3'|'modelos-regresion'|'estadistica-no-parametrica'|'stoch'|'administracion-financiera'|'all', partial:1|2|3|'final',
     due:'YYYY-MM-DD', priority:'alta'|'media'|'baja', desc, steps:[], materials:[],
@@ -5638,16 +5641,16 @@ function calMerged(){
 const PERIOD_NAMES = {p1:'1.er parcial', p2:'2.º parcial', p3:'3.er parcial', final:'Examen final'};
 function daysUntil(d){ if(!d) return null; return Math.round((new Date(d+'T00:00') - new Date(todayKey()+'T00:00'))/86400000); }
 function fmtDay(d){ return d ? new Date(d+'T00:00').toLocaleDateString('es-MX',{weekday:'short', day:'2-digit', month:'short'}) : '—'; }
-function partialLabel(t){ return t.partial==='final' ? '🏁 Final' : '📖 Parcial '+t.partial; }
+function partialLabel(t){ return t.partial==='final' ? 'Final' : 'Parcial '+t.partial; }
 function dueChipHTML(t){
-  if(!t.due) return '<span class="due-chip">📅 Sin fecha límite</span>';
+  if(!t.due) return '<span class="due-chip">Sin fecha límite</span>';
   const dd = daysUntil(t.due);
   const f = fmtDay(t.due);
-  if(S.taskDone[t.id]) return '<span class="due-chip">📅 '+f+'</span>';
+  if(S.taskDone[t.id]) return '<span class="due-chip">'+f+'</span>';
   if(dd < 0)  return '<span class="due-chip late">⌛ Venció el '+f+'</span>';
   if(dd === 0) return '<span class="due-chip soon">🚨 ¡Vence HOY!</span>';
   if(dd <= 3) return '<span class="due-chip soon">⏰ Vence en '+dd+' día'+(dd===1?'':'s')+' · '+f+'</span>';
-  return '<span class="due-chip">📅 '+f+' · faltan '+dd+' días</span>';
+  return '<span class="due-chip">'+f+' · faltan '+dd+' días</span>';
 }
 let taskTab = 'activas', taskAdminOn = false, taskEditId = null;
 const tFilters = { subj:'', part:'', state:'', q:'' };
@@ -5672,27 +5675,27 @@ function taskCardHTML(t, archived){
     + '<input type="checkbox" data-tdone="'+esc(t.id)+'"'+(done?' checked':'')+' style="width:19px;height:19px;accent-color:var(--good)"> Ya la realicé</label>'
     + '</div>'
     + (t.desc ? '<p style="font-size:.9rem;color:var(--ink2);margin:8px 0 0">'+esc(t.desc)+'</p>' : '')
-    + (t.steps && t.steps.length ? '<details><summary>📋 Pasos sugeridos ('+t.steps.length+')</summary><ol style="margin:6px 0;padding-left:20px">'+t.steps.map(s=>'<li>'+esc(s)+'</li>').join('')+'</ol></details>' : '')
+    + (t.steps && t.steps.length ? '<details><summary>Pasos sugeridos ('+t.steps.length+')</summary><ol style="margin:6px 0;padding-left:20px">'+t.steps.map(s=>'<li>'+esc(s)+'</li>').join('')+'</ol></details>' : '')
     + (t.materials && t.materials.length ? '<details><summary>📎 Materiales</summary><ul style="margin:6px 0;padding-left:20px">'+t.materials.map(m=>'<li>'+esc(m)+'</li>').join('')+'</ul></details>' : '')
-    + (t.notes ? '<p class="q-help" style="margin-top:6px">📝 '+esc(t.notes)+'</p>' : '')
+    + (t.notes ? '<p class="q-help" style="margin-top:6px">'+esc(t.notes)+'</p>' : '')
     + '<p class="q-help" style="margin-top:6px">Publicada: '+(t.published||'—')+(done?' · realizada el '+new Date(S.taskDone[t.id]).toLocaleDateString('es-MX'):'')+'</p>'
     + (taskAdminOn ? '<div class="q-actions" style="justify-content:flex-start;flex-wrap:wrap;margin-top:8px">'
-        + '<button class="btn ghost small" data-tedit="'+esc(t.id)+'">✏️ Editar</button>'
-        + '<button class="btn ghost small" data-tarch="'+esc(t.id)+'">'+(archived?'📤 Desarchivar':'🗂️ Archivar')+'</button>'
-        + '<button class="btn danger small" data-tdel="'+esc(t.id)+'">🗑️ Eliminar</button></div>' : '')
+        + '<button class="btn ghost small" data-tedit="'+esc(t.id)+'">Editar</button>'
+        + '<button class="btn ghost small" data-tarch="'+esc(t.id)+'">'+(archived?'Desarchivar':'Archivar')+'</button>'
+        + '<button class="btn danger small" data-tdel="'+esc(t.id)+'">Eliminar</button></div>' : '')
     + '</div>';
 }
 function taskFiltersHTML(){
   return '<div class="lb-controls" style="margin-bottom:12px">'
     + '<input class="ainput" id="tfQ" placeholder="🔎 Buscar tarea…" value="'+esc(tFilters.q)+'">'
     + '<select class="ainput" id="tfSubj"><option value="">Todas las materias</option>'
-    + SUBJECTS.map(s=>'<option value="'+s.id+'"'+(tFilters.subj===s.id?' selected':'')+'>'+s.icon+' '+esc(s.short)+'</option>').join('')
-    + '<option value="all"'+(tFilters.subj==='all'?' selected':'')+'>📚 Generales</option></select>'
+    + SUBJECTS.map(s=>'<option value="'+s.id+'"'+(tFilters.subj===s.id?' selected':'')+'>'+esc(s.short)+'</option>').join('')
+    + '<option value="all"'+(tFilters.subj==='all'?' selected':'')+'>Generales</option></select>'
     + '<select class="ainput" id="tfPart"><option value="">Todos los parciales</option>'
-    + ['1','2','3','final'].map(p=>'<option value="'+p+'"'+(tFilters.part===p?' selected':'')+'>'+(p==='final'?'🏁 Final':'📖 Parcial '+p)+'</option>').join('')+'</select>'
+    + ['1','2','3','final'].map(p=>'<option value="'+p+'"'+(tFilters.part===p?' selected':'')+'>'+(p==='final'?'Final':'Parcial '+p)+'</option>').join('')+'</select>'
     + '<select class="ainput" id="tfState"><option value="">Todos los estados</option>'
-    + '<option value="pend"'+(tFilters.state==='pend'?' selected':'')+'>⏳ Pendientes</option>'
-    + '<option value="done"'+(tFilters.state==='done'?' selected':'')+'>✅ Realizadas</option></select>'
+    + '<option value="pend"'+(tFilters.state==='pend'?' selected':'')+'>Pendientes</option>'
+    + '<option value="done"'+(tFilters.state==='done'?' selected':'')+'>Realizadas</option></select>'
     + '</div>';
 }
 function taskMatchesFilters(t){
@@ -5716,7 +5719,7 @@ function renderCalendarHTML(){
     if(d && d >= today) upcoming.push({subj:s, per, d});
   }));
   upcoming.sort((a,b) => a.d.localeCompare(b.d));
-  let html = '<div class="panel" style="margin-bottom:14px"><h3>⏳ Próximos exámenes</h3>'
+  let html = '<div class="panel" style="margin-bottom:14px"><h3>Próximos exámenes</h3>'
     + (upcoming.length ? upcoming.slice(0,6).map(u => {
         const dd = daysUntil(u.d);
         return '<div class="cal-exam'+(dd<=7?' soon':'')+'"><span class="ce-date">'+fmtDay(u.d)+'</span>'
@@ -5729,13 +5732,13 @@ function renderCalendarHTML(){
   const arch = shLoad().archivedTasks || [];
   const soonTasks = allTasks().filter(t => !arch.includes(t.id) && !S.taskDone[t.id] && t.due && daysUntil(t.due) >= 0 && daysUntil(t.due) <= 7)
     .sort((a,b) => a.due.localeCompare(b.due));
-  html += '<div class="panel" style="margin-bottom:14px"><h3>📌 Tareas que vencen esta semana</h3>'
+  html += '<div class="panel" style="margin-bottom:14px"><h3>Tareas que vencen esta semana</h3>'
     + (soonTasks.length ? soonTasks.map(t => {
         const subj = t.subject==='all' ? {icon:'📚', short:'Todas'} : subjectById(t.subject);
         return '<div class="cal-exam"><span class="ce-date">'+fmtDay(t.due)+'</span>'
-          + '<span style="flex:1">'+subj.icon+' '+esc(t.title)+'</span>'+dueChipHTML(t)+'</div>';
+          + '<span style="flex:1">'+subjSVG(subj.id)+' '+esc(t.title)+'</span>'+dueChipHTML(t)+'</div>';
       }).join('')
-      : '<p style="color:var(--good-text);font-size:.87rem;font-weight:700">🎉 Nada vence en los próximos 7 días.</p>')
+      : '<p style="color:var(--good-text);font-size:.87rem;font-weight:700">Nada vence en los próximos 7 días.</p>')
     + '</div>';
   // — Fechas y preparación por materia —
   html += '<div class="dash-grid">' + SUBJECTS.map(s => {
@@ -5749,8 +5752,8 @@ function renderCalendarHTML(){
            : (d ? (dd>=0 ? '<span class="due-chip'+(dd<=7?' soon':'')+'">'+(dd===0?'¡HOY!':'en '+dd+' días')+'</span>' : '<span class="due-chip">ya pasó</span>') : '<span class="due-chip">sin fecha</span>'))
         + '</div>';
     }).join('');
-    return '<div class="panel"><h3>'+s.icon+' '+esc(s.short)+'</h3>'+rows
-      + '<h4 style="margin:12px 0 6px;font-size:.82rem;color:var(--ink2)">🎯 Tu preparación</h4>'
+    return '<div class="panel"><h3>'+subjSVG(s.id)+' '+esc(s.short)+'</h3>'+rows
+      + '<h4 style="margin:12px 0 6px;font-size:.82rem;color:var(--ink2)">Tu preparación</h4>'
       + '<div class="hbar-row"><span class="hb-label">Módulos</span><span class="hbar-track"><i style="width:'+(st.total?Math.round(st.done/st.total*100):0)+'%"></i></span><span class="hb-val">'+st.done+'/'+(st.total||'—')+'</span></div>'
       + '<div class="hbar-row"><span class="hb-label">Promedio</span><span class="hbar-track"><i style="width:'+st.avg+'%"></i></span><span class="hb-val">'+(st.attempts?st.avg+'%':'—')+'</span></div>'
       + '<p class="q-help">'+(st.total ? (st.done===st.total ? '🏆 Materia dominada en la app' : st.attempts ? 'Sigue practicando para llegar al examen preparado' : 'Aún no practicas esta materia en la app') : 'Contenido de práctica en preparación')+'</p>'
@@ -5761,9 +5764,9 @@ function renderCalendarHTML(){
 function taskAdminHTML(){
   if(!lbIsAdmin()) return '';
   const editing = taskEditId ? allTasks().find(t => t.id === taskEditId) : null;
-  let html = '<div class="panel" style="margin-top:16px"><h3>🛠️ Panel de administrador · Tareas</h3>'
+  let html = '<div class="panel" style="margin-top:16px"><h3>Panel de administrador · Tareas</h3>'
     + '<div class="q-actions" style="justify-content:flex-start;flex-wrap:wrap">'
-    + '<button class="btn small'+(taskAdminOn?'':' ghost')+'" id="tAdminToggle">'+(taskAdminOn?'🟢 Modo administrador: ON':'⚪ Modo administrador: OFF')+'</button>'
+    + '<button class="btn small'+(taskAdminOn?'':' ghost')+'" id="tAdminToggle">'+(taskAdminOn?'Modo administrador: ON':'Modo administrador: OFF')+'</button>'
     + (taskAdminOn ? '' : '<input class="ainput" id="tAdminPass" type="password" placeholder="Contraseña de administrador" style="max-width:220px">')
     + '</div>';
   if(taskAdminOn){
@@ -5773,10 +5776,10 @@ function taskAdminHTML(){
       + '<input class="ainput" id="tfTitle" placeholder="Título de la tarea" maxlength="90" value="'+esc(editing?editing.title:'')+'">'
       + '</div><div class="lb-controls">'
       + '<select class="ainput" id="tfSubject">'
-      + SUBJECTS.map(s=>'<option value="'+s.id+'"'+(editing&&editing.subject===s.id?' selected':'')+'>'+s.icon+' '+esc(s.short)+'</option>').join('')
-      + '<option value="all"'+(editing&&editing.subject==='all'?' selected':'')+'>📚 Todas las materias</option></select>'
+      + SUBJECTS.map(s=>'<option value="'+s.id+'"'+(editing&&editing.subject===s.id?' selected':'')+'>'+esc(s.short)+'</option>').join('')
+      + '<option value="all"'+(editing&&editing.subject==='all'?' selected':'')+'>Todas las materias</option></select>'
       + '<select class="ainput" id="tfPartial">'
-      + ['1','2','3','final'].map(p=>'<option value="'+p+'"'+(editing&&String(editing.partial)===p?' selected':'')+'>'+(p==='final'?'🏁 Final':'📖 Parcial '+p)+'</option>').join('')+'</select>'
+      + ['1','2','3','final'].map(p=>'<option value="'+p+'"'+(editing&&String(editing.partial)===p?' selected':'')+'>'+(p==='final'?'Final':'Parcial '+p)+'</option>').join('')+'</select>'
       + '<input class="ainput" type="date" id="tfDue" value="'+esc(editing&&editing.due?editing.due:'')+'" style="max-width:170px">'
       + '<select class="ainput" id="tfPrio" style="max-width:150px">'
       + ['alta','media','baja'].map(p=>'<option value="'+p+'"'+((editing?editing.priority:'media')===p?' selected':'')+'>Prioridad '+p+'</option>').join('')+'</select>'
@@ -5788,12 +5791,12 @@ function taskAdminHTML(){
       + '<div class="q-actions" style="justify-content:flex-start;flex-wrap:wrap">'
       + '<button class="btn small" id="tfSave">'+(editing?'💾 Guardar cambios':'➕ Publicar tarea')+'</button>'
       + (editing ? '<button class="btn ghost small" id="tfCancel">Cancelar</button>' : '')
-      + '<button class="btn ghost small" id="tExport">⬇️ Exportar tasks.json</button>'
-      + '<button class="btn ghost small" id="tImport">⬆️ Importar</button>'
+      + '<button class="btn ghost small" id="tExport">Exportar tasks.json</button>'
+      + '<button class="btn ghost small" id="tImport">Importar</button>'
       + '<input type="file" id="tImportFile" accept=".json,application/json" class="hidden">'
       + '</div>'
-      + '<p class="q-help">🌐 <b>Para publicar a todo el grupo:</b> toca “⬇️ Exportar tasks.json” y sube ese archivo al repositorio reemplazando <code>tasks.json</code> (Add file → Upload files). Al desplegarse, todos verán las tareas y fechas al abrir 📋 Tareas.</p>'
-      + '<p class="q-help">En la pestaña 📅 Calendario capturas las fechas de exámenes con el modo admin activado. Usa ✏️ / 🗂️ / 🗑️ en cada tarjeta para editar, archivar o eliminar.</p>';
+      + '<p class="q-help">🌐 <b>Para publicar a todo el grupo:</b> toca “⬇️ Exportar tasks.json” y sube ese archivo al repositorio reemplazando <code>tasks.json</code> (Add file → Upload files). Al desplegarse, todos verán las tareas y fechas al abrir Tareas.</p>'
+      + '<p class="q-help">En la pestaña Calendario capturas las fechas de exámenes con el modo admin activado. Usa ✏️ / 🗂️ / 🗑️ en cada tarjeta para editar, archivar o eliminar.</p>';
   } else {
     html += '<p class="q-help">Escribe la contraseña y toca el botón para administrar tareas y fechas de exámenes.</p>';
   }
@@ -5823,12 +5826,12 @@ function renderTasks(){
     list.sort((a,b) => (a.due||'9999').localeCompare(b.due||'9999'));
     html = '<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 10px">'
       + '<p style="font-weight:700;font-size:.9rem;margin:0;flex:1;min-width:180px">'
-      + (pend ? '⏳ Tienes <b>'+pend+'</b> tarea'+(pend===1?'':'s')+' pendiente'+(pend===1?'':'s')+' en total.' : '🎉 ¡Todo al día! No tienes tareas pendientes.')
-      + '</p><button class="btn ghost small" id="tRefreshTop">🔄 Actualizar</button></div>'
+      + (pend ? '⏳ Tienes <b>'+pend+'</b> tarea'+(pend===1?'':'s')+' pendiente'+(pend===1?'':'s')+' en total.' : '¡Todo al día! No tienes tareas pendientes.')
+      + '</p><button class="btn ghost small" id="tRefreshTop">Actualizar</button></div>'
       + taskFiltersHTML()
       + (list.length ? list.map(t => taskCardHTML(t, arch.includes(t.id))).join('')
          : '<div class="panel" style="text-align:center;color:var(--muted)">'
-           + (taskTab==='vencidas' ? '🎉 No tienes tareas vencidas.' : taskTab==='archivo' ? 'El archivo está vacío.' : 'No hay tareas que coincidan con el filtro.')+'</div>');
+           + (taskTab==='vencidas' ? 'No tienes tareas vencidas.' : taskTab==='archivo' ? 'El archivo está vacío.' : 'No hay tareas que coincidan con el filtro.')+'</div>');
   }
   html += taskAdminHTML();
   $('#tasksBody').innerHTML = html;
@@ -5848,7 +5851,7 @@ function bindTaskEvents(){
   // marcar realizada
   $$('#tasksBody [data-tdone]').forEach(ch => ch.addEventListener('change', e => {
     const id = ch.dataset.tdone;
-    if(e.target.checked){ S.taskDone[id] = Date.now(); toast('✅ Tarea marcada como realizada'); sfx('ok'); }
+    if(e.target.checked){ S.taskDone[id] = Date.now(); toast('Tarea marcada como realizada'); sfx('ok'); }
     else { delete S.taskDone[id]; sfx('click'); }
     save(); updateTaskBadge(); renderTasks();
   }));
@@ -5858,7 +5861,7 @@ function bindTaskEvents(){
     const sh = shLoad();
     sh.calendar[sid] = sh.calendar[sid] || {};
     sh.calendar[sid][per] = e.target.value || '';
-    shSave(sh); toast('📅 Fecha guardada: '+subjectById(sid).short+' · '+PERIOD_NAMES[per]); sfx('ok'); renderTasks();
+    shSave(sh); toast('Fecha guardada: '+subjectById(sid).short+' · '+PERIOD_NAMES[per]); sfx('ok'); renderTasks();
   }));
   // admin: activar/desactivar
   const at = $('#tAdminToggle');
@@ -5866,10 +5869,10 @@ function bindTaskEvents(){
     if(taskAdminOn){ taskAdminOn = false; taskEditId = null; sfx('click'); renderTasks(); return; }
     // siempre exige la contraseña al activar el modo administrador
     const pass = ($('#tAdminPass') && $('#tAdminPass').value) || '';
-    if(!pass){ toast('🔑 Escribe la contraseña de administrador'); sfx('bad'); return; }
+    if(!pass){ toast('Escribe la contraseña de administrador'); sfx('bad'); return; }
     const good = await lbCheckPass(pass);
-    if(!good){ toast('❌ Contraseña incorrecta'); sfx('bad'); return; }
-    taskAdminOn = true; sfx('unlock'); toast('🛠️ Modo administrador de tareas activado'); renderTasks();
+    if(!good){ toast('Contraseña incorrecta'); sfx('bad'); return; }
+    taskAdminOn = true; sfx('unlock'); toast('Modo administrador de tareas activado'); renderTasks();
   });
   // admin: guardar/editar tarea
   const ts = $('#tfSave');
@@ -5914,7 +5917,7 @@ function bindTaskEvents(){
     delete sh.tasks[t.id];
     if(!sh.deletedTasks.includes(t.id)) sh.deletedTasks.push(t.id);
     shSave(sh); if(taskEditId===t.id) taskEditId=null;
-    toast('🗑️ Tarea eliminada'); sfx('bad'); updateTaskBadge(); renderTasks();
+    toast('Tarea eliminada'); sfx('bad'); updateTaskBadge(); renderTasks();
   }));
   // admin: exportar / importar tareas + calendario
   const te = $('#tExport');
@@ -5925,10 +5928,10 @@ function bindTaskEvents(){
     // publica directo al servidor (requiere cuenta admin); si falla, descarga el JSON como antes
     try{
       await window.AQ.api('PUT', '/api/tasks', payload);
-      toast('🌐 ¡Tareas publicadas! Todo el grupo las verá al abrir la app.'); sfx('win');
+      toast('¡Tareas publicadas! Todo el grupo las verá al abrir la app.'); sfx('win');
     }catch(e){
-      if(e.status === 403){ toast('🚫 Tu cuenta no es administradora en el servidor.'); sfx('bad'); }
-      else { downloadJSON('tasks.json', payload); toast('⚠️ Sin conexión con el servidor: se descargó tasks.json como respaldo.'); }
+      if(e.status === 403){ toast('Tu cuenta no es administradora en el servidor.'); sfx('bad'); }
+      else { downloadJSON('tasks.json', payload); toast('Sin conexión con el servidor: se descargó tasks.json como respaldo.'); }
     }
   });
   const trf = $('#tRefresh');
@@ -5947,13 +5950,13 @@ function bindTaskEvents(){
       if(Array.isArray(payload.deletedTasks)) sh.deletedTasks = payload.deletedTasks;
       if(payload.calendar) SUBJECTS.forEach(s => { if(payload.calendar[s.id]) { sh.calendar[s.id] = Object.assign({}, sh.calendar[s.id]||{}, payload.calendar[s.id]); } });
       shSave(sh);
-      toast('⬆️ Tareas y calendario importados'); sfx('unlock'); updateTaskBadge(); renderTasks();
+      toast('Tareas y calendario importados'); sfx('unlock'); updateTaskBadge(); renderTasks();
     });
   });
 }
 /* — Tareas y calendario compartidos: tasks.json publicado junto a la página —
    El admin edita las tareas, exporta tasks.json y lo sube al repositorio; al
-   desplegarse, todos los alumnos reciben la versión nueva al abrir 📋 Tareas.
+   desplegarse, todos los alumnos reciben la versión nueva al abrir Tareas.
    Se aplica solo si el archivo trae una fecha (updated) más reciente que la
    última importada, para no pisar tus cambios locales si eres el admin. */
 let tasksFetchedAt = 0;
@@ -5986,7 +5989,7 @@ function tasksMaybeFetch(force){
   tasksFetchedAt = Date.now();
   tasksFetchRemote().then(n => {
     if(n > 0){ updateTaskBadge(); const tv = document.querySelector('#view-tasks:not(.hidden)'); if(tv) renderTasks();
-      toast('🌐 Tareas actualizadas desde el grupo'); }
+      toast('Tareas actualizadas desde el grupo'); }
     else if(force) toast(n === -1 ? '🌐 No se pudo descargar tasks.json' : '🌐 Ya tienes las tareas más recientes');
   });
 }
@@ -6057,7 +6060,7 @@ function statsTilesHTML(o, exams, exAvg){
     + tile('','Tiempo estudiado', fmtDur(S.totalTime), '', 'acumulado')
     + tile('','XP', S.xp, '', 'Nivel '+levelInfo().lvl)
     + tile('','Racha', S.streak, S.streak===1?' día':' días', 'mejor blitz: '+S.bestBlitz+' aciertos · mejor racha: '+(S.bestBlitzCombo||0))
-    + tile('📝','Exámenes diarios', exams.length, '', exams.length ? 'promedio '+exAvg+'%' : 'aún sin exámenes')
+    + tile('','Exámenes diarios', exams.length, '', exams.length ? 'promedio '+exAvg+'%' : 'aún sin exámenes')
     + '</div>';
 }
 /* — Estadísticas generales de todas las materias — */
@@ -6072,24 +6075,24 @@ function statsGlobalPanelHTML(myPos, lbTotal){
   { const cal = calMerged(), today = todayKey();
     SUBJECTS.forEach(s => Object.entries(cal[s.id]).forEach(([per,d]) => { if(d && d >= today) upcomingG.push({s, per, d}); }));
     upcomingG.sort((a,b)=>a.d.localeCompare(b.d)); }
-  return '<div class="panel"><h3>🌍 Generales · todas las materias</h3>'
+  return '<div class="panel"><h3>Generales · todas las materias</h3>'
     + '<div class="tag-list" style="margin-bottom:10px">'
-    + '<span class="tag neutral">⚡ '+S.xp.toLocaleString()+' XP · nivel '+levelInfo().lvl+'</span>'
-    + '<span class="tag neutral">📈 Promedio general: '+(withHist.length?globalAvg+'%':'—')+'</span>'
-    + '<span class="tag neutral">🔥 Racha: '+S.streak+(S.streak===1?' día':' días')+'</span>'
-    + '<span class="tag neutral">📚 Materias con actividad: '+withHist.length+'/'+SUBJECTS.length+'</span>'
-    + '<span class="tag neutral">🏆 Progreso total: '+globalProg+'%</span>'
-    + '<span class="tag neutral">📋 Tareas pendientes: '+pendingTasksCount()+'</span>'
-    + (topSubj && topSubj.xp>0 ? '<span class="tag dom">⭐ Más estudiada: '+topSubj.s.icon+' '+esc(topSubj.s.short)+' ('+topSubj.xp+' XP)</span>' : '')
-    + (myPos ? '<span class="tag neutral">🥇 Leaderboard: #'+myPos+' de '+lbTotal+'</span>' : '')
+    + '<span class="tag neutral">'+S.xp.toLocaleString()+' XP · nivel '+levelInfo().lvl+'</span>'
+    + '<span class="tag neutral">Promedio general: '+(withHist.length?globalAvg+'%':'—')+'</span>'
+    + '<span class="tag neutral">Racha: '+S.streak+(S.streak===1?' día':' días')+'</span>'
+    + '<span class="tag neutral">Materias con actividad: '+withHist.length+'/'+SUBJECTS.length+'</span>'
+    + '<span class="tag neutral">Progreso total: '+globalProg+'%</span>'
+    + '<span class="tag neutral">Tareas pendientes: '+pendingTasksCount()+'</span>'
+    + (topSubj && topSubj.xp>0 ? '<span class="tag dom">Más estudiada: '+subjSVG(topSubj.s.id)+' '+esc(topSubj.s.short)+' ('+topSubj.xp+' XP)</span>' : '')
+    + (myPos ? '<span class="tag neutral">'+ico('🥇')+' Leaderboard: #'+myPos+' de '+lbTotal+'</span>' : '')
     + '</div>'
-    + (upcomingG.length ? '<p style="font-size:.85rem;font-weight:700;margin:6px 0 4px">⏳ Próximos exámenes:</p>'
+    + (upcomingG.length ? '<p style="font-size:.85rem;font-weight:700;margin:6px 0 4px">Próximos exámenes:</p>'
         + upcomingG.slice(0,2).map(u => '<div class="cal-exam"><span class="ce-date">'+fmtDay(u.d)+'</span>'
-          + '<span style="flex:1">'+u.s.icon+' '+esc(u.s.short)+' · '+PERIOD_NAMES[u.per]+'</span>'
+          + '<span style="flex:1">'+subjSVG(u.s.id)+' '+esc(u.s.short)+' · '+PERIOD_NAMES[u.per]+'</span>'
           + '<span class="due-chip'+(daysUntil(u.d)<=7?' soon':'')+'">'+(daysUntil(u.d)===0?'¡HOY!':'en '+daysUntil(u.d)+' días')+'</span></div>').join('')
-      : '<p class="q-help">Sin fechas de exámenes capturadas todavía (pestaña 📋 → 📅 Calendario).</p>')
+      : '<p class="q-help">Sin fechas de exámenes capturadas todavía (pestaña Tareas → Calendario).</p>')
     + '<table class="hist-table" style="margin-top:10px"><tr><th>Materia</th><th class="num">XP</th><th class="num">Módulos</th><th class="num">Avance</th><th class="num">Promedio</th><th class="num">Intentos</th></tr>'
-    + perSubj.map(x => '<tr'+(x.s.id===S.activeSubject?' style="font-weight:700"':'')+'><td>'+x.s.icon+' '+esc(x.s.short)+(x.s.id===S.activeSubject?' ✔':'')+'</td>'
+    + perSubj.map(x => '<tr'+(x.s.id===S.activeSubject?' style="font-weight:700"':'')+'><td>'+subjSVG(x.s.id)+' '+esc(x.s.short)+(x.s.id===S.activeSubject?' ✔':'')+'</td>'
         + '<td class="num">'+x.xp.toLocaleString()+'</td>'
         + '<td class="num">'+(x.total ? x.done+'/'+x.total : '—')+'</td>'
         + '<td class="num">'+(x.total ? Math.round(x.progress*100)+'%' : '—')+'</td>'
@@ -6102,58 +6105,58 @@ function statsPlayerCardHTML(o, myPos){
   const p = activeProfile();
   const li = levelInfo();
   const nr = nextReward();
-  return '<div class="panel"><h3>👤 Mi tarjeta</h3>'
+  return '<div class="panel"><h3>Mi tarjeta</h3>'
     + '<div style="text-align:center">'+avatarStack(p, 84)
     + '<div style="font-weight:800;margin-top:6px">'+esc(p.name)+'</div>'
     + '<div style="font-size:.82rem;color:var(--ink2)">'+titleIco()+' '+esc(currentTitle())+'</div></div>'
     + '<div class="qprog" style="margin:12px 0 4px"><i style="width:'+Math.round(li.frac*100)+'%"></i></div>'
     + '<p class="q-help" style="margin:0 0 10px">Nivel '+li.lvl+' · '+S.xp+' XP · faltan '+li.toNext+' para subir</p>'
     + '<div class="tag-list">'
-    + '<span class="tag neutral">🔥 Racha: '+S.streak+(S.streak===1?' día':' días')+'</span>'
-    + (myPos ? '<span class="tag neutral">🏆 #'+myPos+' del leaderboard</span>' : '')
-    + '<span class="tag neutral">🎖️ '+S.badges.length+'/'+BADGES.length+' insignias</span>'
+    + '<span class="tag neutral">Racha: '+S.streak+(S.streak===1?' día':' días')+'</span>'
+    + (myPos ? '<span class="tag neutral">#'+myPos+' del leaderboard</span>' : '')
+    + '<span class="tag neutral">'+S.badges.length+'/'+BADGES.length+' insignias</span>'
     + '<span class="tag neutral">✅ '+o.done+'/'+o.total+' módulos</span>'
     + '</div>'
-    + (nr ? '<p style="font-size:.85rem;font-weight:700;margin:12px 0 4px">⏭️ Próxima recompensa: '+nr.ico+' '+esc(nr.name)+'</p>'
+    + (nr ? '<p style="font-size:.85rem;font-weight:700;margin:12px 0 4px">Próxima recompensa: '+nr.ico+' '+esc(nr.name)+'</p>'
         + '<div class="pbar"><i style="width:'+Math.min(100,Math.round(S.xp/nr.xp*100))+'%"></i></div>'
-        + '<p class="q-help">'+S.xp+' / '+nr.xp+' XP · equípala desde tu perfil 🎁</p>'
-      : '<p style="font-size:.85rem;font-weight:700;color:var(--good-text);margin-top:12px">🏆 Desbloqueaste toda la tienda de recompensas</p>')
+        + '<p class="q-help">'+S.xp+' / '+nr.xp+' XP · equípala desde tu perfil</p>'
+      : '<p style="font-size:.85rem;font-weight:700;color:var(--good-text);margin-top:12px">Desbloqueaste toda la tienda de recompensas</p>')
     + '</div>';
 }
 /* — Último examen diario + temas fallados con acceso directo al módulo — */
 function statsLastExamPanelHTML(exams, subj){
   const lastEx = exams[0];
   const lastTopics = (lastEx && lastEx.failedTopics) ? lastEx.failedTopics : [];
-  return '<div class="panel"><h3>📝 Último examen · '+esc(subj.short)+'</h3>'
+  return '<div class="panel"><h3>Último examen · '+esc(subj.short)+'</h3>'
     + (lastEx
       ? '<p style="font-size:1.5rem;font-weight:800;margin:4px 0">'+lastEx.score+'%</p>'
         + '<p class="q-help" style="margin:0 0 10px">'+fmtDate(lastEx.t)+' · '+fmtDur(lastEx.sec)+(lastEx.n?' · '+lastEx.n+' preguntas':'')+(lastEx.xp!=null?' · +'+lastEx.xp+' XP':'')+'</p>'
-        + '<h3 style="margin-top:14px">📚 Temas por repasar</h3>'
+        + '<h3 style="margin-top:14px">Temas por repasar</h3>'
         + (lastTopics.length
           ? '<div class="tag-list">'+lastTopics.map(t => {
               const mod = TOPIC_MODULE[t];
               return mod!=null ? '<button class="tag ref" style="cursor:pointer;border:none;font:inherit" data-goto-mod="'+mod+'">⚠ '+(TOPIC_NAMES[t]||t)+' →</button>'
                 : '<span class="tag ref">⚠ '+(TOPIC_NAMES[t]||t)+'</span>'; }).join('')+'</div>'
             + '<p class="q-help">Toca un tema para ir directo al módulo donde se practica.</p>'
-          : '<p style="color:var(--good-text);font-size:.85rem;font-weight:700">🎉 Sin errores en tu último examen.</p>')
+          : '<p style="color:var(--good-text);font-size:.85rem;font-weight:700">Sin errores en tu último examen.</p>')
       : '<p style="color:var(--muted);font-size:.85rem">Aún no presentas el examen diario. ¡Inténtalo desde la pantalla de inicio!</p>')
     + '</div>';
 }
 /* — Recompensas desbloqueadas recientemente — */
 function statsRecentRewardsHTML(){
   const rlog = (S.rewardLog||[]).slice(0,8);
-  return '<div class="panel"><h3>🕘 Logros recientes</h3>'
+  return '<div class="panel"><h3>Logros recientes</h3>'
     + (rlog.length ? rlog.map(e => {
         const r = REWARDS.find(x=>x.id===e.id);
         return r ? '<div class="profile-row"><span class="pr-av">'+r.ico+'</span><span class="pr-name">'+esc(r.name)+'</span><small style="color:var(--muted)">'+fmtDate(e.t)+'</small></div>' : '';
-      }).join('') : '<p style="color:var(--muted);font-size:.85rem">Tus recompensas desbloqueadas aparecerán aquí. La próxima te espera en la tienda 🎁.</p>')
+      }).join('') : '<p style="color:var(--muted);font-size:.85rem">Tus recompensas desbloqueadas aparecerán aquí. La próxima te espera en la tienda.</p>')
     + '</div>';
 }
 /* — Progreso por módulo de la materia activa — */
 function statsModulesPanelHTML(subj){
-  return '<div class="panel"><h3>📚 Progreso por módulo · '+esc(subj.short)+'</h3>'
+  return '<div class="panel"><h3>Progreso por módulo · '+esc(subj.short)+'</h3>'
     + MODULES.map((m,i) => { const st = modState(m.id);
-      return '<div class="hbar-row"><span class="hb-label" title="'+esc(m.name)+'">'+m.icon+' '+esc(m.name)+'</span>'
+      return '<div class="hbar-row"><span class="hb-label" title="'+esc(m.name)+'">'+ico(m.icon)+' '+esc(m.name)+'</span>'
         + '<span class="hbar-track"><i style="width:'+st.best+'%"></i></span>'
         + '<span class="hb-val">'+(st.attempts? st.best+'%' : '—')+'</span></div>'; }).join('')
     + '</div>';
@@ -6162,7 +6165,7 @@ function statsModulesPanelHTML(subj){
 function statsTopicsPanelHTML(subj){
   const topics = Object.entries(S.concepts).map(([k,c]) => ({k, n:c.ok+c.bad, acc:c.ok/(c.ok+c.bad)}))
     .filter(t => t.n>0).sort((a,b)=>b.n-a.n).slice(0,12);
-  return '<div class="panel"><h3>🧩 Progreso por tema · '+esc(subj.short)+'</h3>'
+  return '<div class="panel"><h3>Progreso por tema · '+esc(subj.short)+'</h3>'
     + (topics.length ? topics.map(t =>
         '<div class="hbar-row"><span class="hb-label">'+(TOPIC_NAMES[t.k]||t.k)+'</span>'
         + '<span class="hbar-track"><i style="width:'+Math.round(t.acc*100)+'%"></i></span>'
@@ -6180,19 +6183,19 @@ function statsConceptsPanelHTML(subj){
     else if(n>=2 && acc<0.6) ref.push(name);
     else if(n>0) prog.push(name);
   });
-  return '<div class="panel"><h3>🏅 Conceptos dominados · '+esc(subj.short)+'</h3><div class="tag-list">'
+  return '<div class="panel"><h3>Conceptos dominados · '+esc(subj.short)+'</h3><div class="tag-list">'
     + (dom.length ? dom.map(d=>'<span class="tag dom">✔ '+d+'</span>').join('') : '<span class="tag neutral">Aún ninguno: sigue practicando</span>')
-    + '</div><h3 style="margin-top:16px">🔁 Por reforzar</h3><div class="tag-list">'
-    + (ref.length ? ref.map(d=>'<span class="tag ref">⚠ '+d+'</span>').join('') : '<span class="tag neutral">Nada pendiente por ahora 🎉</span>')
+    + '</div><h3 style="margin-top:16px">Por reforzar</h3><div class="tag-list">'
+    + (ref.length ? ref.map(d=>'<span class="tag ref">⚠ '+d+'</span>').join('') : '<span class="tag neutral">Nada pendiente por ahora</span>')
     + '</div>'
-    + (prog.length ? '<h3 style="margin-top:16px">⏳ En progreso</h3><div class="tag-list">'+prog.map(d=>'<span class="tag neutral">'+d+'</span>').join('')+'</div>' : '')
+    + (prog.length ? '<h3 style="margin-top:16px">En progreso</h3><div class="tag-list">'+prog.map(d=>'<span class="tag neutral">'+d+'</span>').join('')+'</div>' : '')
     + '</div>';
 }
 /* — Rejilla de insignias (las secretas se ocultan hasta ganarlas) — */
 function statsBadgesPanelHTML(){
   const secretTotal = BADGES.filter(b=>b.secret).length;
   const secretGot = BADGES.filter(b=>b.secret && S.badges.includes(b.id)).length;
-  return '<div class="panel"><h3>🎖️ Insignias ('+S.badges.length+'/'+BADGES.length+')</h3><div class="badge-grid">'
+  return '<div class="panel"><h3>Insignias ('+S.badges.length+'/'+BADGES.length+')</h3><div class="badge-grid">'
     + BADGES.map(b => {
         const got = S.badges.includes(b.id);
         const hidden = b.secret && !got;               // secreto no revelado
@@ -6202,18 +6205,18 @@ function statsBadgesPanelHTML(){
         return '<div class="badge '+(got?'earned':'locked-b')+(hidden?' secret':'')+'" title="'+esc(desc)+'">'
           + '<div class="b-ico">'+ico+'</div><div class="b-name">'+esc(name)+'</div><div class="b-desc">'+esc(desc)+'</div></div>';
       }).join('')
-    + '</div><p class="q-help">🕵️ Logros secretos: '+secretGot+'/'+secretTotal+' descubiertos.</p></div>';
+    + '</div><p class="q-help">Logros secretos: '+secretGot+'/'+secretTotal+' descubiertos.</p></div>';
 }
-/* — Adelanto de logros en Estadísticas (viven ahora en el hub del icono 🔥) — */
+/* — Adelanto de logros en Estadísticas (viven ahora en el hub del icono de racha) — */
 function statsAchievementsTeaserHTML(){
   const recent = BADGES.filter(b=>S.badges.includes(b.id)).slice(-6).reverse();
   const secretGot = BADGES.filter(b=>b.secret && S.badges.includes(b.id)).length;
-  return '<div class="panel"><h3>🎖️ Logros ('+S.badges.length+'/'+BADGES.length+')</h3>'
+  return '<div class="panel"><h3>Logros ('+S.badges.length+'/'+BADGES.length+')</h3>'
     + (recent.length
-        ? '<div class="tag-list" style="margin-bottom:8px">'+recent.map(b=>'<span class="tag dom">'+b.ico+' '+esc(b.name)+'</span>').join('')+'</div>'
+        ? '<div class="tag-list" style="margin-bottom:8px">'+recent.map(b=>'<span class="tag dom">'+ico(b.ico)+' '+esc(b.name)+'</span>').join('')+'</div>'
         : '<p class="q-help">Aún no tienes logros: ¡juega para desbloquearlos!</p>')
-    + '<p class="q-help">🕵️ Secretos descubiertos: '+secretGot+'/'+BADGES.filter(b=>b.secret).length+'. Los retos diarios/semanales y todos los logros ahora viven en el icono 🔥 del encabezado.</p>'
-    + '<div class="q-actions" style="justify-content:flex-start"><button class="btn small" id="statsGoLogros">🔥 Ver retos y logros</button></div></div>';
+    + '<p class="q-help">Secretos descubiertos: '+secretGot+'/'+BADGES.filter(b=>b.secret).length+'. Los retos diarios/semanales y todos los logros ahora viven en el icono de racha del encabezado.</p>'
+    + '<div class="q-actions" style="justify-content:flex-start"><button class="btn small" id="statsGoLogros">Ver retos y logros</button></div></div>';
 }
 /* ==================== Hub del icono de racha 🔥 ====================
    Reúne en un solo lugar: estado de la racha, retos diarios, retos semanales y
@@ -6226,7 +6229,7 @@ function missionRowHTML(def, scope, m){
   const done = raw >= goal;
   const unit = def.unit ? ' '+def.unit : '';
   const act = claimed ? '<span class="m-check" title="Reclamado">✅</span>'
-    : done ? '<button class="btn small" data-claim="'+scope+':'+def.id+'">🎁 Reclamar</button>'
+    : done ? '<button class="btn small" data-claim="'+scope+':'+def.id+'">Reclamar</button>'
     : '<span class="m-lock">'+pctv+'%</span>';
   return '<div class="mission '+(claimed?'m-claimed':done?'m-ready':'')+'">'
     + '<div class="m-ico">'+def.ico+'</div>'
@@ -6243,7 +6246,7 @@ function streakHubHTML(tab){
   const badge = n => n ? ' <span class="streak-dot" style="position:static;box-shadow:none;display:inline-grid;vertical-align:middle">'+n+'</span>' : '';
   let body = '';
   if(tab==='daily'){
-    body = '<p class="q-help" style="margin:0 0 6px">Se renuevan cada día (medianoche, hora CDMX). Completa y reclama tu XP. 🎁</p>'
+    body = '<p class="q-help" style="margin:0 0 6px">Se renuevan cada día (medianoche, hora CDMX). Completa y reclama tu XP.</p>'
       + dList.map(d=>missionRowHTML(d,'d',m)).join('');
   } else if(tab==='weekly'){
     body = '<p class="q-help" style="margin:0 0 6px">Se renuevan cada semana. Suma progreso en cualquier materia.</p>'
@@ -6251,17 +6254,17 @@ function streakHubHTML(tab){
   } else {
     body = statsBadgesPanelHTML();
   }
-  return '<h2 style="margin-top:0">🔥 Racha, retos y logros</h2>'
+  return '<h2 style="margin-top:0">Racha, retos y logros</h2>'
     + '<div class="tag-list" style="margin-bottom:4px">'
-    + '<span class="tag neutral">🔥 Racha: '+S.streak+(S.streak===1?' día':' días')+'</span>'
-    + '<span class="tag neutral">🧊 Congeladores: '+(S.streakFreezes||0)+'</span>'
-    + '<span class="tag neutral">📆 Días esta semana: '+studyDaysThisWeek()+'</span>'
-    + '<span class="tag neutral">🎖️ Logros: '+S.badges.length+'/'+BADGES.length+'</span>'
+    + '<span class="tag neutral">Racha: '+S.streak+(S.streak===1?' día':' días')+'</span>'
+    + '<span class="tag neutral">Congeladores: '+(S.streakFreezes||0)+'</span>'
+    + '<span class="tag neutral">Días esta semana: '+studyDaysThisWeek()+'</span>'
+    + '<span class="tag neutral">Logros: '+S.badges.length+'/'+BADGES.length+'</span>'
     + '</div>'
     + '<div class="hub-tabs">'
-    + '<button data-tab="daily"'+(tab==='daily'?' class="on"':'')+'>📅 Diarios'+badge(dReady)+'</button>'
-    + '<button data-tab="weekly"'+(tab==='weekly'?' class="on"':'')+'>🗓️ Semanales'+badge(wReady)+'</button>'
-    + '<button data-tab="logros"'+(tab==='logros'?' class="on"':'')+'>🎖️ Logros</button>'
+    + '<button data-tab="daily"'+(tab==='daily'?' class="on"':'')+'>Diarios'+badge(dReady)+'</button>'
+    + '<button data-tab="weekly"'+(tab==='weekly'?' class="on"':'')+'>Semanales'+badge(wReady)+'</button>'
+    + '<button data-tab="logros"'+(tab==='logros'?' class="on"':'')+'>Logros</button>'
     + '</div>'
     + '<div id="hubBody">'+body+'</div>'
     + '<div class="q-actions" style="justify-content:center;margin-top:6px"><button class="btn ghost" id="hubClose">Cerrar</button></div>';
@@ -6276,18 +6279,18 @@ function openStreakHub(tab){
 /* — Mejores resultados de la materia activa — */
 function statsBestPanelHTML(subj){
   const best = [...S.history].sort((a,b)=>b.score-a.score).slice(0,5);
-  return '<div class="panel"><h3>🥇 Mejores resultados · '+esc(subj.short)+'</h3>'
+  return '<div class="panel"><h3>Mejores resultados · '+esc(subj.short)+'</h3>'
     + (best.length ? '<table class="hist-table"><tr><th>Módulo</th><th>Calif.</th><th>XP</th></tr>'
-        + best.map(h => '<tr><td>'+MODULES[h.mod].icon+' '+esc(MODULES[h.mod].name)+'</td><td class="num"><b>'+h.score+'%</b></td><td class="num">+'+h.xp+'</td></tr>').join('')
+        + best.map(h => '<tr><td>'+ico(MODULES[h.mod].icon)+' '+esc(MODULES[h.mod].name)+'</td><td class="num"><b>'+h.score+'%</b></td><td class="num">+'+h.xp+'</td></tr>').join('')
         + '</table>'
       : '<p style="color:var(--muted);font-size:.85rem">Completa una actividad para ver tus marcas.</p>')
     + '</div>';
 }
 /* — Historial reciente de actividades — */
 function statsRecentActivityPanelHTML(subj){
-  return '<div class="panel"><h3>🕓 Últimas actividades · '+esc(subj.short)+'</h3>'
+  return '<div class="panel"><h3>Últimas actividades · '+esc(subj.short)+'</h3>'
     + (S.history.length ? '<table class="hist-table"><tr><th>Fecha</th><th>Módulo</th><th>Calif.</th><th>Tiempo</th></tr>'
-        + S.history.slice(0,8).map(h => '<tr><td>'+fmtDate(h.t)+'</td><td>'+MODULES[h.mod].icon+' '+esc(MODULES[h.mod].name).slice(0,26)+'</td>'
+        + S.history.slice(0,8).map(h => '<tr><td>'+fmtDate(h.t)+'</td><td>'+ico(MODULES[h.mod].icon)+' '+esc(MODULES[h.mod].name).slice(0,26)+'</td>'
           + '<td class="num">'+h.score+'%</td><td class="num">'+fmtDur(h.sec)+'</td></tr>').join('')
         + '</table>'
       : '<p style="color:var(--muted);font-size:.85rem">Tu historial aparecerá aquí.</p>')
@@ -6295,7 +6298,7 @@ function statsRecentActivityPanelHTML(subj){
 }
 /* — Historial de exámenes diarios — */
 function statsDailyExamsPanelHTML(exams, exAvg, subj){
-  return '<div class="panel"><h3>📝 Exámenes diarios · '+esc(subj.short)+'</h3>'
+  return '<div class="panel"><h3>Exámenes diarios · '+esc(subj.short)+'</h3>'
     + (exams.length ? '<table class="hist-table"><tr><th>Fecha</th><th>Calificación</th><th>Tiempo</th></tr>'
         + exams.slice(0,10).map(e => '<tr><td>'+fmtDate(e.t)+'</td><td class="num"><b>'+e.score+'%</b></td><td class="num">'+fmtDur(e.sec)+'</td></tr>').join('')
         + '</table><p class="q-help">Promedio: <b>'+exAvg+'%</b> · Un examen por día.</p>'
@@ -6336,8 +6339,8 @@ function guideHTML(){
   // Cada sección se desbloquea cuando el módulo `req` está desbloqueado (el
   // "tema siguiente que aún no ves" siempre está disponible para estudiarlo).
   const secs = [
-  {req:0, html:'<div class="lesson-card"><h3>📖 Guía de estudio · Cálculo Actuarial (Unidad 1)</h3><p>Resumen de conceptos, fórmulas, procedimientos y ejercicios resueltos. Usa el botón <b>Imprimir / Guardar PDF</b> para llevarla contigo.</p>'
-    + (prog ? '<p style="font-size:.82rem;color:var(--muted)">🔓 La guía se desbloquea tema por tema conforme avanzas en los módulos. Si prefieres verla completa, desactiva “Guía de estudio progresiva” en tu perfil ⚙️.</p>' : '') + '</div>'},
+  {req:0, html:'<div class="lesson-card"><h3>Guía de estudio · Cálculo Actuarial (Unidad 1)</h3><p>Resumen de conceptos, fórmulas, procedimientos y ejercicios resueltos. Usa el botón <b>Imprimir / Guardar PDF</b> para llevarla contigo.</p>'
+    + (prog ? '<p style="font-size:.82rem;color:var(--muted)">La guía se desbloquea tema por tema conforme avanzas en los módulos. Si prefieres verla completa, desactiva “Guía de estudio progresiva” en tu perfil ⚙️.</p>' : '') + '</div>'},
   {req:0, html:'<div class="lesson-card"><h3>1 · Glosario de conceptos</h3><table><tr><th>Concepto</th><th>Definición</th></tr>'
     + GLOSSARY.map(g => '<tr><td><b>'+g.t+'</b></td><td>'+g.d+'</td></tr>').join('') + '</table></div>'},
   {req:1, html:'<div class="lesson-card"><h3>2 · Fórmulas clave</h3>'
@@ -6450,12 +6453,12 @@ function guideGeneric(sid){
       + '<p>'+esc(m.desc)+'</p>'
       + '<p style="font-size:.82rem;color:var(--muted)">Práctica: '+esc(m.kind)+'</p></div>';
   };
-  let html = '<div class="lesson-card"><h3>📖 Guía de estudio · '+esc(subj.name)+'</h3>'
+  let html = '<div class="lesson-card"><h3>Guía de estudio · '+esc(subj.name)+'</h3>'
     + '<p>Resumen de los módulos del curso, agrupados por parcial, con las fórmulas clave. Usa <b>Imprimir / Guardar PDF</b> para llevarla contigo.</p>'
-    + (prog ? '<p style="font-size:.82rem;color:var(--muted)">🔓 La guía se desbloquea conforme avanzas. Desactiva “Guía de estudio progresiva” en tu perfil ⚙️ para verla completa.</p>' : '')
+    + (prog ? '<p style="font-size:.82rem;color:var(--muted)">La guía se desbloquea conforme avanzas. Desactiva “Guía de estudio progresiva” en tu perfil ⚙️ para verla completa.</p>' : '')
     + '</div>';
   if(formulas.length){
-    html += '<div class="lesson-card"><h3>🧮 Fórmulas clave</h3><table><tr><th>Tema</th><th>Fórmula / idea</th></tr>'
+    html += '<div class="lesson-card"><h3>Fórmulas clave</h3><table><tr><th>Tema</th><th>Fórmula / idea</th></tr>'
       + formulas.map(f => '<tr><td><b>'+f[0]+'</b></td><td>'+f[1]+'</td></tr>').join('') + '</table></div>';
   }
   if(par){
@@ -6499,16 +6502,16 @@ function buildExam(){
 }
 function startExam(){
   const builder = EXAM_BUILDERS_BY_SUBJECT[S.activeSubject];
-  if(!builder){ toast('📝 El examen de '+subjectById(S.activeSubject).name+' estará disponible cuando la materia tenga contenido.'); return; }
+  if(!builder){ toast('El examen de '+subjectById(S.activeSubject).name+' estará disponible cuando la materia tenga contenido.'); return; }
   if(S.examDay === todayKey()){
     const last = S.examHistory.length ? S.examHistory[0].score+'%' : '—';
-    toast('📝 Ya presentaste el examen de hoy ('+last+'). Hay 1 por día: se reinicia a medianoche (hora CDMX) 😉');
+    toast('Ya presentaste el examen de hoy ('+last+'). Hay 1 por día: se reinicia a medianoche (hora CDMX) 😉');
     return;
   }
   touchStreak();
   SES = { id:'exam', exam:true, qs:builder(), i:0, pts:0, xp:0, t0:Date.now(), recap:[] };
   showView('session'); renderQ();
-  toast('📝 Examen diario · '+subjectById(S.activeSubject).name+': '+SES.qs.length+' preguntas. Las respuestas se revelan al final. ¡Suerte!');
+  toast('Examen diario · '+subjectById(S.activeSubject).name+': '+SES.qs.length+' preguntas. Las respuestas se revelan al final. ¡Suerte!');
 }
 function finishExam(){
   const n = SES.qs.length;
@@ -6548,7 +6551,7 @@ function reviewItemHTML(r, i){
     + (r.correct ? '<div class="rv-line">✔️ <b>Respuesta correcta:</b> '+r.correct+'</div>' : '')
     + (r.explain ? '<div class="rv-line">📌 '+r.explain+'</div>' : '')
     + (r.steps ? '<details class="rv-steps"'+(r.ok?'':' open')+'><summary>🧮 Fórmula y procedimiento paso a paso</summary><ol class="steps">'+r.steps.map(s=>'<li>'+s+'</li>').join('')+'</ol></details>' : '')
-    + (!r.ok && mod!=null ? '<div style="margin-top:8px"><button class="btn ghost small" data-goto-mod="'+mod+'">📚 Repasar este tema → '+MODULES[mod].icon+' '+esc(MODULES[mod].name)+'</button></div>' : '')
+    + (!r.ok && mod!=null ? '<div style="margin-top:8px"><button class="btn ghost small" data-goto-mod="'+mod+'">Repasar este tema → '+MODULES[mod].icon+' '+esc(MODULES[mod].name)+'</button></div>' : '')
     + '</div>';
 }
 function reviewSectionHTML(recap, title){
@@ -6583,9 +6586,9 @@ function renderExamResult(score, xp, sec, recap, newRewards){
   const title = score>=90 ? '¡Sobresaliente! 🏅' : passed ? '¡Muy buen examen!' : score>=60 ? 'Buen intento' : 'A repasar y volver mañana';
   let html = '<div class="result-card">'
     + '<div style="display:flex;justify-content:center;margin-bottom:6px">'+avatarStack(activeProfile(), 60)+'</div>'
-    + '<div class="big-ico" style="font-size:34px">'+(score>=90?'🏅':passed?'🎉':'📚')+'</div>'
+    + '<div class="big-ico" style="font-size:34px">'+(score>=90?ico('🏅'):passed?ico('🎉'):ico('📚'))+'</div>'
     + '<h2>'+title+'</h2>'
-    + '<div class="r-sub">📝 Examen diario · '+esc(subjectById(S.activeSubject).name)+' · '+new Date().toLocaleDateString('es-MX',{day:'numeric',month:'long'})+' · '+esc(activeProfile().name)+'</div>'
+    + '<div class="r-sub">Examen diario · '+esc(subjectById(S.activeSubject).name)+' · '+new Date().toLocaleDateString('es-MX',{day:'numeric',month:'long'})+' · '+esc(activeProfile().name)+'</div>'
     + '<div class="r-score-ring"><svg width="130" height="130">'
     + '<circle cx="65" cy="65" r="'+R+'" fill="none" stroke="var(--surface3)" stroke-width="12"/>'
     + '<circle cx="65" cy="65" r="'+R+'" fill="none" stroke="'+(passed?'var(--good)':'var(--bad)')+'" stroke-width="12" stroke-linecap="round" '
@@ -6594,12 +6597,12 @@ function renderExamResult(score, xp, sec, recap, newRewards){
     + '<p style="font-weight:700">Tu calificación de hoy: '+score+'/100</p>'
     + '<div class="r-meta"><span><b>'+okCount+'/'+recap.length+'</b>aciertos</span><span><b>'+(recap.length-okCount)+'</b>errores</span>'
     + '<span><b>+'+xp+'</b>XP</span><span><b>'+fmtDur(sec)+'</b>tiempo</span></div>'
-    + (newRewards && newRewards.length ? '<p style="font-weight:700;color:var(--good-text)">🎁 Recompensas desbloqueadas: '+newRewards.map(r=>r.ico+' '+esc(r.name)).join(' · ')+'</p>' : '')
-    + (failedTopics.length ? '<p style="font-size:.86rem;color:var(--ink2)">📚 Temas relacionados por repasar: <b>'+failedTopics.map(t=>TOPIC_NAMES[t]||t).join(', ')+'</b></p>' : '')
+    + (newRewards && newRewards.length ? '<p style="font-weight:700;color:var(--good-text)">Recompensas desbloqueadas: '+newRewards.map(r=>r.ico+' '+esc(r.name)).join(' · ')+'</p>' : '')
+    + (failedTopics.length ? '<p style="font-size:.86rem;color:var(--ink2)">Temas relacionados por repasar: <b>'+failedTopics.map(t=>TOPIC_NAMES[t]||t).join(', ')+'</b></p>' : '')
     + '<p style="font-size:.85rem;color:var(--ink2)">Solo se permite un examen por día: el próximo estará disponible mañana. Abajo puedes revisar cada pregunta.</p>'
     + '<div class="q-actions" style="justify-content:center">'
-    + '<button class="btn ghost" id="rHome">🏠 Inicio</button>'
-    + '<button class="btn" id="rStats">📊 Mis estadísticas</button>'
+    + '<button class="btn ghost" id="rHome">Inicio</button>'
+    + '<button class="btn" id="rStats">Mis estadísticas</button>'
     + '</div></div>';
   html += reviewSectionHTML(recap, '📋 Revisión del examen');
   $('#view-result').innerHTML = html;
@@ -6641,18 +6644,18 @@ function currentTitle(){
 function titleIco(){
   if(S.equip && S.equip.title){
     const chosen = REWARDS.find(r => r.id===S.equip.title && r.type==='title');
-    if(chosen) return chosen.ico || '🏷️';
+    if(chosen) return chosen.ico || '';
   }
-  return '🏷️';
+  return '';
 }
 /* Emoji de un título por su nombre (para filas de otros en el leaderboard). */
 function titleIcoByName(name){
   const r = REWARDS.find(x => x.type==='title' && x.name===name);
-  return (r && r.ico) || '🏷️';
+  return (r && r.ico) || '';
 }
 
 /* ==================== Tienda de recompensas ==================== */
-const REWARD_TYPE_LABEL = {frame:'🖼️ Marcos', bg:'🌆 Fondos', acc:'🎭 Accesorios', title:'🏷️ Títulos', effect:'✨ Efectos del marco', hitfx:'🎉 Efectos al acertar', theme:'🎨 Temas'};
+const REWARD_TYPE_LABEL = {frame:'Marcos', bg:'Fondos', acc:'Accesorios', title:'Títulos', effect:'Efectos del marco', hitfx:'Efectos al acertar', theme:'Temas'};
 /* Rareza de las recompensas: cambia el color del borde y la etiqueta. */
 const RARITY = {
   common:    {name:'Común',      color:'#9aa0a8'},
@@ -6877,18 +6880,18 @@ function showRewardModal(list){
     html += '<div style="font-size:52px">'+(r.ico||'🏷️')+'</div>'
       + '<h2>¡Recompensa desbloqueada!</h2><div class="r-sub">'+esc(r.name)+' · '+(REWARD_TYPE_LABEL[r.type]||'')+'</div>'
       + '<p style="color:var(--ink2);font-size:.9rem">'+esc(r.desc||'')+'</p>'
-      + '<div class="q-actions" style="justify-content:center"><button class="btn" id="rwEquip">✅ Equipar ahora</button><button class="btn ghost" id="rwOk">Después</button></div>';
+      + '<div class="q-actions" style="justify-content:center"><button class="btn" id="rwEquip">Equipar ahora</button><button class="btn ghost" id="rwOk">Después</button></div>';
   } else {
-    html += '<div style="font-size:48px">🎁</div>'
+    html += '<div style="font-size:48px"><svg class="ic" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/></svg></div>'
       + '<h2>¡Desbloqueaste '+list.length+' recompensas!</h2>'
       + '<div class="reward-unlock-list">'
       + list.map(r => '<div class="ru-row"><span class="ru-ico">'+(r.ico||'🏷️')+'</span>'
           + '<span class="ru-txt"><b>'+esc(r.name)+'</b><small>'+(REWARD_TYPE_LABEL[r.type]||'')+'</small></span></div>').join('')
       + '</div>'
-      + '<p class="q-help">Equípalas cuando quieras desde la 🛒 Tienda → Mi colección.</p>'
+      + '<p class="q-help">Equípalas cuando quieras desde la Tienda → Mi colección.</p>'
       + '<div class="q-actions" style="justify-content:center">'
-      + (list.length > 5 ? '<button class="btn" id="rwAll">✅ Aceptar todas</button>' : '<button class="btn" id="rwAll">¡Genial!</button>')
-      + '<button class="btn ghost" id="rwShop">🛒 Ver en la tienda</button></div>';
+      + (list.length > 5 ? '<button class="btn" id="rwAll">Aceptar todas</button>' : '<button class="btn" id="rwAll">¡Genial!</button>')
+      + '<button class="btn ghost" id="rwShop">Ver en la tienda</button></div>';
   }
   html += '</div>';
   const o = openModal(html);
@@ -6951,7 +6954,7 @@ function builderLabel(key, c){
   }
   return '';
 }
-const BUILDER_LABELS = {skin:'🖐️ Piel', hair:'💇 Peinado', hairColor:'🎨 Color', eyes:'👀 Ojos'};
+const BUILDER_LABELS = {skin:'Piel', hair:'Peinado', hairColor:'Color', eyes:'Ojos'};
 /* Modo de avatar: 'emoji' | 'photo' | 'custom' */
 function avatarMode(p){ return p && p.avatarMode ? p.avatarMode : (p && p.photo ? 'photo' : 'emoji'); }
 function avatarBase(p, size){
@@ -6995,7 +6998,7 @@ function avatarStack(p, size, equipOv){
 }
 /* Equipar / desequipar respetando las reglas (un marco/fondo/título/efecto/tema; varios accesorios) */
 function equipReward(r){
-  if(!isUnlockedReward(r.id)){ toast('🔒 Primero desbloquéala en la tienda'); sfx('bad'); return; }
+  if(!isUnlockedReward(r.id)){ toast('Primero desbloquéala en la tienda'); sfx('bad'); return; }
   const eq = ensureEquip();
   if(r.type === 'acc'){
     const i = eq.acc.indexOf(r.id);
@@ -7030,8 +7033,8 @@ function rewardCardHTML(r){
   const pctv = r.xp != null ? Math.min(100, Math.round(S.xp/r.xp*100)) : 0;
   const rar = rarityOf(r);
   const secretLocked = r.secret && !unlocked;              // secreto no revelado
-  const tag = equipped ? '<span class="rw-tag eq">✔ Equipado</span>' : unlocked ? '<span class="rw-tag owned">Tienes</span>' : '<span class="rw-tag lock">🔒</span>';
-  const name = secretLocked ? '❓ Logro secreto' : esc(r.name);
+  const tag = equipped ? '<span class="rw-tag eq">✔ Equipado</span>' : unlocked ? '<span class="rw-tag owned">Tienes</span>' : '<span class="rw-tag lock"></span>';
+  const name = secretLocked ? 'Logro secreto' : esc(r.name);
   const ico  = secretLocked ? '❔' : r.ico;
   return '<div class="reward-card'+(unlocked?' unlocked':'')+(equipped?' equipped':'')+'" style="--rar:'+rar.color+'">'+tag
     + '<span class="rw-rar" style="color:'+rar.color+'">'+rar.name+'</span>'
@@ -7052,18 +7055,18 @@ function avatarUnlocked(a){ return levelInfo().lvl >= avatarReqLevel(a); }
 function renderLevels(){
   const li = levelInfo();
   let html = '<div class="result-card" style="margin-top:0;max-width:640px">'
-    + '<div class="big-ico">⬆️</div><h2>Nivel '+li.lvl+'</h2>'
+    + '<div class="big-ico"></div><h2>Nivel '+li.lvl+'</h2>'
     + '<div class="r-sub">'+titleIco()+' '+esc(currentTitle())+'</div>'
     + '<div class="qprog" style="max-width:340px;margin:16px auto 8px"><i style="width:'+Math.round(li.frac*100)+'%"></i></div>'
     + '<p style="font-size:.9rem;color:var(--ink2)"><b>'+S.xp+' XP</b> acumulados · faltan <b>'+li.toNext+' XP</b> para el nivel '+(li.lvl+1)+'</p>'
     + '<p class="q-help">Gana XP con los módulos, el examen diario, el memorama, el escape room y los retos contrarreloj.</p></div>';
-  html += '<div class="panel" style="max-width:640px;margin:16px auto"><h3>🗺️ Ruta de recompensas</h3>'
+  html += '<div class="panel" style="max-width:640px;margin:16px auto"><h3>Ruta de recompensas</h3>'
     + LEVEL_REWARDS.map(r => {
         const un = li.lvl >= r.lvl;
         const parts = [];
         if(r.title) parts.push('🏷️ Título: <b>'+r.title+'</b>');
         if(r.avatars) parts.push('😀 Avatares: '+r.avatars.join(' '));
-        if(r.custom) parts.push('🧑‍🎨 '+r.custom+' <i style="color:var(--muted)">(beta)</i>');
+        if(r.custom) parts.push(''+r.custom+' <i style="color:var(--muted)">(beta)</i>');
         return '<div class="lvl-row'+(un?' done':'')+((li.lvl+1)===r.lvl?' next':'')+'">'
           + '<span class="lvl-badge">'+r.lvl+'</span>'
           + '<span class="lvl-info">'+parts.join('<br>')+'<small>Se alcanza con '+xpForLvl(r.lvl).toLocaleString()+' XP</small></span>'
@@ -7084,7 +7087,7 @@ function equipItemHTML(r){
 function equipGridHTML(type){
   const owned = REWARDS.filter(r => r.type===type && isUnlockedReward(r.id));
   const eq = ensureEquip();
-  if(!owned.length) return '<p class="q-help">Aún no tienes '+REWARD_TYPE_LABEL[type].toLowerCase()+'. Consíguelos en la 🛒 Tienda.</p>';
+  if(!owned.length) return '<p class="q-help">Aún no tienes '+REWARD_TYPE_LABEL[type].toLowerCase()+'. Consíguelos en la Tienda.</p>';
   if(type === 'acc'){
     // agrupado por ranura, con "Quitar" por ranura
     const slots = [...new Set(owned.map(r=>r.slot))];
@@ -7092,12 +7095,12 @@ function equipGridHTML(type){
       const list = owned.filter(r=>r.slot===slot);
       const none = !eq.acc.some(id=>accSlot(id)===slot);
       return '<div style="margin-bottom:6px"><div class="eq-slot-label">'+(ACC_SLOT_NAMES[slot]||slot)+'</div>'
-        + '<div class="equip-grid"><div class="equip-item'+(none?' on':'')+'" data-eqnoneslot="'+slot+'"><span class="ei-ico">🚫</span><span class="ei-name">Ninguno</span></div>'
+        + '<div class="equip-grid"><div class="equip-item'+(none?' on':'')+'" data-eqnoneslot="'+slot+'"><span class="ei-ico"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="m4.9 4.9 14.2 14.2"/></svg></span><span class="ei-name">Ninguno</span></div>'
         + list.map(equipItemHTML).join('')+'</div></div>';
     }).join('');
   }
   const none = !eq[type];
-  return '<div class="equip-grid"><div class="equip-item'+(none?' on':'')+'" data-eqnone="'+type+'"><span class="ei-ico">🚫</span><span class="ei-name">Ninguno</span></div>'
+  return '<div class="equip-grid"><div class="equip-item'+(none?' on':'')+'" data-eqnone="'+type+'"><span class="ei-ico"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="m4.9 4.9 14.2 14.2"/></svg></span><span class="ei-name">Ninguno</span></div>'
     + owned.map(equipItemHTML).join('')+'</div>';
 }
 /* Editor de avatar en formato "vestidor": dos columnas responsive.
@@ -7111,12 +7114,12 @@ function avatarEditorBody(p){
     return '<div class="avatar-pick">'+AVATARS.map(a => {
         const un = avatarUnlocked(a);
         return '<button class="av'+(a===p.avatar?' on':'')+(un?'':' locked')+'" data-av="'+a+'"'
-          + (un ? '' : ' title="Se desbloquea en el nivel '+avatarReqLevel(a)+'"')+'>'+(un?a:'🔒')+'</button>';
+          + (un ? '' : ' title="Se desbloquea en el nivel '+avatarReqLevel(a)+'"')+'>'+(un?a:ico('🔒'))+'</button>';
       }).join('')+'</div>';
   } else if(mode === 'photo'){
     return '<div class="q-actions" style="justify-content:center;flex-wrap:wrap;align-items:center">'
-      + '<button class="btn ghost small" id="btnPhotoUp">📤 '+(p.photo?'Cambiar foto':'Subir foto')+'</button>'
-      + (p.photo ? '<button class="btn ghost small" id="btnPhotoDel">🗑️ Quitar foto</button>' : '')
+      + '<button class="btn ghost small" id="btnPhotoUp">'+(p.photo?'Cambiar foto':'Subir foto')+'</button>'
+      + (p.photo ? '<button class="btn ghost small" id="btnPhotoDel">Quitar foto</button>' : '')
       + '<input type="file" id="photoFile" accept="image/*" class="hidden"></div>'
       + (p.photo ? '' : '<p class="q-help">Elige una imagen; se recorta en círculo. El marco y los accesorios se le aplican encima.</p>');
   }
@@ -7139,23 +7142,23 @@ function avatarEditorHTML(p, fb){
     + '<div class="tag-list dp-tags">'
       + '<span class="tag neutral">'+subjectById(S.activeSubject).icon+' '+esc(subjectById(S.activeSubject).short)+'</span>'
       + '<span class="tag neutral">🔥 '+S.streak+'</span>'
-      + '<span class="tag neutral">⚡ Nv '+levelInfo().lvl+'</span></div>'
-    + '<div class="av-modes">'+seg('emoji','😀 Emoji')+seg('photo','📷 Foto')+seg('custom','🧑 3D')+'</div>'
+      + '<span class="tag neutral">Nv '+levelInfo().lvl+'</span></div>'
+    + '<div class="av-modes">'+seg('emoji','Emoji')+seg('photo','Foto')+seg('custom','🧑 3D')+'</div>'
     + '<div id="avEditorBody">'+avatarEditorBody(p)+'</div>'
     + '</div>';
   // — Columna derecha: secciones para equipar (colapsables) —
   const dsec = (title, type, open, note) => '<details class="dsec'+(open?' ':'')+'"'+(open?' open':'')+'><summary>'+title
     + (note?' <small>'+note+'</small>':'')+'</summary><div class="dsec-body">'+equipGridHTML(type)+'</div></details>';
   const dress = '<div class="dresser-dress">'
-    + '<p class="q-help" style="margin:0 0 10px">Equipa lo que desbloqueaste en la 🛒 Tienda y velo al instante en tu avatar de la izquierda. Un accesorio por ranura.</p>'
-    + dsec('🖼️ Marco','frame',true)
-    + dsec('🌆 Fondo','bg',true)
-    + dsec('🎭 Accesorios','acc',true)
-    + dsec('🏷️ Título','title',false,'(aparece bajo tu nombre)')
-    + dsec('✨ Efecto del marco','effect',false,'(reemplaza al marco)')
-    + dsec('🎉 Efecto al acertar','hitfx',false)
+    + '<p class="q-help" style="margin:0 0 10px">Equipa lo que desbloqueaste en la Tienda y velo al instante en tu avatar de la izquierda. Un accesorio por ranura.</p>'
+    + dsec('Marco','frame',true)
+    + dsec('Fondo','bg',true)
+    + dsec('Accesorios','acc',true)
+    + dsec('Título','title',false,'(aparece bajo tu nombre)')
+    + dsec('Efecto del marco','effect',false,'(reemplaza al marco)')
+    + dsec('Efecto al acertar','hitfx',false)
     + '</div>';
-  return '<details class="dresser-wrap" open><summary>🎨 Personalizar mi avatar<span class="dw-hint">— clic para minimizar</span></summary>'
+  return '<details class="dresser-wrap" open><summary>Personalizar mi avatar<span class="dw-hint">— clic para minimizar</span></summary>'
     + '<div class="dresser">'+preview+dress+'</div></details>';
 }
 function bindAvatarEditor(p){
@@ -7166,12 +7169,12 @@ function bindAvatarEditor(p){
     saveProfiles(); renderHeader(); renderProfile(); sfx('flip');
   }));
   $$('#profileBody .avatar-pick .av').forEach(b => b.addEventListener('click', () => {
-    if(b.classList.contains('locked')){ toast('🔒 Ese avatar se desbloquea en el nivel '+avatarReqLevel(b.dataset.av)); sfx('bad'); return; }
+    if(b.classList.contains('locked')){ toast('Ese avatar se desbloquea en el nivel '+avatarReqLevel(b.dataset.av)); sfx('bad'); return; }
     p.avatar = b.dataset.av; p.avatarMode = 'emoji'; saveProfiles(); renderHeader(); renderProfile(); sfx('flip');
   }));
   const pu = $('#btnPhotoUp'); if(pu) pu.addEventListener('click', () => $('#photoFile').click());
   const pf = $('#photoFile'); if(pf) pf.addEventListener('change', e => { if(e.target.files[0]) setPhotoFromFile(e.target.files[0]); e.target.value=''; });
-  const pd = $('#btnPhotoDel'); if(pd) pd.addEventListener('click', () => { p.photo = null; if(p.avatarMode==='photo') p.avatarMode='emoji'; saveProfiles(); renderHeader(); renderProfile(); toast('🗑️ Foto quitada'); sfx('click'); });
+  const pd = $('#btnPhotoDel'); if(pd) pd.addEventListener('click', () => { p.photo = null; if(p.avatarMode==='photo') p.avatarMode='emoji'; saveProfiles(); renderHeader(); renderProfile(); toast('Foto quitada'); sfx('click'); });
   $$('#profileBody .bnav').forEach(b => b.addEventListener('click', () => {
     const k = b.dataset.bk, d = +b.dataset.bd;
     const c = p.custom = Object.assign(defaultCustom(), p.custom||{});
@@ -7207,49 +7210,49 @@ function renderProfile(){
   let html = '<div class="dash-grid">';
   // — Tarjeta de perfil / vestidor (avatar + equipar en dos columnas) —
   const fb = S.equip.badge ? BADGES.find(b=>b.id===S.equip.badge) : null;
-  html += '<div class="panel panel-dresser"><h3>👤 Mi perfil</h3>'
+  html += '<div class="panel panel-dresser"><h3>Mi perfil</h3>'
     + avatarEditorHTML(p, fb)
     + '<label class="fld" style="margin-top:14px">Nombre completo<input class="ainput" id="pfName" maxlength="40" value="'+esc(p.name)+'"></label>'
-    + '<button class="btn small" id="pfSave" style="margin-top:8px">💾 Guardar datos</button>'
+    + '<button class="btn small" id="pfSave" style="margin-top:8px">Guardar datos</button>'
     + '<p class="q-help">Perfil creado el '+new Date(p.created).toLocaleDateString('es-MX')+' · '+S.xp+' XP · '+S.badges.length+'/'+BADGES.length+' insignias</p></div>';
   // — Apariencia y estudio —
-  html += '<div class="panel"><h3>🎨 Apariencia</h3>'
-    + '<label class="fld">🌗 Tema<select class="ainput" id="prefTheme">'
-    + '<option value="">🖥️ Según el sistema</option><option value="light">☀️ Claro</option><option value="dark">🌙 Oscuro</option>'
+  html += '<div class="panel"><h3>Apariencia</h3>'
+    + '<label class="fld">Tema<select class="ainput" id="prefTheme">'
+    + '<option value="">Según el sistema</option><option value="light">Claro</option><option value="dark">Oscuro</option>'
     + '</select></label>'
-    + '<label class="fld">🎨 Color principal<select class="ainput" id="prefAccent">'
-    + '<option value="">🔵 Azul (predeterminado)</option><option value="#1baf7a">🟢 Verde</option><option value="#4a3aa7">🟣 Morado</option>'
-    + '<option value="#e34948">🔴 Rojo</option><option value="#eb6834">🟠 Naranja</option><option value="#d55181">🌸 Rosa</option>'
+    + '<label class="fld">Color principal<select class="ainput" id="prefAccent">'
+    + '<option value="">Azul (predeterminado)</option><option value="#1baf7a">Verde</option><option value="#4a3aa7">Morado</option>'
+    + '<option value="#e34948">Rojo</option><option value="#eb6834">Naranja</option><option value="#d55181">Rosa</option>'
     + '</select></label>'
-    + '<label class="fld">📚 Materia activa<select class="ainput" id="prefSubject">'
+    + '<label class="fld">Materia activa<select class="ainput" id="prefSubject">'
     + SUBJECTS.map(s=>'<option value="'+s.id+'"'+(s.id===S.activeSubject?' selected':'')+'>'+esc(s.name)+'</option>').join('')
     + '</select></label>'
-    + '<label class="fld">📅 Objetivo diario de XP<select class="ainput" id="prefGoal">'
+    + '<label class="fld">Objetivo diario de XP<select class="ainput" id="prefGoal">'
     + [25,50,75,100,150].map(g=>'<option value="'+g+'">'+g+' XP al día</option>').join('')
     + '</select></label>'
-    + toggleRow('prefConfetti','🎉 Confeti al aprobar', S.confetti !== false)
-    + toggleRow('prefSteps','🧮 Mostrar el procedimiento también al acertar', !!S.stepsOnOk)
-    + toggleRow('prefGuide','📖 Guía de estudio progresiva', S.guideProgressive !== false)
+    + toggleRow('prefConfetti','Confeti al aprobar', S.confetti !== false)
+    + toggleRow('prefSteps','Mostrar el procedimiento también al acertar', !!S.stepsOnOk)
+    + toggleRow('prefGuide','Guía de estudio progresiva', S.guideProgressive !== false)
     + '</div>';
   // — Perfiles del dispositivo —
-  html += '<div class="panel"><h3>👥 Perfiles en este dispositivo</h3>'
+  html += '<div class="panel"><h3>Perfiles en este dispositivo</h3>'
     + PROFILES.list.map(pr =>
       '<div class="profile-row'+(pr.id===PROFILES.active?' active':'')+'">'
       + '<span class="pr-av">'+(pr.photo?'<img src="'+pr.photo+'" style="width:26px;height:26px;border-radius:50%;object-fit:cover">':pr.avatar)+'</span><span class="pr-name">'+esc(pr.name)+'</span>'
-      + (pr.id===PROFILES.active ? '<span class="tag dom">✔ Activo</span>'
+      + (pr.id===PROFILES.active ? '<span class="tag dom">Activo</span>'
         : '<button class="btn ghost small" data-use="'+pr.id+'">Usar</button>')
-      + (PROFILES.list.length>1 ? '<button class="iconbtn" style="width:32px;height:32px;font-size:14px" title="Eliminar este perfil" aria-label="Eliminar este perfil" data-del="'+pr.id+'">🗑️</button>' : '')
+      + (PROFILES.list.length>1 ? '<button class="iconbtn" style="width:32px;height:32px;font-size:14px" title="Eliminar este perfil" aria-label="Eliminar este perfil" data-del="'+pr.id+'"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg></button>' : '')
       + '</div>').join('')
     + '<div class="answer-row"><input class="ainput" id="newProfName" placeholder="Nombre del nuevo perfil…" maxlength="24">'
     + '<button class="btn small" id="pfNew">＋ Crear</button></div>'
     + '<p class="q-help">Cada perfil guarda su propio progreso en tu cuenta del servidor: entra con tu usuario desde cualquier dispositivo y ahí estará.</p></div>';
   // — Congeladores de racha —
-  html += '<div class="panel"><h3>🧊 Congeladores de racha</h3>'
-    + '<p style="font-size:.9rem;color:var(--ink2)">Un congelador salva tu racha 🔥 si te saltas un día (se usa solo cuando hace falta). Tienes <b>'+(S.streakFreezes||0)+'</b>.</p>'
+  html += '<div class="panel"><h3>Congeladores de racha</h3>'
+    + '<p style="font-size:.9rem;color:var(--ink2)">Un congelador salva tu racha si te saltas un día (se usa solo cuando hace falta). Tienes <b>'+(S.streakFreezes||0)+'</b>.</p>'
     + '<div class="q-actions" style="justify-content:flex-start;flex-wrap:wrap">'
     + (S.freezeMonth===cdmxMonth()
-        ? '<button class="btn ghost" disabled>🧊 Congelador mensual ya reclamado</button>'
-        : '<button class="btn" id="btnClaimFreeze">🧊 Reclamar congelador mensual</button>')
+        ? '<button class="btn ghost" disabled>Congelador mensual ya reclamado</button>'
+        : '<button class="btn" id="btnClaimFreeze">Reclamar congelador mensual</button>')
     + '</div>'
     + '<p class="q-help">Ganas +1 al reclamar el mensual y +1 cada vez que terminas un parcial de una materia (≥ 90% de sus módulos).</p></div>';
   // — Datos —
@@ -7268,7 +7271,7 @@ function renderProfile(){
   $('#pfSave').addEventListener('click', () => {
     const nm = $('#pfName').value.trim();
     if(nm) p.name = nm;
-    saveProfiles(); renderHeader(); renderProfile(); toast('💾 Perfil actualizado'); sfx('ok');
+    saveProfiles(); renderHeader(); renderProfile(); toast('Perfil actualizado'); sfx('ok');
   });
   $$('#profileBody [data-use]').forEach(b => b.addEventListener('click', () => switchProfile(b.dataset.use)));
   $$('#profileBody [data-del]').forEach(b => b.addEventListener('click', () => deleteProfile(b.dataset.del)));
@@ -7279,7 +7282,7 @@ function renderProfile(){
   });
   // — Apariencia / estudio —
   $('#prefTheme').addEventListener('change', e => { S.theme = e.target.value || null; save(); applyTheme(); sfx('click'); });
-  $('#prefGoal').addEventListener('change', e => { S.xpGoal = +e.target.value || 50; if(S.dayXP) S.dayXP.goalHit = S.dayXP.xp >= S.xpGoal; save(); toast('📅 Objetivo diario: '+S.xpGoal+' XP'); sfx('click'); });
+  $('#prefGoal').addEventListener('change', e => { S.xpGoal = +e.target.value || 50; if(S.dayXP) S.dayXP.goalHit = S.dayXP.xp >= S.xpGoal; save(); toast('Objetivo diario: '+S.xpGoal+' XP'); sfx('click'); });
   $('#prefAccent').addEventListener('change', e => { S.accentColor = e.target.value || null; save(); applyTheme(); sfx('click'); });
   $('#prefSubject').addEventListener('change', e => { const id = e.target.value; if(id!==S.activeSubject) switchSubject(id); });
   $('#prefConfetti').addEventListener('change', e => { S.confetti = e.target.checked; save(); if(S.confetti) confetti(25); });
@@ -7288,21 +7291,21 @@ function renderProfile(){
     toast(S.guideProgressive ? '📖 La guía se desbloqueará conforme avances' : '📖 Guía completa visible'); });
   const cf = $('#btnClaimFreeze');
   if(cf) cf.addEventListener('click', () => {
-    if(claimMonthlyFreeze()){ toast('🧊 +1 congelador mensual. Ahora tienes '+S.streakFreezes+'.'); sfx('unlock'); renderProfile(); renderHeader(); }
-    else { toast('🧊 Ya reclamaste el congelador de este mes.'); sfx('bad'); }
+    if(claimMonthlyFreeze()){ toast('+1 congelador mensual. Ahora tienes '+S.streakFreezes+'.'); sfx('unlock'); renderProfile(); renderHeader(); }
+    else { toast('Ya reclamaste el congelador de este mes.'); sfx('bad'); }
   });
   $('#btnReset').addEventListener('click', () => {
     if(!confirm('Esto borrará TODO el progreso del perfil "'+p.name+'" (XP, módulos, exámenes, insignias). ¿Continuar?')) return;
     if(!confirm('Última confirmación: el borrado no se puede deshacer. ¿Reiniciar?')) return;
     S = DEFAULT_STATE(); MODULES = MODULES_BY_SUBJECT[S.activeSubject] || [];
-    save(); applyTheme(); renderHeader(); renderProfile(); toast('🗑️ Progreso reiniciado'); sfx('bad');
+    save(); applyTheme(); renderHeader(); renderProfile(); toast('Progreso reiniciado'); sfx('bad');
   });
 }
 function switchProfile(id){
   PROFILES.active = id; saveProfiles();
   reloadActiveState();
   applyTheme(); renderHeader(); renderProfile();
-  toast('👤 Perfil activo: '+esc(activeProfile().name)); sfx('unlock');
+  toast('Perfil activo: '+esc(activeProfile().name)); sfx('unlock');
 }
 function createProfile(name){
   const id = 'p' + Date.now().toString(36) + ri(10,99);
@@ -7310,7 +7313,7 @@ function createProfile(name){
   PROFILES.active = id; saveProfiles();
   reloadActiveState();
   save(); applyTheme(); renderHeader(); renderProfile();
-  toast('👤 Perfil "'+esc(name)+'" creado y activo'); sfx('unlock');
+  toast('Perfil "'+esc(name)+'" creado y activo'); sfx('unlock');
 }
 function deleteProfile(id){
   const pr = PROFILES.list.find(x => x.id === id);
@@ -7319,7 +7322,7 @@ function deleteProfile(id){
   Store.remove('actuariq_u_'+id);
   PROFILES.list = PROFILES.list.filter(x => x.id !== id);
   if(PROFILES.active === id){ PROFILES.active = PROFILES.list[0].id; reloadActiveState(); applyTheme(); }
-  saveProfiles(); renderHeader(); renderProfile(); toast('🗑️ Perfil eliminado'); sfx('bad');
+  saveProfiles(); renderHeader(); renderProfile(); toast('Perfil eliminado'); sfx('bad');
 }
 /* Respaldo TOTAL: todos los perfiles y su progreso + leaderboard + tareas + logo. */
 function exportData(){
@@ -7334,7 +7337,7 @@ function exportData(){
     shared: Store.getJSON(SHKEY, null),
     logo: Store.get(LOGOKEY) || null
   });
-  toast('⬇️ Respaldo total exportado ('+(PROFILES.list||[]).length+' perfil'+((PROFILES.list||[]).length===1?'':'es')+')'); sfx('ok');
+  toast('Respaldo total exportado ('+(PROFILES.list||[]).length+' perfil'+((PROFILES.list||[]).length===1?'':'es')+')'); sfx('ok');
 }
 function importData(file){
   readJSONFile(file, '❌ El archivo no es un respaldo válido de AprendeUteca', payload => {
@@ -7350,7 +7353,7 @@ function importData(file){
       if(payload.shared) Store.setJSON(SHKEY, payload.shared);
       if(payload.logo) Store.set(LOGOKEY, payload.logo);
       saveProfiles(); reloadActiveState(); applyTheme(); applyLogo(); renderHeader(); renderProfile();
-      toast('⬆️ Respaldo total restaurado ('+Object.keys(payload.states).length+' perfiles)'); sfx('unlock');
+      toast('Respaldo total restaurado ('+Object.keys(payload.states).length+' perfiles)'); sfx('unlock');
       return;
     }
     // — Compatibilidad: respaldo por-perfil antiguo (app:'actuariq') —
@@ -7372,7 +7375,7 @@ function importData(file){
       saveProfiles();
     }
     save(); applyTheme(); renderHeader(); renderProfile();
-    toast('⬆️ Datos importados correctamente'); sfx('unlock');
+    toast('Datos importados correctamente'); sfx('unlock');
   });
 }
 $('#btnProfile').addEventListener('click', ()=>{ sfx('click'); renderProfile(); showView('profile'); });
@@ -7385,9 +7388,9 @@ function renderShop(){
   let html = '';
   if(shopTab === 'tienda'){
     html += '<div class="panel"><div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">'
-      + '<h3 style="margin:0">🛒 Tienda</h3><span class="tag neutral">⚡ '+S.xp.toLocaleString()+' XP acumulados</span></div>'
-      + '<p class="q-help">Las recompensas se desbloquean al alcanzar su XP (tu XP no se gasta). Las de logro tienen su propio reto. Toca “Equipar” para lucirlas; en 🎒 Mi colección las tienes ordenadas por tipo.</p>'
-      + (nr ? '<p style="font-size:.85rem;font-weight:700;color:var(--ink2)">⏭️ Próxima: '+nr.ico+' '+esc(nr.name)+' · '+S.xp.toLocaleString()+' / '+nr.xp.toLocaleString()+' XP</p>' : '<p style="font-size:.85rem;font-weight:700;color:var(--good-text)">🏆 ¡Desbloqueaste toda la tienda!</p>')
+      + '<h3 style="margin:0">Tienda</h3><span class="tag neutral">'+S.xp.toLocaleString()+' XP acumulados</span></div>'
+      + '<p class="q-help">Las recompensas se desbloquean al alcanzar su XP (tu XP no se gasta). Las de logro tienen su propio reto. Toca “Equipar” para lucirlas; en Mi colección las tienes ordenadas por tipo.</p>'
+      + (nr ? '<p style="font-size:.85rem;font-weight:700;color:var(--ink2)">Próxima: '+nr.ico+' '+esc(nr.name)+' · '+S.xp.toLocaleString()+' / '+nr.xp.toLocaleString()+' XP</p>' : '<p style="font-size:.85rem;font-weight:700;color:var(--good-text)">¡Desbloqueaste toda la tienda!</p>')
       + '</div>';
     html += REWARD_TYPES.map(type => {
       const items = REWARDS.filter(r => r.type===type);
@@ -7398,7 +7401,7 @@ function renderShop(){
     const owned = REWARDS.filter(r => isUnlockedReward(r.id));
     const locked = REWARDS.filter(r => !isUnlockedReward(r.id));
     const equipped = REWARDS.filter(isEquipped);
-    html += '<div class="panel"><h3>🎒 Mi colección</h3>'
+    html += '<div class="panel"><h3>Mi colección</h3>'
       + '<div class="tag-list" style="margin-bottom:8px">'
       + '<span class="tag dom">✅ '+owned.length+' desbloqueadas</span>'
       + '<span class="tag neutral">🎯 '+equipped.length+' equipadas</span>'
@@ -7407,21 +7410,21 @@ function renderShop(){
     // secciones desplegables por tipo, para que la lista no se haga enorme
     const secHTML = (title, list, empty, open) => '<details class="panel coll-sec"'+(open?' open':'')+'><summary><b>'+title+' ('+list.length+')</b></summary>'
       + (list.length ? '<div class="reward-grid" style="margin-top:10px">'+list.map(rewardCardHTML).join('')+'</div>' : '<p class="q-help">'+empty+'</p>')+'</details>';
-    html += secHTML('🎯 Equipadas', equipped, 'Aún no equipas nada.', true);
+    html += secHTML('Equipadas', equipped, 'Aún no equipas nada.', true);
     REWARD_TYPES.forEach(type => {
       const own = owned.filter(r=>r.type===type);
       if(own.length) html += secHTML(REWARD_TYPE_LABEL[type]+' desbloqueados', own, '', false);
     });
     // insignia destacada (se muestra junto a tu nombre en perfil, header y leaderboard)
     const myBadges = BADGES.filter(b=>S.badges.includes(b.id));
-    html += '<details class="panel coll-sec"><summary><b>🎖️ Insignia destacada'+(S.equip.badge?' · '+(BADGES.find(b=>b.id===S.equip.badge)||{}).ico:'')+'</b></summary>'
+    html += '<details class="panel coll-sec"><summary><b>Insignia destacada'+(S.equip.badge?' · '+(BADGES.find(b=>b.id===S.equip.badge)||{}).ico:'')+'</b></summary>'
       + '<p class="q-help" style="margin-top:8px">La insignia destacada aparece junto a tu nombre en el perfil, el encabezado y el leaderboard.</p>'
-      + '<div class="equip-grid"><div class="equip-item'+(!S.equip.badge?' on':'')+'" data-badge=""><span class="ei-ico">🚫</span><span class="ei-name">Ninguna</span></div>'
+      + '<div class="equip-grid"><div class="equip-item'+(!S.equip.badge?' on':'')+'" data-badge=""><span class="ei-ico"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="m4.9 4.9 14.2 14.2"/></svg></span><span class="ei-name">Ninguna</span></div>'
       + (myBadges.length ? myBadges.map(b=>'<div class="equip-item'+(S.equip.badge===b.id?' on':'')+'" data-badge="'+b.id+'"><span class="ei-ico">'+b.ico+'</span><span class="ei-name">'+esc(b.name)+'</span>'+(S.equip.badge===b.id?'<span class="ei-on">✓</span>':'')+'</div>').join('') : '')
       + '</div>'
       + (myBadges.length ? '' : '<p class="q-help">Gana insignias para poder destacarlas.</p>')
       + '</details>';
-    html += secHTML('🔒 Bloqueadas', locked, '¡Ya tienes todo! 🏆', false);
+    html += secHTML('Bloqueadas', locked, '¡Ya tienes todo!', false);
   }
   $('#shopBody').innerHTML = html;
 }
@@ -7450,7 +7453,7 @@ function applyLogo(){
 /* Lee un archivo de imagen, lo recorta al cuadrado central, lo reescala a
    size×size y entrega el dataURL a onReady. Errores → toast + sonido. */
 function imageFileToDataURL(file, size, mime, quality, onReady){
-  if(!file || !file.type.startsWith('image/')){ toast('❌ Elige un archivo de imagen'); sfx('bad'); return; }
+  if(!file || !file.type.startsWith('image/')){ toast('Elige un archivo de imagen'); sfx('bad'); return; }
   const rd = new FileReader();
   rd.onload = () => {
     const img = new Image();
@@ -7460,10 +7463,10 @@ function imageFileToDataURL(file, size, mime, quality, onReady){
       cv.getContext('2d').drawImage(img, (img.width-side)/2, (img.height-side)/2, side, side, 0, 0, size, size);
       let data;
       try{ data = cv.toDataURL(mime, quality); }
-      catch(e){ toast('❌ No se pudo procesar la imagen'); sfx('bad'); return; }
+      catch(e){ toast('No se pudo procesar la imagen'); sfx('bad'); return; }
       onReady(data);
     };
-    img.onerror = () => { toast('❌ No se pudo leer la imagen'); sfx('bad'); };
+    img.onerror = () => { toast('No se pudo leer la imagen'); sfx('bad'); };
     img.src = rd.result;
   };
   rd.readAsDataURL(file);
@@ -7471,15 +7474,15 @@ function imageFileToDataURL(file, size, mime, quality, onReady){
 function setLogoFromFile(file){
   // 128×128 para que quepa cómodo en localStorage
   imageFileToDataURL(file, 128, 'image/png', undefined, data => {
-    if(!Store.set(LOGOKEY, data)){ toast('❌ No se pudo guardar el logo (imagen demasiado grande)'); sfx('bad'); return; }
-    applyLogo(); renderProfile(); toast('🖼️ Logo actualizado en este dispositivo'); sfx('ok');
+    if(!Store.set(LOGOKEY, data)){ toast('No se pudo guardar el logo (imagen demasiado grande)'); sfx('bad'); return; }
+    applyLogo(); renderProfile(); toast('Logo actualizado en este dispositivo'); sfx('ok');
   });
 }
 /* Foto de perfil del usuario (por perfil, no por dispositivo) */
 function setPhotoFromFile(file){
   imageFileToDataURL(file, 160, 'image/jpeg', 0.82, data => {
     const p = activeProfile(); p.photo = data; p.avatarMode = 'photo'; saveProfiles();
-    renderHeader(); renderProfile(); toast('📷 Foto de perfil actualizada'); sfx('ok');
+    renderHeader(); renderProfile(); toast('Foto de perfil actualizada'); sfx('ok');
   });
 }
 
@@ -7495,21 +7498,21 @@ function showOnboarding(){
   const o = openModal('<div style="text-align:center"><div id="obPreview" style="display:flex;justify-content:center;margin-bottom:4px">'+avatarStack(activeProfile(), 68, {})+'</div>'
     + '<h2 style="margin:.2em 0 .1em">¡Bienvenido a AprendeUteca!</h2>'
     + '<p style="color:var(--ink2);font-size:.88rem;margin-top:0">Tu plataforma de estudio del cuatrimestre. Personalízala en 20 segundos:</p></div>'
-    + '<label class="fld">🙋 Tu nombre completo<input class="ainput" id="obName" placeholder="Nombre y apellido…" maxlength="30"></label>'
-    + '<div class="fld">😀 Tu avatar (desbloquearás más al subir de nivel)'
+    + '<label class="fld">Tu nombre completo<input class="ainput" id="obName" placeholder="Nombre y apellido…" maxlength="30"></label>'
+    + '<div class="fld">Tu avatar (desbloquearás más al subir de nivel)'
     + '<div class="avatar-pick" id="obAv" style="justify-content:flex-start">'
     + AVATARS.slice(0,4).map(a=>'<button class="av'+(a===chosen?' on':'')+'" data-av="'+a+'">'+a+'</button>').join('')+'</div></div>'
-    + '<label class="fld">📚 ¿Qué materia quieres estudiar primero?<select class="ainput" id="obSubj">'
+    + '<label class="fld">¿Qué materia quieres estudiar primero?<select class="ainput" id="obSubj">'
     + SUBJECTS.map(s=>'<option value="'+s.id+'"'+(s.id===S.activeSubject?' selected':'')+'>'+esc(s.name)+(s.soon?' · en preparación':'')+'</option>').join('')
     + '</select></label>'
-    + '<label class="fld">🎯 Tu meta diaria de XP<select class="ainput" id="obGoal">'
+    + '<label class="fld">Tu meta diaria de XP<select class="ainput" id="obGoal">'
     + [25,50,75,100].map(g=>'<option value="'+g+'"'+(g===50?' selected':'')+'>'+g+' XP al día'+(g===50?' (recomendado)':'')+'</option>').join('')
     + '</select></label>'
-    + '<div class="fld">🎨 Tu color favorito<div class="color-swatches" id="obColors">'
+    + '<div class="fld">Tu color favorito<div class="color-swatches" id="obColors">'
     + COLORS.map(c=>'<button class="sw'+(c.v===chosenColor?' on':'')+'" data-c="'+esc(c.v)+'" title="'+c.n+'" aria-label="'+c.n+'" style="background:'+c.c+'"></button>').join('')
     + '</div></div>'
     + '<p class="q-help">Tu progreso, XP, insignias y recompensas se guardan en tu cuenta: entra con tu usuario desde cualquier dispositivo.</p>'
-    + '<div class="q-actions" style="justify-content:center"><button class="btn" id="obGo" style="font-size:1.02rem;padding:12px 34px">🚀 ¡Comenzar!</button></div>');
+    + '<div class="q-actions" style="justify-content:center"><button class="btn" id="obGo" style="font-size:1.02rem;padding:12px 34px">¡Comenzar!</button></div>');
   o.querySelectorAll('#obAv .av').forEach(b => b.addEventListener('click', () => {
     chosen = b.dataset.av;
     o.querySelectorAll('#obAv .av').forEach(x => x.classList.toggle('on', x === b));
@@ -7534,7 +7537,7 @@ function showOnboarding(){
     const subjSel = o.querySelector('#obSubj').value;
     closeModal(); renderHeader();
     if(subjSel !== S.activeSubject) switchSubject(subjSel); else renderHome();
-    toast('👤 ¡Perfil listo, '+esc(p.name)+'! Mucho éxito 🍀'); sfx('unlock');
+    toast('¡Perfil listo, '+esc(p.name)+'! Mucho éxito 🍀'); sfx('unlock');
   };
   o.querySelector('#obGo').addEventListener('click', go);
   o.querySelector('#obName').addEventListener('keydown', e => { if(e.key==='Enter') go(); });
