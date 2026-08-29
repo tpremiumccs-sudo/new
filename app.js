@@ -507,7 +507,7 @@ function applyTheme(){
   const root = document.documentElement;
   if(S.theme) root.setAttribute('data-theme', S.theme); else root.removeAttribute('data-theme');
   const dark = S.theme==='dark' || (!S.theme && matchMedia('(prefers-color-scheme: dark)').matches);
-  $('#btnTheme').textContent = dark ? '☀️ Tema claro' : '🌙 Tema oscuro';
+  $('#btnTheme').textContent = dark ? 'Tema claro' : 'Tema oscuro';
   // color principal efectivo: manual > tema de interfaz equipado > predeterminado
   let accent = S.accentColor;
   const th = (S.equip && S.equip.theme) ? THEMES.find(t=>t.id===S.equip.theme) : null;
@@ -543,7 +543,7 @@ $('#btnTheme').addEventListener('click', ()=>{
 $('#btnSound').addEventListener('click', e=>{
   S.sound = !S.sound; save();
   e.currentTarget.setAttribute('aria-pressed', S.sound);
-  e.currentTarget.textContent = S.sound ? '🔊 Sonido: activado' : '🔇 Sonido: apagado';
+  e.currentTarget.textContent = S.sound ? 'Sonido: activado' : 'Sonido: apagado';
   if(S.sound) sfx('ok');
 });
 /* Menú "⋯" del encabezado */
@@ -785,7 +785,7 @@ function renderHome(){
   // grid de módulos (o tarjeta de "en preparación" si la materia aún no tiene contenido)
   if(!hasContent){
     $('#moduleGrid').innerHTML = '<div class="mcard locked" style="--mc:var(--c5)">'
-      + '<span class="lock">🚧</span>'
+      + '<span class="lock">'+ico('🔒')+'</span>'
       + '<div class="m-top"><span class="m-ico">'+subjSVG(subj.id)+'</span><span><span class="m-num">Próximamente</span><h3>'+esc(subj.name)+'</h3></span></div>'
       + '<span class="m-desc">Los módulos y quizzes de esta materia se agregarán pronto. Mientras tanto ya puedes consultar sus tareas y su calendario de exámenes.</span>'
       + '<span class="m-type">En preparación</span></div>';
@@ -940,7 +940,7 @@ function settle(q, frac, detailHtml){
     const note = document.createElement('div');
     note.className = 'fb';
     note.style.background = 'var(--surface2)'; note.style.borderColor = 'var(--line)';
-    note.innerHTML = '<div class="fb-head" style="color:var(--ink2)">📩 Respuesta registrada ('+(SES.i+1)+' de '+SES.qs.length+')</div>';
+    note.innerHTML = '<div class="fb-head" style="color:var(--ink2)">Respuesta registrada ('+(SES.i+1)+' de '+SES.qs.length+')</div>';
     card.appendChild(note);
     setTimeout(() => { if(!SES) return; advanceSession(); }, 600);
     return;
@@ -6045,7 +6045,7 @@ function checkBadges(){
   BADGES.forEach(b => {
     if(!S.badges.includes(b.id) && b.test()){
       S.badges.push(b.id); save();
-      toast(b.ico+(b.secret?' 🕵️ ¡Logro secreto: <b>':' ¡Nueva insignia: <b>')+b.name+'</b>!'); sfx('unlock');
+      toast((b.secret?'¡Logro secreto: <b>':' ¡Nueva insignia: <b>')+b.name+'</b>!'); sfx('unlock');
     }
   });
 }
@@ -6232,7 +6232,7 @@ function missionRowHTML(def, scope, m){
     : done ? '<button class="btn small" data-claim="'+scope+':'+def.id+'">Reclamar</button>'
     : '<span class="m-lock">'+pctv+'%</span>';
   return '<div class="mission '+(claimed?'m-claimed':done?'m-ready':'')+'">'
-    + '<div class="m-ico">'+def.ico+'</div>'
+    + '<div class="m-ico">'+ico(def.ico)+'</div>'
     + '<div class="m-body"><div class="m-top"><b>'+esc(def.name)+'</b><span class="m-xp">+'+def.xp+' XP</span></div>'
     + '<div class="pbar"><i style="width:'+pctv+'%"></i></div>'
     + '<div class="m-sub">'+cur+' / '+goal+unit+' · '+esc(def.desc)+'</div></div>'
