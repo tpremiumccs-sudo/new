@@ -884,3 +884,11 @@ svg.ic{ width:18px; height:18px; display:inline-block; vertical-align:-3px; }
 .lms-foot{ margin-top:16px; color:rgba(255,255,255,.72); font-size:.68rem; }
 
 .site-foot{ margin-top:44px; padding:22px 12px 28px; text-align:center; font-size:.78rem; color:var(--muted); border-top:1px solid var(--line); }
+
+/* Iconos SVG en memorama, escape y guía */
+.memo-front svg.ic{ width:26px; height:26px; color:#fff; }
+.guide-locked svg.ic{ width:15px; height:15px; vertical-align:-2px; }
+.lesson-card h3 svg.ic{ width:18px; height:18px; vertical-align:-3px; color:var(--accent); }
+.hist-table th svg.ic{ width:18px; height:18px; }
+.d-ico svg.ic{ width:30px; height:30px; }
+.dial svg.ic{ width:26px; height:26px; }

@@ -3950,7 +3950,7 @@ function startMemo(){
   MEMO = { cards, open:[], found:0, tries:0, lock:false, t0:Date.now() };
   $('#memoGrid').innerHTML = cards.map((c,i) =>
     '<button class="memo-card" data-i="'+i+'" aria-label="carta"><span class="memo-inner">'
-    + '<span class="memo-face memo-front">🛡️</span>'
+    + '<span class="memo-face memo-front">'+subjSVG(S.activeSubject)+'</span>'
     + '<span class="memo-face memo-back'+(c.kind==='c' ? ' concept' : '')+'">'+esc(c.txt)+'</span>'
     + '</span></button>').join('');
   $$('#memoGrid .memo-card').forEach(b => b.addEventListener('click', () => memoFlip(+b.dataset.i)));
@@ -4037,7 +4037,7 @@ function renderEscape(){
     + '<p style="font-weight:700">Llaves obtenidas: '+solved+' / 4</p></div>';
   html += '<div class="doors">' + ESC.puzzles.map((p,i) =>
     '<div class="door'+(p.solved?' solved':'')+'" data-p="'+i+'" role="button" tabindex="0">'
-    + '<div class="d-ico">'+(p.solved?'🔑':p.icon)+'</div><h4>'+p.title+'</h4>'
+    + '<div class="d-ico">'+ico(p.solved?'🔑':p.icon)+'</div><h4>'+p.title+'</h4>'
     + '<div class="d-state">'+(p.solved ? 'Resuelta' : 'Haz clic para entrar')+'</div>'
     + (p.solved ? '<div class="d-code">CÓDIGO: '+p.code+'</div>' : '')
     + '</div>').join('') + '</div>';
@@ -4048,7 +4048,7 @@ function renderEscape(){
           '<input class="code-in" id="code'+i+'" inputmode="decimal" placeholder="Código '+(i+1)+'" aria-label="Código '+(i+1)+'">').join('') + '</div>'
       + '<button class="btn" id="btnSafe" style="font-size:1rem">Abrir la caja fuerte</button></div>';
   } else {
-    html += '<div class="safe locked-visual"><div class="dial">🔒</div><h3>La caja fuerte</h3>'
+    html += '<div class="safe locked-visual"><div class="dial">'+ico('🔒')+'</div><h3>La caja fuerte</h3>'
       + '<p style="font-size:.9rem;color:var(--ink2)">Consigue las 4 llaves para intentar abrirla.</p></div>';
   }
   $('#escBody').innerHTML = html;
@@ -4632,7 +4632,7 @@ function openModulePicker(){
   const avail = MODULES.filter(m => m.build && isUnlocked(m.id));
   if(!avail.length){ toast('Desbloquea módulos para el quiz clásico.'); return; }
   const o = openModal('<h2 style="margin-top:0">Quiz clásico</h2><p style="color:var(--ink2);font-size:.9rem">Elige el módulo que quieres practicar.</p>'
-    + avail.map(m => '<button class="profile-row" style="width:100%;text-align:left" data-mod="'+m.id+'"><span class="pr-av">'+m.icon+'</span><span class="pr-name">'+esc(m.name)+'</span></button>').join('')
+    + avail.map(m => '<button class="profile-row" style="width:100%;text-align:left" data-mod="'+m.id+'"><span class="pr-av">'+ico(m.icon)+'</span><span class="pr-name">'+esc(m.name)+'</span></button>').join('')
     + '<div class="q-actions" style="justify-content:center"><button class="btn ghost" id="mpClose">Cerrar</button></div>');
   o.querySelectorAll('[data-mod]').forEach(b => b.addEventListener('click', () => { closeModal(); openModule(+b.dataset.mod); }));
   o.querySelector('#mpClose').addEventListener('click', closeModal);
@@ -4727,7 +4727,7 @@ function startJeopardy(){
   const draw = () => {
     let html = '<div class="panel"><button class="btn ghost small" id="jBack">Modos</button>'
       + '<h3 style="display:inline-block;margin-left:8px">Jeopardy · '+score+' pts</h3>'
-      + '<div style="overflow-x:auto"><table class="hist-table" style="min-width:420px"><tr>'+mods.map(m=>'<th style="text-align:center">'+m.icon+'<br>'+esc(m.name.split(' ')[0])+'</th>').join('')+'</tr>';
+      + '<div style="overflow-x:auto"><table class="hist-table" style="min-width:420px"><tr>'+mods.map(m=>'<th style="text-align:center">'+ico(m.icon)+'<br>'+esc(m.name.split(' ')[0])+'</th>').join('')+'</tr>';
     vals.forEach(v => { html += '<tr>'+mods.map((m,ci)=>{ const key=ci+'-'+v; return '<td style="text-align:center">'+(used[key]?'<span style="opacity:.3">—</span>':'<button class="btn small" data-cell="'+key+'">'+v+'</button>')+'</td>'; }).join('')+'</tr>'; });
     html += '</table></div><p class="q-help">Elige una casilla, responde y suma puntos.</p></div><div id="jQ"></div>';
     host.innerHTML = html;
@@ -5509,7 +5509,7 @@ function lbAdminPanelHTML(b){
         + '<input class="ainput" id="lbfMods" type="number" min="0" max="12" placeholder="Módulos" style="max-width:110px" value="'+(editing?(editing.mods||0):'')+'">'
         + '</div>'
         + '<div class="q-actions" style="justify-content:flex-start;flex-wrap:wrap">'
-        + '<button class="btn small" id="lbfSave">'+(editing?'💾 Guardar cambios':'➕ Agregar')+'</button>'
+        + '<button class="btn small" id="lbfSave">'+(editing?'Guardar cambios':'Agregar')+'</button>'
         + (editing?'<button class="btn ghost small" id="lbfCancel">Cancelar</button>':'')
         + '<button class="btn ghost small" id="lbSort">Ordenar por XP</button>'
         + '<button class="btn danger small" id="lbReset">Resetear leaderboard</button>'
@@ -5789,7 +5789,7 @@ function taskAdminHTML(){
       + '<textarea class="ainput" id="tfMaterials" rows="2" placeholder="Materiales (uno por línea)" style="width:100%;margin:0 0 8px;resize:vertical">'+esc(editing?(editing.materials||[]).join('\n'):'')+'</textarea>'
       + '<input class="ainput" id="tfNotes" placeholder="Notas (opcional)" style="width:100%;margin:0 0 8px" value="'+esc(editing?(editing.notes||''):'')+'">'
       + '<div class="q-actions" style="justify-content:flex-start;flex-wrap:wrap">'
-      + '<button class="btn small" id="tfSave">'+(editing?'💾 Guardar cambios':'➕ Publicar tarea')+'</button>'
+      + '<button class="btn small" id="tfSave">'+(editing?'Guardar cambios':'Publicar tarea')+'</button>'
       + (editing ? '<button class="btn ghost small" id="tfCancel">Cancelar</button>' : '')
       + '<button class="btn ghost small" id="tExport">Exportar tasks.json</button>'
       + '<button class="btn ghost small" id="tImport">Importar</button>'
@@ -5896,7 +5896,7 @@ function bindTaskEvents(){
     });
     sh.deletedTasks = (sh.deletedTasks||[]).filter(x => x !== id);
     shSave(sh);
-    toast(taskEditId ? '💾 Tarea actualizada' : '➕ Tarea publicada'); sfx('ok');
+    toast(taskEditId ? 'Tarea actualizada' : '➕ Tarea publicada'); sfx('ok');
     taskEditId = null; updateTaskBadge(); renderTasks();
   });
   const tc = $('#tfCancel');
@@ -6340,7 +6340,7 @@ function guideHTML(){
   // "tema siguiente que aún no ves" siempre está disponible para estudiarlo).
   const secs = [
   {req:0, html:'<div class="lesson-card"><h3>Guía de estudio · Cálculo Actuarial (Unidad 1)</h3><p>Resumen de conceptos, fórmulas, procedimientos y ejercicios resueltos. Usa el botón <b>Imprimir / Guardar PDF</b> para llevarla contigo.</p>'
-    + (prog ? '<p style="font-size:.82rem;color:var(--muted)">La guía se desbloquea tema por tema conforme avanzas en los módulos. Si prefieres verla completa, desactiva “Guía de estudio progresiva” en tu perfil ⚙️.</p>' : '') + '</div>'},
+    + (prog ? '<p style="font-size:.82rem;color:var(--muted)">La guía se desbloquea tema por tema conforme avanzas en los módulos. Si prefieres verla completa, desactiva “Guía de estudio progresiva” en tu perfil.</p>' : '') + '</div>'},
   {req:0, html:'<div class="lesson-card"><h3>1 · Glosario de conceptos</h3><table><tr><th>Concepto</th><th>Definición</th></tr>'
     + GLOSSARY.map(g => '<tr><td><b>'+g.t+'</b></td><td>'+g.d+'</td></tr>').join('') + '</table></div>'},
   {req:1, html:'<div class="lesson-card"><h3>2 · Fórmulas clave</h3>'
@@ -6375,8 +6375,8 @@ function guideHTML(){
   return secs.map(s => {
     if(!prog || isUnlocked(s.req)) return s.html;
     const m = MODULES[s.req];
-    return '<div class="lesson-card guide-locked">🔒 <b>Sección bloqueada</b><br>'
-      + '<span>Se desbloquea al llegar al Módulo '+(s.req+1)+' · '+m.icon+' '+esc(m.name)
+    return '<div class="lesson-card guide-locked">'+ico('🔒')+' <b>Sección bloqueada</b><br>'
+      + '<span>Se desbloquea al llegar al Módulo '+(s.req+1)+' · '+esc(m.name)
       + '. Aprueba los módulos anteriores con ≥ 80% para estudiarla.</span></div>';
   }).join('');
 }
@@ -6447,15 +6447,15 @@ function guideGeneric(sid){
   const prog = S.guideProgressive !== false;
   const modCard = m => {
     if(prog && !isUnlocked(m.id))
-      return '<div class="lesson-card guide-locked">🔒 <b>'+m.icon+' '+esc(m.name)+'</b><br>'
+      return '<div class="lesson-card guide-locked">'+ico('🔒')+' <b>'+esc(m.name)+'</b><br>'
         + '<span>Se desbloquea al llegar a este módulo. Aprueba los anteriores con ≥ 80% para estudiarlo.</span></div>';
-    return '<div class="lesson-card"><h3>'+m.icon+' Módulo '+(m.id+1)+' · '+esc(m.name)+'</h3>'
+    return '<div class="lesson-card"><h3>'+ico(m.icon)+' Módulo '+(m.id+1)+' · '+esc(m.name)+'</h3>'
       + '<p>'+esc(m.desc)+'</p>'
       + '<p style="font-size:.82rem;color:var(--muted)">Práctica: '+esc(m.kind)+'</p></div>';
   };
   let html = '<div class="lesson-card"><h3>Guía de estudio · '+esc(subj.name)+'</h3>'
     + '<p>Resumen de los módulos del curso, agrupados por parcial, con las fórmulas clave. Usa <b>Imprimir / Guardar PDF</b> para llevarla contigo.</p>'
-    + (prog ? '<p style="font-size:.82rem;color:var(--muted)">La guía se desbloquea conforme avanzas. Desactiva “Guía de estudio progresiva” en tu perfil ⚙️ para verla completa.</p>' : '')
+    + (prog ? '<p style="font-size:.82rem;color:var(--muted)">La guía se desbloquea conforme avanzas. Desactiva “Guía de estudio progresiva” en tu perfil para verla completa.</p>' : '')
     + '</div>';
   if(formulas.length){
     html += '<div class="lesson-card"><h3>Fórmulas clave</h3><table><tr><th>Tema</th><th>Fórmula / idea</th></tr>'
