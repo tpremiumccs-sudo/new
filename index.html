@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="ActuarIQ — Plataforma interactiva para aprender Cálculo Actuarial: niveles, XP, insignias, ejercicios aleatorios, escape room y casos reales.">
+<title>ActuarIQ · Cálculo Actuarial Interactivo</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%9B%A1%EF%B8%8F%3C/text%3E%3C/svg%3E">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#2a78d6">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="top">
+  <button class="logo" id="btnHome" title="Ir al inicio">
+    <span class="mark">🛡️</span>
+    <span>ActuarIQ<small>Cálculo Actuarial Interactivo</small></span>
+  </button>
+  <span class="spacer"></span>
+  <button class="chip subject" id="btnSubject" title="Cambiar de materia"><span class="icon" id="subjIcon">🛡️</span><b id="subjShort">Cálculo III</b> <span style="opacity:.55">▾</span></button>
+  <div class="lvlbox" id="lvlbox" title="Nivel y experiencia">
+    <span class="lvlnum" id="lvlNum">1</span>
+    <span><span class="lvlbar"><i id="lvlBar" style="width:0%"></i></span><small id="lvlXpTxt">0 XP</small></span>
+  </div>
+  <span class="chip hdr-badge hidden" id="hdrBadge" title="Insignia destacada"></span>
+  <button class="iconbtn" id="btnProfile" title="Mi perfil y configuración" aria-label="Mi perfil y configuración">🎓</button>
+  <button class="iconbtn" id="btnShop" title="Tienda y colección" aria-label="Tienda y colección">🛒</button>
+  <button class="iconbtn" id="btnModes" title="Modos de juego" aria-label="Modos de juego">🎮</button>
+  <button class="iconbtn" id="btnTasks" title="Tareas y calendario" aria-label="Tareas y calendario" style="position:relative">📋<span id="taskBadge" class="task-badge hidden"></span></button>
+  <button class="chip hearts" id="btnHearts" title="Corazones (vidas)" style="cursor:pointer;border:none;font:inherit"><span class="icon">❤️</span><b id="heartsTxt">5</b></button>
+  <button class="chip streak" id="btnStreak" title="Racha, retos diarios/semanales y logros" style="position:relative;cursor:pointer;border:none;font:inherit"><span class="icon">🔥</span><b id="streakTxt">0</b><span id="streakDot" class="streak-dot hidden"></span></button>
+  <div class="more-wrap">
+    <button class="iconbtn" id="btnMore" title="Más opciones" aria-label="Más opciones" aria-haspopup="true" aria-expanded="false">⋯</button>
+    <div class="more-menu hidden" id="moreMenu">
+      <button class="more-item" id="btnBoard">🏆 Leaderboard</button>
+      <button class="more-item" id="btnStats">📊 Estadísticas</button>
+      <button class="more-item" id="btnGuide">🖨️ Guía de estudio</button>
+      <button class="more-item" id="btnSound" aria-pressed="true">🔊 Sonido</button>
+      <button class="more-item" id="btnTheme">🌙 Tema claro/oscuro</button>
+    </div>
+  </div>
+</header>
+
+<main class="app">
+
+  <!-- ================= VISTA: INICIO ================= -->
+  <section id="view-home">
+    <div class="hero">
+      <h1 id="heroTitle">¡Bienvenido, futuro actuario! 👋</h1>
+      <p id="heroDesc">Avanza por los módulos resolviendo retos. Necesitas <b>80%</b> para desbloquear el siguiente nivel. Gana XP, estrellas e insignias mientras dominas cada concepto.</p>
+      <div class="actions">
+        <button class="btn onhero" id="btnContinue">▶ Continuar donde me quedé</button>
+        <button class="btn onhero" id="btnExam">📝 Examen diario</button>
+        <button class="btn ghost" id="btnFlash" style="background:rgba(255,255,255,.16); color:#fff; border-color:rgba(255,255,255,.35)">🃏 Flashcards de repaso</button>
+        <button class="btn ghost" id="btnBlitz" style="background:rgba(255,255,255,.16); color:#fff; border-color:rgba(255,255,255,.35)">⚡ Reto contrarreloj</button>
+        <button class="btn ghost" id="btnSudden" style="background:rgba(255,255,255,.16); color:#fff; border-color:rgba(255,255,255,.35)">💀 Muerte súbita</button>
+        <button class="btn ghost" id="btnReview" style="background:rgba(255,255,255,.16); color:#fff; border-color:rgba(255,255,255,.35)">🎯 Repaso mixto</button>
+      </div>
+    </div>
+
+    <div class="stats-strip" id="homeStats"></div>
+
+    <div class="section-h"><h2 id="subjSectionTitle">📘 Unidad 1 · Fundamentos del Cálculo Actuarial</h2><span class="line"></span><span class="meta" id="modMeta"></span></div>
+    <div class="mgrid" id="moduleGrid"></div>
+    <div id="futureUnits">
+      <div class="section-h" style="margin-top:30px"><h2>📗 Próximas unidades</h2><span class="line"></span></div>
+      <div class="mgrid">
+        <div class="mcard locked" style="--mc:var(--c2)">
+          <span class="lock" title="Disponible próximamente">🔒</span>
+          <div class="m-top"><span class="m-ico">📗</span><span><span class="m-num">Unidad 2</span><h3>Nuevos temas · Próximamente</h3></span></div>
+          <span class="m-desc">Se agregará con los siguientes temas del curso. Cada unidad tiene sus propios módulos y su propio examen diario: los temas no se mezclan entre unidades, salvo los que se comparten.</span>
+          <span class="m-type">En preparación</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= VISTA: LECCIÓN ================= -->
+  <section id="view-lesson" class="hidden">
+    <div class="session-top">
+      <button class="btn ghost small back" data-nav="home">← Salir</button>
+      <span class="qcount" id="lessonTitleTop"></span>
+    </div>
+    <div class="lesson" id="lessonBody"></div>
+    <div style="text-align:center; margin:22px 0">
+      <button class="btn" id="btnLessonStart" style="font-size:1.05rem; padding:14px 34px">🚀 Comenzar actividades</button>
+    </div>
+  </section>
+
+  <!-- ================= VISTA: SESIÓN DE PREGUNTAS ================= -->
+  <section id="view-session" class="hidden">
+    <div class="session-top">
+      <button class="btn ghost small back" id="btnQuit">← Salir</button>
+      <div class="qprog"><i id="qProgBar" style="width:0%"></i></div>
+      <span class="qcount" id="qCount">1 / 10</span>
+    </div>
+    <div id="qHost"></div>
+  </section>
+
+  <!-- ================= VISTA: RESULTADO ================= -->
+  <section id="view-result" class="hidden"></section>
+
+  <!-- ================= VISTA: MEMORAMA ================= -->
+  <section id="view-memo" class="hidden">
+    <div class="session-top">
+      <button class="btn ghost small back" data-nav="home">← Salir</button>
+      <span class="qcount">🧠 Memorama de conceptos</span>
+    </div>
+    <div class="memo-hud">
+      <span>🎯 Pares: <b id="memoPairs">0/8</b></span>
+      <span>🔁 Intentos: <b id="memoTries">0</b></span>
+      <span>⏱️ <b id="memoTime">0:00</b></span>
+    </div>
+    <div class="memo-grid" id="memoGrid"></div>
+    <p class="q-help" style="text-align:center">Encuentra cada <b>concepto</b> con su <b>definición</b>. Menos intentos = mejor calificación.</p>
+  </section>
+
+  <!-- ================= VISTA: ESCAPE ROOM ================= -->
+  <section id="view-escape" class="hidden">
+    <div class="session-top">
+      <button class="btn ghost small back" data-nav="home">← Salir</button>
+      <span class="qcount">🔐 Escape Room actuarial</span>
+    </div>
+    <div class="esc-wrap" id="escBody"></div>
+  </section>
+
+  <!-- ================= VISTA: FLASHCARDS ================= -->
+  <section id="view-flash" class="hidden">
+    <div class="session-top">
+      <button class="btn ghost small back" data-nav="home">← Salir</button>
+      <span class="qcount">🃏 Flashcards de repaso</span>
+    </div>
+    <div class="flash-wrap">
+      <button class="flashcard" id="flashCard" title="Haz clic para voltear">
+        <span class="flash-inner">
+          <span class="flash-face flash-front" id="flashFront"></span>
+          <span class="flash-face flash-back" id="flashBack"></span>
+        </span>
+      </button>
+      <div class="flash-count" id="flashCount"></div>
+      <div class="flash-nav hidden" id="flashRate">
+        <button class="btn danger small" id="flashAgain">😵 Otra vez</button>
+        <button class="btn ghost small" id="flashHard">🙂 Difícil</button>
+        <button class="btn good small" id="flashEasy">😎 Fácil</button>
+      </div>
+      <div class="flash-nav">
+        <button class="btn ghost small" id="flashPrev">← Anterior</button>
+        <button class="btn small" id="flashFlip">🔄 Voltear</button>
+        <button class="btn ghost small" id="flashNext">Siguiente →</button>
+        <button class="btn ghost small" id="flashShuffle">🔀 Barajar</button>
+      </div>
+      <p class="q-help" style="text-align:center">🧠 Repetición espaciada: voltea la tarjeta y califícala. Las que falles volverán pronto; las fáciles descansarán varios días.</p>
+    </div>
+  </section>
+
+  <!-- ================= VISTA: BLITZ ================= -->
+  <section id="view-blitz" class="hidden">
+    <div class="session-top">
+      <button class="btn ghost small back" id="btnBlitzQuit">← Salir</button>
+      <span class="qcount">⚡ Reto contrarreloj · +5 s por acierto · fallar resta cada vez más</span>
+    </div>
+    <div style="text-align:center">
+      <div class="blitz-timer" id="blitzTimer">60</div>
+      <div class="blitz-bonus" id="blitzBonus" aria-live="polite"></div>
+      <div class="memo-hud"><span>✅ Aciertos: <b id="blitzOk">0</b></span><span>🔥 Racha: <b id="blitzCombo">0</b></span><span>💠 Mejor racha: <b id="blitzBest">0</b></span></div>
+    </div>
+    <div id="blitzHost" style="margin-top:14px"></div>
+  </section>
+
+  <!-- ================= VISTA: MUERTE SÚBITA ================= -->
+  <section id="view-sudden" class="hidden">
+    <div class="session-top">
+      <button class="btn ghost small back" id="btnSuddenQuit">← Salir</button>
+      <span class="qcount">💀 Muerte súbita · un error y se acaba</span>
+    </div>
+    <div style="text-align:center">
+      <div class="memo-hud"><span>🔥 Racha actual: <b id="sdCombo">0</b></span><span>💠 Mejor racha: <b id="sdBest">0</b></span></div>
+    </div>
+    <div id="sdHost" style="margin-top:14px"></div>
+  </section>
+
+  <!-- ================= VISTA: LEADERBOARD ================= -->
+  <section id="view-board" class="hidden">
+    <div class="session-top">
+      <button class="btn ghost small back" data-nav="home">← Salir</button>
+      <span class="qcount">🏆 Leaderboard</span>
+    </div>
+    <div id="boardBody"></div>
+  </section>
+
+  <!-- ================= VISTA: TAREAS Y CALENDARIO ================= -->
+  <section id="view-tasks" class="hidden">
+    <div class="session-top">
+      <button class="btn ghost small back" data-nav="home">← Salir</button>
+      <span class="qcount">📋 Tareas y calendario</span>
+    </div>
+    <div class="task-tabs" id="taskTabs">
+      <button class="btn small" data-ttab="activas">📋 Activas</button>
+      <button class="btn ghost small" data-ttab="vencidas">⌛ Vencidas</button>
+      <button class="btn ghost small" data-ttab="archivo">🗂️ Archivo</button>
+      <button class="btn ghost small" data-ttab="calendario">📅 Calendario</button>
+    </div>
+    <div id="tasksBody"></div>
+  </section>
+
+  <!-- ================= VISTA: ESTADÍSTICAS ================= -->
+  <section id="view-stats" class="hidden">
+    <div class="session-top">
+      <button class="btn ghost small back" data-nav="home">← Volver</button>
+      <span class="qcount">📊 Mi panel de progreso</span>
+    </div>
+    <div id="statsBody"></div>
+  </section>
+
+  <!-- ================= VISTA: GUÍA ================= -->
+  <section id="view-guide" class="hidden">
+    <div class="session-top">
+      <button class="btn ghost small back" data-nav="home">← Volver</button>
+      <span class="qcount">📖 Guía de estudio</span>
+      <span class="spacer" style="flex:1"></span>
+      <button class="btn small" id="btnPrint">🖨️ Imprimir / Guardar PDF</button>
+    </div>
+    <div class="lesson" id="guideBody"></div>
+  </section>
+
+  <!-- ================= VISTA: NIVELES ================= -->
+  <section id="view-levels" class="hidden">
+    <div class="session-top">
+      <button class="btn ghost small back" data-nav="home">← Volver</button>
+      <span class="qcount">⬆️ Niveles y recompensas</span>
+    </div>
+    <div id="levelsBody"></div>
+  </section>
+
+  <!-- ================= VISTA: PERFIL ================= -->
+  <section id="view-profile" class="hidden">
+    <div class="session-top">
+      <button class="btn ghost small back" data-nav="home">← Volver</button>
+      <span class="qcount">👤 Mi perfil y configuración</span>
+    </div>
+    <div id="profileBody"></div>
+  </section>
+
+  <!-- ================= VISTA: TIENDA / COLECCIÓN ================= -->
+  <section id="view-shop" class="hidden">
+    <div class="session-top">
+      <button class="btn ghost small back" data-nav="home">← Volver</button>
+      <span class="qcount">🛒 Tienda y colección</span>
+    </div>
+    <div class="shop-tabs" id="shopTabs">
+      <button class="btn small" data-shtab="tienda">🛒 Tienda</button>
+      <button class="btn ghost small" data-shtab="coleccion">🎒 Mi colección</button>
+    </div>
+    <div id="shopBody"></div>
+  </section>
+
+  <!-- ================= VISTA: MODOS DE JUEGO ================= -->
+  <section id="view-modes" class="hidden">
+    <div class="session-top">
+      <button class="btn ghost small back" data-nav="home">← Volver</button>
+      <span class="qcount">🎮 Modos de juego</span>
+    </div>
+    <div id="modesBody"></div>
+  </section>
+
+</main>
+
+<div id="modalHost"></div>
+<div id="toasts"></div>
+<audio id="sfxFallback" preload="auto" src="data:audio/wav;base64,UklGRsQFAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YaAFAACAgYWJi4iAdWpjY2x9kqSvrp+FZ0w9P1N2nsHV0rmOXTEYGjdqptr5+dWbWiMEBSdgodr6+9ujYigGAyFYmdT4/eCrai4IAhxRkc71/uWycjULARdJisfy/+q5eTsPABNCgsDu/+7AgkITAA87ebnq//LHikkXAQs1crLl/vXOkVEcAgguaqvg/fjUmVghAwYoYqPb+/raoWAnBQQjWpvV+fzfqWgtCAIdUpPP9v7ksHAzCgEYS4vJ8//puHc5DgAURITC7//tv4BAEgAQPXu76//xxohHFgAMNnS05/71zI9PGwEJMGyt4v330pdWIAMGKmSl3Pv62J9eJQUEJFyd1/n83qdmKwcCH1SV0ff9465uMQoBGk2NyvT+6LZ1OA0AFUaGxPD/7L19PxEAET99vez/8MSGRhUADTh1tuj+9MqNTRoBCjFuruP999GVVB8CBytmp978+dedXCQEBSVen9j6+9ylZCoGAyBWl9L3/eKtbDAJARtPj8z1/ue0dDYMABZHiMbx/+u7ez0QABJAf7/t/+/ChEQUAA45d7jp//PJi0sYAQozcLDk/vbPk1IdAggtaKnf/PnVm1ojBAUnYKHa+vvbo2IoBgMhWJnU+P3gq2ouCAIcUZHO9f7lsnI1CwEXSYrH8v/quXk7DwATQoLA7v/uwIJCEwAPO3m56v/yx4pJFwELNXKy5f71zpFRHAIILmqr4P341JlYIQMGKGKj2/v62qFgJwUEI1qb1fn836loLQgCHVKTz/b+5LBwMwoBGEuLyfP/6bh3OQ4AFESEwu//7b+AQBIAED17u+v/8caIRxYADDZ0tOf+9cyPTxsBCTBsreL999KXViADBipkpdz7+tifXiUFBCRcndf5/N6nZisHAh9UldH3/eOubjEKARpNjcr0/ui2dTgNABVGhsTw/+y9fT8RABE/fb3s//DEhkYVAA04dbbo/vTKjU0aAQoxbq7j/ffRlVQfAgcrZqfe/PnXnVwkBAUlXp/Y+vvcpWQqBgMgVpfS9/3irWwwCQEbT4/M9f7ntHQ2DAAWR4jG8f/ru3s9EAASQH+/7f/vwoREFAAOOXe46f/zyYtLGAEKM3Cw5P72z5NSHQIILWip3/z51ZtaIwQFJ2Ch2vr726NiKAYDIViZ1Pj94KtqLggCHFGRzvX+5bJyNQsBF0mKx/L/6rl5Ow8AE0KCwO7/7sCCQhMADzt5uer/8seKSRcBCzVysuX+9c6RURwCCC5qq+D9+NSZWCEDBihio9v7+tqhYCcFBCNam9X5/N+paC0IAh1Sk8/2/uSwcDMKARhLi8nz/+m4dzkOABREhMLv/+2/gEASABA9e7vr//HGiEcWAAw2dLTn/vXMj08bAQkwbK3i/ffSl1YgAwYqZKXc+vjXn18oCAgnXZzT9PbZpWcwDgolV5TL7vTbq284FAwjUozD6PHdsHdAGhAiTYW74e7dtH5IIRMiSX6z2+rduIRQKBciRXer1Obdu4tXLxwjQnGkzeHcvpBeNiAkQGydxtzawJVlPCUmPmeWv9fYwZpsQysoPWOQuNLVwp5ySjArPV+KsszSw6F4UDYuPVyFq8fPwqR9VzsyPVl/pcHLwaeCXUE2Pld7n7vHwKiGY0c6QFZ3mrXDvqqKaEw/QlVzlLC+vKqNbVJDRFVwkKq6uqqQcldIR1Vui6W1t6qSdl1NSlVsh6Cws6mUemJRTVdqg5ursKiVfWZWUVhpgJenrKaWgGtbVVppfpKiqKSWg29fWVxpe46dpKGWhXJkXV9qeouZoJ+VhnZoYWJreIiVnJuUh3lsZWVseIWRmJiSh3twaWlueIONlJWQh31zbWxweIGKkJGOh353cXBzeICHjI2LhoB5dXR1en+EiImIhYB8eXh5e3+ChYaFg4B+fHt8fX+BgYKBgYB/f38="></audio>
+<div id="printGuide"></div>
+
+<script src="net.js"></script>
+</body>
+</html>
