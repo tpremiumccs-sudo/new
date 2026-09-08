@@ -215,7 +215,7 @@
     if(!menu || document.getElementById('btnLogout')) return;
     const b = document.createElement('button');
     b.className = 'more-item'; b.id = 'btnLogout';
-    b.textContent = '👋 Cerrar sesión ('+(AQ.user ? AQ.user.username : '')+')';
+    b.textContent = 'Cerrar sesión ('+(AQ.user ? AQ.user.username : '')+')';
     b.onclick = async () => {
       try{ await AQ.flushNow(); }catch(e){}
       try{ await api('POST','/api/logout'); }catch(e){}
