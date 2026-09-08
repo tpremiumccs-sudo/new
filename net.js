@@ -115,9 +115,10 @@
     document.documentElement.classList.add('gated');
     const render = () => {
       gate.innerHTML =
-        '<div class="lms-card">'
+        '<img class="lms-mascot" src="assets/Logo_Login.png" alt="" aria-hidden="true">'
+        + '<div class="lms-card">'
         + '<div class="lms-welcome">\u00a1Bienvenido de nuevo!</div>'
-        + '<img class="lms-logo" src="assets/Logo_Login.png" alt="UTECA">'
+        + '<img class="lms-logo" src="assets/Logo_UTECA.png" alt="UTECA CDMX">'
         + (notice ? '<div class="auth-notice">'+notice+'</div>' : '')
         + '<form id="authForm" autocomplete="off">'
         + '<div class="lms-title">Iniciar sesi\u00f3n</div>'
