@@ -8,7 +8,6 @@ Sirve los archivos estáticos de la app Y la API bajo /api/*.
 Endpoints:
   POST /api/register    {username, pin, name?}        -> crea cuenta e inicia sesión
   POST /api/login       {email, password}            -> inicia sesión (correo institucional)
-  POST /api/profile     {username, name, carrera?, semestre?} -> completa el perfil (1er ingreso)
   POST /api/logout                                    -> cierra sesión
   GET  /api/me                                        -> {user:{username,name,email,onboarded,admin}}
   GET  /api/data                                      -> {data:{clave: valor_string}}  (todo el estado del usuario)
@@ -107,6 +106,8 @@ def init_db():
     if 'onboarded' not in have:  c.execute('ALTER TABLE users ADD COLUMN onboarded INTEGER NOT NULL DEFAULT 0')
     if 'profile' not in have:    c.execute('ALTER TABLE users ADD COLUMN profile TEXT')
     c.execute('CREATE UNIQUE INDEX IF NOT EXISTS idx_users_email ON users(email) WHERE email IS NOT NULL')
+    # No hay alta de perfil en la app: las credenciales se provisionan.
+    c.execute('UPDATE users SET onboarded=1 WHERE onboarded=0')
     c.commit()
 
 def hash_pin(pin: str, salt: bytes) -> bytes:
@@ -240,7 +241,6 @@ class Handler(BaseHTTPRequestHandler):
         path = urlparse(self.path).path
         if path == '/api/register':   return self.api_register()
         if path == '/api/login':      return self.api_login()
-        if path == '/api/profile':    return self.api_profile()
         if path == '/api/logout':     return self.api_logout()
         if path == '/api/data':       return self.api_put_data()   # sendBeacon usa POST
         if path == '/api/leaderboard':return self.api_post_lb()
@@ -297,50 +297,27 @@ class Handler(BaseHTTPRequestHandler):
         if password != DEFAULT_PASSWORD:
             return self.err(401, 'credenciales')
         salt = secrets.token_bytes(16)
+        local = email.split('@')[0]
+        username = re.sub(r'[^a-zA-Z0-9_.\-]', '', local)[:24] or 'alumno'
+        display = ' '.join(w.capitalize() for w in re.split(r'[._\-]+', local) if w)[:40] or username
+        # el username debe ser unico: si ya existe, se agrega un sufijo corto
+        base = username
+        for i in range(2, 40):
+            if not db().execute('SELECT 1 FROM users WHERE username=? COLLATE NOCASE', (username,)).fetchone():
+                break
+            username = (base[:20] + str(i))
         try:
             cur = db().execute(
-                'INSERT INTO users(username, name, pin_hash, salt, created, email, onboarded) VALUES(?,?,?,?,?,?,0)',
-                (email, email.split('@')[0][:32], hash_pin(DEFAULT_PASSWORD, salt), salt, int(time.time()), email))
+                'INSERT INTO users(username, name, pin_hash, salt, created, email, onboarded) VALUES(?,?,?,?,?,?,1)',
+                (username, display, hash_pin(DEFAULT_PASSWORD, salt), salt, int(time.time()), email))
             db().commit()
-            return self.start_session(cur.lastrowid, email, email.split('@')[0][:32],
-                                      email=email, onboarded=False)
+            return self.start_session(cur.lastrowid, username, display, email=email, onboarded=True)
         except sqlite3.IntegrityError:
             row = db().execute('SELECT * FROM users WHERE email=? COLLATE NOCASE', (email,)).fetchone()
             if row:
                 return self.start_session(row['id'], row['username'], row['name'],
                                           email=email, onboarded=bool(row['onboarded']))
             return self.err(500, 'no-se-pudo-crear')
-
-    def api_profile(self):
-        # Alta de perfil tras el primer ingreso: nombre de usuario + datos basicos.
-        u = self.current_user()
-        if not u: return self.err(401, 'no-session')
-        b = self.read_body()
-        if not b: return self.err(400, 'bad-json')
-        username = re.sub(r'[\x00-\x1f\x7f]', '', str(b.get('username', ''))).strip()[:24]
-        name     = re.sub(r'[\x00-\x1f\x7f]', '', str(b.get('name', ''))).strip()[:40]
-        if not VALID_USER.match(username):
-            return self.err(400, 'usuario-invalido')
-        if len(name) < 2:
-            return self.err(400, 'nombre-corto')
-        taken = db().execute('SELECT id FROM users WHERE username=? COLLATE NOCASE AND id<>?',
-                             (username, u['id'])).fetchone()
-        if taken:
-            return self.err(409, 'usuario-ocupado')
-        profile = json.dumps({
-            'carrera': str(b.get('carrera', ''))[:60],
-            'semestre': str(b.get('semestre', ''))[:20],
-            'grupo': str(b.get('grupo', ''))[:20],
-        }, ensure_ascii=False)
-        try:
-            db().execute('UPDATE users SET username=?, name=?, profile=?, onboarded=1 WHERE id=?',
-                         (username, name, profile, u['id']))
-            db().commit()
-        except sqlite3.IntegrityError:
-            return self.err(409, 'usuario-ocupado')
-        return self.j(200, {'ok': True, 'user': {'username': username, 'name': name,
-                                                 'email': u.get('email'), 'onboarded': True,
-                                                 'admin': self.is_admin(username, u.get('email'))}})
 
     def is_admin(self, username, email=None):
         if (username or '').lower() in ADMINS: return True
