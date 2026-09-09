@@ -7,9 +7,10 @@ Sirve los archivos estáticos de la app Y la API bajo /api/*.
 
 Endpoints:
   POST /api/register    {username, pin, name?}        -> crea cuenta e inicia sesión
-  POST /api/login       {username, pin}               -> inicia sesión (cookie HttpOnly)
+  POST /api/login       {email, password}            -> inicia sesión (correo institucional)
+  POST /api/profile     {username, name, carrera?, semestre?} -> completa el perfil (1er ingreso)
   POST /api/logout                                    -> cierra sesión
-  GET  /api/me                                        -> {user:{username,name,admin}}
+  GET  /api/me                                        -> {user:{username,name,email,onboarded,admin}}
   GET  /api/data                                      -> {data:{clave: valor_string}}  (todo el estado del usuario)
   PUT  /api/data        {set:{k:v,...}, del:[k,...]}  -> guarda/borra claves (también acepta POST, para sendBeacon)
   GET  /api/leaderboard                               -> {students:[...]}  (filas de todos los usuarios)
@@ -26,6 +27,9 @@ Config por variables de entorno:
   AQ_PORT   (default 8099)         AQ_DB     (default ~/aprendeuteca-data/aq.db)
   AQ_ROOT   (default carpeta padre de este archivo)
   AQ_ADMINS (default "oliver")     usernames con permiso de publicar tareas
+  AQ_EMAIL_DOMAINS (default "uteca.edu.mx")   dominios de correo permitidos
+  AQ_EMAIL_WHITELIST (default "")             correos sueltos autorizados
+  AQ_DEFAULT_PASSWORD (default "Aprendeuteca") contraseña inicial de todos
 """
 import json, os, re, sqlite3, secrets, hashlib, hmac, time, threading
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -36,6 +40,24 @@ ROOT   = os.environ.get('AQ_ROOT') or os.path.dirname(os.path.dirname(os.path.ab
 PORT   = int(os.environ.get('AQ_PORT', '8099'))
 DBPATH = os.path.expanduser(os.environ.get('AQ_DB', '~/aprendeuteca-data/aq.db'))
 ADMINS = {u.strip().lower() for u in os.environ.get('AQ_ADMINS', 'oliver').split(',') if u.strip()}
+
+# --- Acceso institucional -------------------------------------------------
+# Solo entran correos del dominio de la escuela o los agregados a la lista
+# blanca. La contrasena por defecto es la misma para todos y se guarda con
+# hash (PBKDF2); a futuro cada quien podra cambiarla sin tocar este codigo.
+EMAIL_DOMAINS = {d.strip().lower().lstrip('@') for d in
+                 os.environ.get('AQ_EMAIL_DOMAINS', 'uteca.edu.mx').split(',') if d.strip()}
+EMAIL_WHITELIST = {e.strip().lower() for e in
+                   os.environ.get('AQ_EMAIL_WHITELIST', '').split(',') if e.strip()}
+DEFAULT_PASSWORD = os.environ.get('AQ_DEFAULT_PASSWORD', 'Aprendeuteca')
+EMAIL_RE = re.compile(r'^[^@\s]{1,64}@[^@\s]{1,190}\.[a-z]{2,}$', re.I)
+
+def email_allowed(email: str) -> bool:
+    e = email.lower().strip()
+    if e in EMAIL_WHITELIST:
+        return True
+    dom = e.rsplit('@', 1)[-1]
+    return dom in EMAIL_DOMAINS
 
 MAX_BODY        = 8 * 1024 * 1024   # 8 MB (el estado incluye fotos de perfil en base64)
 SESSION_DAYS    = 45
@@ -79,6 +101,12 @@ def init_db():
     CREATE TABLE IF NOT EXISTS tasks(
       id INTEGER PRIMARY KEY CHECK(id=1), payload TEXT NOT NULL, updated INTEGER NOT NULL);
     ''')
+    # --- migracion: columnas nuevas para el acceso institucional ---
+    have = {r['name'] for r in c.execute('PRAGMA table_info(users)')}
+    if 'email' not in have:      c.execute('ALTER TABLE users ADD COLUMN email TEXT')
+    if 'onboarded' not in have:  c.execute('ALTER TABLE users ADD COLUMN onboarded INTEGER NOT NULL DEFAULT 0')
+    if 'profile' not in have:    c.execute('ALTER TABLE users ADD COLUMN profile TEXT')
+    c.execute('CREATE UNIQUE INDEX IF NOT EXISTS idx_users_email ON users(email) WHERE email IS NOT NULL')
     c.commit()
 
 def hash_pin(pin: str, salt: bytes) -> bytes:
@@ -161,11 +189,12 @@ class Handler(BaseHTTPRequestHandler):
         if COOKIE_NAME not in ck:
             return None
         token = ck[COOKIE_NAME].value
-        row = db().execute('SELECT s.token, s.expires, u.id, u.username, u.name FROM sessions s JOIN users u ON u.id=s.uid WHERE s.token=?', (token,)).fetchone()
+        row = db().execute('SELECT s.token, s.expires, u.id, u.username, u.name, u.email, u.onboarded FROM sessions s JOIN users u ON u.id=s.uid WHERE s.token=?', (token,)).fetchone()
         if not row or row['expires'] < time.time():
             return None
         return {'id': row['id'], 'username': row['username'], 'name': row['name'],
-                'admin': row['username'].lower() in ADMINS, 'token': token}
+                'email': row['email'], 'onboarded': bool(row['onboarded']),
+                'admin': self.is_admin(row['username'], row['email']), 'token': token}
 
     def log_message(self, fmt, *args):  # log compacto
         try:
@@ -181,7 +210,7 @@ class Handler(BaseHTTPRequestHandler):
         if path == '/api/me':
             u = self.current_user()
             if not u: return self.err(401, 'no-session')
-            return self.j(200, {'user': {'username': u['username'], 'name': u['name'], 'admin': u['admin']}})
+            return self.j(200, {'user': {'username': u['username'], 'name': u['name'], 'email': u['email'], 'onboarded': u['onboarded'], 'admin': u['admin']}})
         if path == '/api/data':
             u = self.current_user()
             if not u: return self.err(401, 'no-session')
@@ -211,6 +240,7 @@ class Handler(BaseHTTPRequestHandler):
         path = urlparse(self.path).path
         if path == '/api/register':   return self.api_register()
         if path == '/api/login':      return self.api_login()
+        if path == '/api/profile':    return self.api_profile()
         if path == '/api/logout':     return self.api_logout()
         if path == '/api/data':       return self.api_put_data()   # sendBeacon usa POST
         if path == '/api/leaderboard':return self.api_post_lb()
@@ -243,42 +273,89 @@ class Handler(BaseHTTPRequestHandler):
         return self.start_session(cur.lastrowid, username, name)
 
     def api_login(self):
-        # Modo abierto (UTECA): se acepta CUALQUIER usuario. La contrasena NO se
-        # verifica ni se guarda; el primer ingreso crea la cuenta al vuelo.
-        # La autenticacion real contra el sistema escolar queda para otra etapa.
+        # Acceso institucional: correo del dominio de la escuela (o lista blanca)
+        # + contrasena. La primera vez se crea la cuenta con la contrasena por
+        # defecto y queda pendiente de completar el perfil (onboarded=0).
         b = self.read_body()
         if not b: return self.err(400, 'bad-json')
-        username = str(b.get('username', '')).strip()
-        username = re.sub(r'[\x00-\x1f\x7f]', '', username)[:40].strip()
-        if not username:
-            return self.err(400, 'usuario-vacio')
+        email = re.sub(r'[\x00-\x1f\x7f]', '', str(b.get('email', ''))).strip().lower()[:120]
+        password = str(b.get('password', ''))
+        if not EMAIL_RE.match(email):
+            return self.err(400, 'correo-invalido')
+        if not email_allowed(email):
+            return self.err(403, 'correo-no-permitido')
         ip = self.headers.get('CF-Connecting-IP') or self.client_address[0]
-        if rate_limited((ip, username.lower())):
+        if rate_limited((ip, email)):
             return self.err(429, 'demasiados-intentos')
-        row = db().execute('SELECT * FROM users WHERE username=? COLLATE NOCASE', (username,)).fetchone()
+        row = db().execute('SELECT * FROM users WHERE email=? COLLATE NOCASE', (email,)).fetchone()
         if row:
-            return self.start_session(row['id'], row['username'], row['name'])
+            if not hmac.compare_digest(hash_pin(password, row['salt']), row['pin_hash']):
+                return self.err(401, 'credenciales')
+            return self.start_session(row['id'], row['username'], row['name'],
+                                      email=email, onboarded=bool(row['onboarded']))
+        # cuenta nueva: solo con la contrasena por defecto
+        if password != DEFAULT_PASSWORD:
+            return self.err(401, 'credenciales')
         salt = secrets.token_bytes(16)
-        placeholder = secrets.token_hex(16)   # sin contrasena real
         try:
-            cur = db().execute('INSERT INTO users(username, name, pin_hash, salt, created) VALUES(?,?,?,?,?)',
-                               (username, username[:32], hash_pin(placeholder, salt), salt, int(time.time())))
+            cur = db().execute(
+                'INSERT INTO users(username, name, pin_hash, salt, created, email, onboarded) VALUES(?,?,?,?,?,?,0)',
+                (email, email.split('@')[0][:32], hash_pin(DEFAULT_PASSWORD, salt), salt, int(time.time()), email))
             db().commit()
-            return self.start_session(cur.lastrowid, username, username[:32])
+            return self.start_session(cur.lastrowid, email, email.split('@')[0][:32],
+                                      email=email, onboarded=False)
         except sqlite3.IntegrityError:
-            row = db().execute('SELECT * FROM users WHERE username=? COLLATE NOCASE', (username,)).fetchone()
+            row = db().execute('SELECT * FROM users WHERE email=? COLLATE NOCASE', (email,)).fetchone()
             if row:
-                return self.start_session(row['id'], row['username'], row['name'])
+                return self.start_session(row['id'], row['username'], row['name'],
+                                          email=email, onboarded=bool(row['onboarded']))
             return self.err(500, 'no-se-pudo-crear')
 
-    def start_session(self, uid, username, name):
+    def api_profile(self):
+        # Alta de perfil tras el primer ingreso: nombre de usuario + datos basicos.
+        u = self.current_user()
+        if not u: return self.err(401, 'no-session')
+        b = self.read_body()
+        if not b: return self.err(400, 'bad-json')
+        username = re.sub(r'[\x00-\x1f\x7f]', '', str(b.get('username', ''))).strip()[:24]
+        name     = re.sub(r'[\x00-\x1f\x7f]', '', str(b.get('name', ''))).strip()[:40]
+        if not VALID_USER.match(username):
+            return self.err(400, 'usuario-invalido')
+        if len(name) < 2:
+            return self.err(400, 'nombre-corto')
+        taken = db().execute('SELECT id FROM users WHERE username=? COLLATE NOCASE AND id<>?',
+                             (username, u['id'])).fetchone()
+        if taken:
+            return self.err(409, 'usuario-ocupado')
+        profile = json.dumps({
+            'carrera': str(b.get('carrera', ''))[:60],
+            'semestre': str(b.get('semestre', ''))[:20],
+            'grupo': str(b.get('grupo', ''))[:20],
+        }, ensure_ascii=False)
+        try:
+            db().execute('UPDATE users SET username=?, name=?, profile=?, onboarded=1 WHERE id=?',
+                         (username, name, profile, u['id']))
+            db().commit()
+        except sqlite3.IntegrityError:
+            return self.err(409, 'usuario-ocupado')
+        return self.j(200, {'ok': True, 'user': {'username': username, 'name': name,
+                                                 'email': u.get('email'), 'onboarded': True,
+                                                 'admin': self.is_admin(username, u.get('email'))}})
+
+    def is_admin(self, username, email=None):
+        if (username or '').lower() in ADMINS: return True
+        if email and email.split('@')[0].lower() in ADMINS: return True
+        return False
+
+    def start_session(self, uid, username, name, email=None, onboarded=True):
         token = secrets.token_urlsafe(32)
         exp = int(time.time()) + SESSION_DAYS * 86400
         db().execute('INSERT INTO sessions(token, uid, expires) VALUES(?,?,?)', (token, uid, exp))
         db().execute('DELETE FROM sessions WHERE expires < ?', (int(time.time()),))
         db().commit()
         return self.j(200, {'ok': True, 'user': {'username': username, 'name': name,
-                                                 'admin': username.lower() in ADMINS}},
+                                                 'email': email, 'onboarded': bool(onboarded),
+                                                 'admin': self.is_admin(username, email)}},
                       extra=[self.set_session_cookie(token, exp)])
 
     def api_logout(self):

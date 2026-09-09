@@ -3,7 +3,7 @@
    - HTML/JS/CSS: red primero (siempre la versión más nueva), caché de respaldo
      solo para poder abrir la app sin conexión (modo lectura).
    - Iconos y docs: caché primero. */
-const CACHE = 'aprendeuteca-v41';
+const CACHE = 'aprendeuteca-v42';
 const ASSETS = ['./', './index.html', './styles.css', './net.js', './app.js', './manifest.json', './icon-192.png', './icon-512.png', './assets/uteca-logo-white.png', './assets/uteca-icon-270.png', './assets/uteca-favicon-32.png', './assets/Logo_Login.png', './assets/Logo_UTECA.png', './assets/duo/duolingo-sans-400.woff2?v=2', './assets/duo/duolingo-sans-700.woff2?v=2', './assets/duo/feather-700.woff2?v=2', './assets/duo/path-star.svg', './assets/duo/path-review.svg', './assets/duo/nav-aprender.svg', './assets/duo/nav-sonidos.svg', './assets/duo/nav-ligas.svg', './assets/duo/nav-desafios.svg', './assets/duo/nav-tienda.svg', './assets/duo/nav-mas.svg', './assets/duo/goal-1.svg', './assets/duo/streak.svg', './assets/duo/gem.svg', './assets/duo/heart.svg', './assets/duo/league-shield.svg', './assets/duo/guia-icon.svg', './assets/duo/back-arrow.svg', './assets/duo/path-chest.svg', './assets/duo/goal-2.svg', './assets/svg_leftArrowLogin.svg', './assets/svg_rightArrowLogin.svg'];
 
 self.addEventListener('install', e => {

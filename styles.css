@@ -1073,3 +1073,73 @@ svg.ic{ width:18px; height:18px; display:inline-block; vertical-align:-3px; }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]):not([data-theme="dark"]){ --duo-nav:#dce6ec; --duo-nav-bg:#202f36; --duo-nav-bd:#3f85a7; }
 }
+
+
+/* ---- Práctica: tarjetas estilo "Desafíos" ---- */
+.quest-banner{ display:flex; align-items:center; gap:16px; background:#ce82ff; color:#fff; border-radius:16px; padding:22px 24px; margin-bottom:24px; }
+.quest-banner .qb-text{ flex:1; min-width:0; }
+.quest-banner h2{ margin:0 0 6px; font-size:22px; font-weight:700; color:#fff; }
+.quest-banner p{ margin:0; font-size:15px; line-height:1.45; opacity:.95; }
+.quest-banner .qb-art{ width:76px; height:auto; flex:none; }
+.quest-sec{ display:flex; align-items:center; gap:12px; margin:22px 0 12px; }
+.quest-sec h3{ margin:0; font-size:19px; font-weight:700; color:var(--ink); }
+.quest-sec .line{ flex:1; height:2px; background:var(--line); }
+.quest-list{ display:flex; flex-direction:column; gap:12px; }
+.quest-card{
+  display:flex; align-items:center; gap:16px; width:100%; text-align:left;
+  background:var(--surface); border:2px solid var(--line); border-radius:16px; padding:14px 16px;
+  cursor:pointer; transition:background .15s, border-color .15s;
+}
+.quest-card:hover:not(.locked){ background:var(--surface2); border-color:var(--qc); }
+.quest-card:active:not(.locked){ transform:translateY(2px); }
+.quest-card.locked{ opacity:.6; cursor:not-allowed; }
+.qc-ico{ width:52px; height:52px; flex:none; border-radius:14px; display:grid; place-items:center;
+  background:color-mix(in srgb, var(--qc) 16%, transparent); color:var(--qc); }
+.qc-ico svg.ic{ width:28px; height:28px; }
+.qc-body{ flex:1; min-width:0; display:flex; flex-direction:column; gap:3px; }
+.qc-body b{ font-size:16px; color:var(--ink); }
+.qc-body small{ font-size:13.5px; color:var(--muted); line-height:1.35; }
+.qc-go{ flex:none; color:var(--muted); display:grid; place-items:center; }
+.qc-go svg.ic{ width:20px; height:20px; }
+.quest-empty{ display:flex; align-items:center; gap:10px; border:2px solid var(--line); border-radius:16px;
+  padding:14px 16px; color:var(--muted); font-size:15px; margin-bottom:8px; }
+
+/* ---- Modal de vidas estilo Duolingo ---- */
+.duo-lives{ text-align:center; }
+.duo-lives h2{ margin:0 0 14px; font-size:22px; font-weight:700; }
+.duo-lives .hearts-bar{ gap:8px; margin:0 0 14px; }
+.duo-lives .hearts-bar .hb svg.ic{ width:34px; height:34px; color:#ff4b4b; }
+.duo-lives .hearts-bar .hb.off{ opacity:1; filter:none; }
+.duo-lives .hearts-bar .hb.off svg.ic{ color:var(--surface3); }
+.dl-state{ margin:0; font-size:17px; font-weight:700; color:var(--ink); }
+.dl-sub{ margin:4px 0 18px; font-size:14px; color:var(--muted); }
+.dl-opt{ display:flex; align-items:center; gap:14px; width:100%; text-align:left; background:var(--surface);
+  border:2px solid var(--line); border-radius:16px; padding:12px 14px; margin-top:10px; cursor:pointer; }
+.dl-opt.is-info{ cursor:default; }
+.dl-opt:hover:not(.is-info){ background:var(--surface2); }
+.dl-opt-ico{ width:40px; height:40px; flex:none; display:grid; place-items:center; color:#ff4b4b; }
+.dl-opt-ico svg.ic{ width:28px; height:28px; }
+.dl-opt-body{ flex:1; min-width:0; display:flex; flex-direction:column; }
+.dl-opt-body b{ font-size:15px; color:var(--ink); }
+.dl-opt-body small{ font-size:13px; color:var(--muted); }
+.dl-opt-cta{ flex:none; font-size:13px; font-weight:700; letter-spacing:.6px; color:#1cb0f6; }
+
+/* ---- Racha semanal (columna derecha) ---- */
+#streakCard{ background:var(--warn-soft); border-color:color-mix(in srgb, var(--warn) 45%, var(--line)); }
+.sw-head{ display:flex; flex-direction:column; gap:2px; margin-bottom:14px; }
+.sw-head b{ font-size:19px; font-weight:700; color:#d18800; }
+.sw-head span{ font-size:14px; color:var(--ink2); }
+.sw-days{ display:grid; grid-template-columns:repeat(7,1fr); gap:6px; background:var(--surface); border-radius:14px; padding:10px 6px; }
+.sw-day{ display:flex; flex-direction:column; align-items:center; gap:6px; }
+.sw-day > span{ font-size:12px; font-weight:700; color:var(--muted); }
+.sw-day.is-today > span{ color:#ff9600; }
+.sw-day i{ width:26px; height:26px; border-radius:50%; background:var(--surface3); display:grid; place-items:center; }
+.sw-day i.on{ background:#ffc800; }
+.sw-day i svg.ic{ width:16px; height:16px; color:#fff; }
+
+/* ---- Login: correo institucional ---- */
+.lms-card select{ display:block; width:100%; box-sizing:border-box; margin:0 0 12px; padding:11px 16px;
+  border-radius:999px; border:none; background:#fff; color:#333; text-align:center; font:inherit; font-size:.98rem; }
+.lms-card select:focus{ outline:3px solid #ffd100; outline-offset:1px; }
+.lms-hint{ font-size:.78rem; color:rgba(255,255,255,.85); line-height:1.4; margin:12px 0 0; }
+.lms-hint b{ color:#ffd100; }

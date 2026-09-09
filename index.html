@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="AprendeUteca — Plataforma de la comunidad UTECA para aprender Cálculo Actuarial: lecciones, XP, insignias, exámenes y retos.">
+<meta name="description" content="AprendeUteca — La plataforma de la comunidad UTECA para aprender, repasar y entregar tus tareas.">
 <title>AprendeUteca · UTECA</title>
 <link rel="icon" href="assets/uteca-favicon-32.png">
 <link rel="manifest" href="manifest.json">
@@ -256,7 +256,7 @@
     <span class="duo-stat duo-gem" title="XP total"><img src="assets/duo/gem.svg" alt=""><b id="xpStat">0</b></span>
     <button class="duo-stat duo-hearts" id="btnHearts" title="Corazones (vidas)"><img src="assets/duo/heart.svg" alt=""><b id="heartsTxt">5</b></button>
   </div>
-  <div class="duo-card duo-hero">
+  <div class="duo-card duo-hero" id="streakCardWrap">
     <h3 id="heroTitle">¡Bienvenido!</h3>
     <p id="heroDesc">Avanza por los módulos resolviendo retos.</p>
     <div class="duo-card-actions">
@@ -264,6 +264,7 @@
       <button class="btn ghost" id="btnExam">Examen diario</button>
     </div>
   </div>
+  <div class="duo-card" id="streakCard"></div>
   <div class="duo-card">
     <div class="duo-card-head"><h3>¡Compite en las Ligas!</h3><button class="duo-link" data-open-board="1">Ver todos</button></div>
     <div class="duo-league"><img src="assets/duo/league-shield.svg" alt=""><div id="leagueText">Completa una lección para entrar a la tabla de tu grupo.</div></div>
